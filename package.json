@@ -1,0 +1,21 @@
+{
+  "name": "pixijs-game",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "pixi.js": "^7.3.2",
+    "howler": "^2.2.4",
+    "gsap": "^3.12.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
+    "@types/howler": "^2.2.11"
+  }
+} 

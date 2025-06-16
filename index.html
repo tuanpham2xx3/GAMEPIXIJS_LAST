@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PixiJS Game Project</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+        color: white;
+        font-family: 'Arial', sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .container {
+        text-align: center;
+        max-width: 800px;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+      
+      h1 {
+        font-size: 3em;
+        margin-bottom: 20px;
+        background: linear-gradient(45deg, #00ffff, #ff00ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      .subtitle {
+        font-size: 1.2em;
+        margin-bottom: 40px;
+        opacity: 0.8;
+      }
+      
+      .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+      }
+      
+      .demo-card {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        padding: 30px;
+        text-decoration: none;
+        color: white;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+      
+      .demo-card:hover {
+        transform: translateY(-5px);
+        border-color: #00ffff;
+        box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
+      }
+      
+      .demo-icon {
+        font-size: 3em;
+        margin-bottom: 15px;
+      }
+      
+      .demo-title {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      
+      .demo-description {
+        opacity: 0.8;
+        line-height: 1.5;
+      }
+      
+      .note {
+        margin-top: 40px;
+        padding: 20px;
+        background: rgba(255, 255, 0, 0.1);
+        border-left: 4px solid #ffff00;
+        border-radius: 5px;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎮 PixiJS Game Project</h1>
+      <p class="subtitle">Choose a demo to explore different features</p>
+      
+      <div class="demo-grid">
+        <a href="/?demo=animation" class="demo-card">
+          <div class="demo-icon">🎬</div>
+          <div class="demo-title">Animation Demo</div>
+          <div class="demo-description">
+            Test all game animations including boss, enemies, coins, and hit effects
+          </div>
+        </a>
+        
+        <a href="/?demo=audio" class="demo-card">
+          <div class="demo-icon">🎵</div>
+          <div class="demo-title">Audio Manager</div>
+          <div class="demo-description">
+            Test audio loading, playback, volume control, and sound effects
+          </div>
+        </a>
+        
+        <a href="/?demo=asset" class="demo-card">
+          <div class="demo-icon">📦</div>
+          <div class="demo-title">Asset Test</div>
+          <div class="demo-description">
+            Test asset loading, texture management, and resource handling
+          </div>
+        </a>
+      </div>
+      
+      <div class="note">
+        <h3>📝 Development Notes:</h3>
+        <ul>
+          <li><strong>Animation Demo:</strong> Shows boss animation with 5-frame cycle (0→4→0)</li>
+          <li><strong>Audio Manager:</strong> Ready to load audio from <code>/public/audio/</code></li>
+          <li><strong>Asset Test:</strong> Tests all texture and animation loading</li>
+        </ul>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html> 
