@@ -58,3 +58,6 @@ lerna-debug.log*
 
 # Vite
 .vite/
+# md
+ANIMATION_GUIDE.md
+GUIDE.md
