@@ -1,0 +1,1 @@
+// Coin entity will be implemented here 
