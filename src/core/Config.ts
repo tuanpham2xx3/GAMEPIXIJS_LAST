@@ -1,3 +1,4 @@
+
 import { PlayerConfig, BulletConfig } from "../types/EntityTypes";
 
 export const GameConfig = {

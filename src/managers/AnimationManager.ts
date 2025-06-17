@@ -850,16 +850,16 @@ export class AnimationManager {
      */
     public async createBossAnimation(config: AnimationConfig = {}): Promise<AnimatedSprite> {
         try {
-            console.log('🎬 Loading boss animation...');
+            console.log('Loading boss animation...');
             // Load boss sprite sheet
             const bossTexture = await this.assetManager.loadTexture(AssetManager.paths.BOSS_ANIMATION);
-            console.log('✅ Loaded boss texture:', bossTexture.width, 'x', bossTexture.height);
+            console.log('Loaded boss texture:', bossTexture.width, 'x', bossTexture.height);
             
             // Create frames from sprite sheet (5 frames horizontally)
             const baseFrames: Texture[] = [];
             const frameWidth = bossTexture.width / 5;  // 5 frames
             const frameHeight = bossTexture.height;
-            console.log('📐 Frame dimensions:', frameWidth, 'x', frameHeight);
+            console.log('Frame dimensions:', frameWidth, 'x', frameHeight);
 
             // Extract each frame from the sprite sheet
             for (let i = 0; i < 5; i++) {

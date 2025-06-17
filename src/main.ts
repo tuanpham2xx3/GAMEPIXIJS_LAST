@@ -12,6 +12,7 @@ class Game {
   private gameContainer: PIXI.Container;
   private backgroundContainer: PIXI.Container;
   private uiContainer: PIXI.Container;
+
   private scrollingBackground: PIXI.TilingSprite | null = null;
   private backgroundTexture: PIXI.Texture | null = null;
 
@@ -124,6 +125,7 @@ class Game {
 
   private async createBackground(): Promise<void> {
     try {
+
       console.log(`Attempting to load background from: ${GameConfig.background.src}`);
       
       // Try to load the background image
@@ -145,6 +147,7 @@ class Game {
 
   private createScrollingBackground(): void {
     if (!this.backgroundTexture) return;
+
 
     // Create single TilingSprite
     this.scrollingBackground = new PIXI.TilingSprite(
@@ -234,6 +237,7 @@ class Game {
       this.bulletManager = new BulletManager(this.gameContainer, bulletTexture);
       this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
       this.gameContainer.addChild(this.player);
+
     }
   }
 
@@ -332,7 +336,9 @@ class Game {
     );
 
     statsText.x = 10;
+
     statsText.y = GameConfig.screen.height - 100;
+
     statsText.name = 'gameStats';
     this.uiContainer.addChild(statsText);
   }
@@ -353,6 +359,7 @@ class Game {
 
 // Start the game when page loads
 window.onload = () => {
+
   console.log('Starting Space Shooter Game...');
   const game = new Game();
   

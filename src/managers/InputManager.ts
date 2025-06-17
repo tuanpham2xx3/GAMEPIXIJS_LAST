@@ -1,3 +1,4 @@
+
 import { InputState, Vector2 } from "../types/EntityTypes";
 
 export class InputManager {
