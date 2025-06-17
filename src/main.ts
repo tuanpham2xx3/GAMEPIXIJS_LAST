@@ -12,7 +12,7 @@ class Game {
   private gameContainer: PIXI.Container;
   private backgroundContainer: PIXI.Container;
   private uiContainer: PIXI.Container;
-  private scrollingBackgrounds: PIXI.Sprite[] = [];
+  private scrollingBackground: PIXI.TilingSprite | null = null;
   private backgroundTexture: PIXI.Texture | null = null;
 
   constructor() {
@@ -133,7 +133,7 @@ class Game {
         console.log(`Background dimensions: ${this.backgroundTexture.width}x${this.backgroundTexture.height}`);
       }
       
-      // Create scrolling background sprites
+      // Create scrolling background
       this.createScrollingBackground();
       
     } catch (error) {
@@ -146,25 +146,14 @@ class Game {
   private createScrollingBackground(): void {
     if (!this.backgroundTexture) return;
 
-    // Calculate how many background images we need to cover the screen height + one extra for seamless scrolling
-    const bgHeight = this.backgroundTexture.height;
-    const screenHeight = GameConfig.screen.height;
-    const numBackgrounds = Math.ceil(screenHeight / bgHeight) + 1;
-
-    // Create background sprites
-    for (let i = 0; i < numBackgrounds; i++) {
-      const bg = new PIXI.Sprite(this.backgroundTexture);
-      
-      // Scale to fit screen width
-      bg.width = GameConfig.screen.width;
-      bg.height = bgHeight;
-      
-      // Position vertically
-      bg.y = i * bgHeight;
-      
-      this.scrollingBackgrounds.push(bg);
-      this.backgroundContainer.addChild(bg);
-    }
+    // Create single TilingSprite
+    this.scrollingBackground = new PIXI.TilingSprite(
+      this.backgroundTexture,
+      GameConfig.screen.width,
+      GameConfig.screen.height + this.backgroundTexture.height
+    );
+    
+    this.backgroundContainer.addChild(this.scrollingBackground);
   }
 
   private createFallbackBackground(): void {
@@ -194,11 +183,9 @@ class Game {
   }
 
   private updateBackgroundSize(): void {
-    if (this.scrollingBackgrounds.length > 0) {
-      // Update background sprites for new screen size
-      for (const bg of this.scrollingBackgrounds) {
-        bg.width = GameConfig.screen.width;
-      }
+    if (this.scrollingBackground) {
+      this.scrollingBackground.width = GameConfig.screen.width;
+      this.scrollingBackground.height = GameConfig.screen.height + (this.backgroundTexture?.height || 0);
     }
   }
 
@@ -282,15 +269,6 @@ class Game {
       stroke: 0x000000,
       strokeThickness: 1,
     });
-
-    const controls = new PIXI.Text(
-      'Hold and drag mouse/finger to move player relative to gesture\nAuto-shooting when moving',
-      controlStyle
-    );
-    controls.anchor.set(0.5, 0);
-    controls.x = GameConfig.screen.width / 2;
-    controls.y = 50;
-    this.uiContainer.addChild(controls);
   }
 
   private gameLoop(delta: number): void {
@@ -314,22 +292,10 @@ class Game {
   }
 
   private updateScrollingBackground(deltaTime: number): void {
-    if (this.scrollingBackgrounds.length === 0) return;
+    if (!this.scrollingBackground) return;
 
     const scrollSpeed = GameConfig.background.scrollSpeed;
-    
-    for (const bg of this.scrollingBackgrounds) {
-      // Move background down
-      bg.y += scrollSpeed * deltaTime;
-      
-      // Reset position when background goes off screen
-      const bgHeight = bg.height;
-      if (bg.y >= GameConfig.screen.height) {
-        // Find the topmost background
-        let minY = Math.min(...this.scrollingBackgrounds.map(b => b.y));
-        bg.y = minY - bgHeight;
-      }
-    }
+    this.scrollingBackground.tilePosition.y += scrollSpeed * deltaTime;
   }
 
   private updateGameStats(): void {
