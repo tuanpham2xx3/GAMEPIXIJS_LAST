@@ -51,13 +51,13 @@ export class AudioManager {
     };
 
     private constructor() {
-        console.log('🔊 Initializing AudioManager...');
+        console.log('Initializing AudioManager...');
         this.setupHowler();
     }
 
     public static getInstance(): AudioManager {
         if (!AudioManager.instance) {
-            console.log('🆕 Creating new AudioManager instance...');
+            console.log('Creating new AudioManager instance...');
             AudioManager.instance = new AudioManager();
         }
         return AudioManager.instance;
@@ -73,7 +73,7 @@ export class AudioManager {
         // Setup audio context unlock for mobile
         Howler.autoUnlock = true;
         
-        console.log('✅ Howler setup complete');
+        console.log('Howler setup complete');
     }
 
     /**
@@ -87,10 +87,10 @@ export class AudioManager {
      * Load a single audio file
      */
     public async loadAudio(name: string, src: string | string[], config: AudioConfig = {}): Promise<Howl> {
-        console.log(`🎵 Loading audio: ${name}`);
+        console.log(`Loading audio: ${name}`);
         
         if (this.audioCache.has(name)) {
-            console.log(`✅ Audio already loaded: ${name}`);
+            console.log(`Audio already loaded: ${name}`);
             return this.audioCache.get(name)!;
         }
 
@@ -102,12 +102,12 @@ export class AudioManager {
                 rate: config.rate || 1.0,
                 autoplay: config.autoplay || false,
                 onload: () => {
-                    console.log(`✅ Audio loaded successfully: ${name}`);
+                    console.log(`Audio loaded successfully: ${name}`);
                     this.audioCache.set(name, howl);
                     resolve(howl);
                 },
                 onloaderror: (id, error) => {
-                    console.error(`❌ Failed to load audio: ${name}`, error);
+                    console.error(`Failed to load audio: ${name}`, error);
                     reject(error);
                 }
             });
@@ -118,7 +118,7 @@ export class AudioManager {
      * Load multiple audio files
      */
     public async loadMultipleAudios(assets: AudioAsset[]): Promise<void> {
-        console.log(`🎵 Loading ${assets.length} audio files...`);
+        console.log(`Loading ${assets.length} audio files...`);
         
         const promises = assets.map(asset => 
             this.loadAudio(asset.name, asset.src, asset.config)
@@ -126,9 +126,9 @@ export class AudioManager {
 
         try {
             await Promise.all(promises);
-            console.log('✅ All audio files loaded successfully!');
+            console.log('All audio files loaded successfully!');
         } catch (error) {
-            console.error('❌ Failed to load some audio files:', error);
+            console.error('Failed to load some audio files:', error);
             throw error;
         }
     }
@@ -177,9 +177,9 @@ export class AudioManager {
 
         try {
             await this.loadMultipleAudios(essentialAudio);
-            console.log('✅ Essential audio preloaded successfully!');
+            console.log('Essential audio preloaded successfully!');
         } catch (error) {
-            console.error('❌ Failed to preload essential audio:', error);
+            console.error('Failed to preload essential audio:', error);
             // Don't throw error, game should continue without audio
         }
     }
@@ -190,7 +190,7 @@ export class AudioManager {
     public play(name: string, config?: { volume?: number; rate?: number; loop?: boolean }): number | null {
         const audio = this.audioCache.get(name);
         if (!audio) {
-            console.warn(`⚠️ Audio not found: ${name}`);
+            console.warn(`Audio not found: ${name}`);
             return null;
         }
 
@@ -202,7 +202,7 @@ export class AudioManager {
         }
 
         const soundId = audio.play();
-        console.log(`🔊 Playing audio: ${name} (ID: ${soundId})`);
+        console.log(`Playing audio: ${name} (ID: ${soundId})`);
         return soundId;
     }
 
@@ -212,7 +212,7 @@ export class AudioManager {
     public stop(name: string, soundId?: number): void {
         const audio = this.audioCache.get(name);
         if (!audio) {
-            console.warn(`⚠️ Audio not found: ${name}`);
+            console.warn(`Audio not found: ${name}`);
             return;
         }
 
@@ -221,7 +221,7 @@ export class AudioManager {
         } else {
             audio.stop();
         }
-        console.log(`⏹️ Stopped audio: ${name}`);
+        console.log(`Stopped audio: ${name}`);
     }
 
     /**
@@ -230,7 +230,7 @@ export class AudioManager {
     public pause(name: string, soundId?: number): void {
         const audio = this.audioCache.get(name);
         if (!audio) {
-            console.warn(`⚠️ Audio not found: ${name}`);
+            console.warn(`Audio not found: ${name}`);
             return;
         }
 
@@ -239,7 +239,7 @@ export class AudioManager {
         } else {
             audio.pause();
         }
-        console.log(`⏸️ Paused audio: ${name}`);
+        console.log(`Paused audio: ${name}`);
     }
 
     /**
@@ -248,7 +248,7 @@ export class AudioManager {
     public resume(name: string, soundId?: number): void {
         const audio = this.audioCache.get(name);
         if (!audio) {
-            console.warn(`⚠️ Audio not found: ${name}`);
+            console.warn(`Audio not found: ${name}`);
             return;
         }
 
@@ -257,7 +257,7 @@ export class AudioManager {
         } else {
             audio.play();
         }
-        console.log(`▶️ Resumed audio: ${name}`);
+        console.log(`Resumed audio: ${name}`);
     }
 
     /**
@@ -266,7 +266,7 @@ export class AudioManager {
     public setVolume(name: string, volume: number, soundId?: number): void {
         const audio = this.audioCache.get(name);
         if (!audio) {
-            console.warn(`⚠️ Audio not found: ${name}`);
+            console.warn(`Audio not found: ${name}`);
             return;
         }
 
@@ -275,7 +275,7 @@ export class AudioManager {
         } else {
             audio.volume(volume);
         }
-        console.log(`🔊 Set volume for ${name}: ${volume}`);
+        console.log(`Set volume for ${name}: ${volume}`);
     }
 
     /**
@@ -284,7 +284,7 @@ export class AudioManager {
     public setMasterVolume(volume: number): void {
         this.masterVolume = Math.max(0, Math.min(1, volume));
         Howler.volume(this.masterVolume);
-        console.log(`🔊 Master volume set to: ${this.masterVolume}`);
+        console.log(`Master volume set to: ${this.masterVolume}`);
     }
 
     /**
@@ -301,7 +301,7 @@ export class AudioManager {
             }
         });
         
-        console.log(`🎵 Music volume set to: ${this.musicVolume}`);
+        console.log(`Music volume set to: ${this.musicVolume}`);
     }
 
     /**
@@ -309,7 +309,7 @@ export class AudioManager {
      */
     public setSfxVolume(volume: number): void {
         this.sfxVolume = Math.max(0, Math.min(1, volume));
-        console.log(`🔊 SFX volume set to: ${this.sfxVolume}`);
+        console.log(`SFX volume set to: ${this.sfxVolume}`);
     }
 
     /**
@@ -317,7 +317,7 @@ export class AudioManager {
      */
     public mute(): void {
         Howler.mute(true);
-        console.log('🔇 All audio muted');
+        console.log('All audio muted');
     }
 
     /**
@@ -325,7 +325,7 @@ export class AudioManager {
      */
     public unmute(): void {
         Howler.mute(false);
-        console.log('🔊 All audio unmuted');
+        console.log('All audio unmuted');
     }
 
     /**
@@ -335,7 +335,7 @@ export class AudioManager {
         this.audioCache.forEach((audio, name) => {
             audio.stop();
         });
-        console.log('⏹️ All audio stopped');
+        console.log('All audio stopped');
     }
 
     /**
@@ -373,7 +373,7 @@ export class AudioManager {
             audio.unload();
         });
         this.audioCache.clear();
-        console.log('🗑️ Audio cache cleared');
+        console.log('Audio cache cleared');
     }
 
     /**
