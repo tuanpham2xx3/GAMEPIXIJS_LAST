@@ -3,8 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch: # Cho phép trigger manual
 
 jobs:
   build-and-deploy:
@@ -18,10 +17,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
+        # Không dùng cache vì không có package-lock.json
         
     - name: Install dependencies
-      run: npm ci
+      run: npm install # Dùng npm install thay vì npm ci
       
     - name: Build
       run: npm run build
