@@ -6,16 +6,19 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist"
   },
+  "homepage": "https://tuanpham2xx3.github.io/GAMEPIXIJS_LAST/",
   "dependencies": {
-    "pixi.js": "^7.3.2",
+    "gsap": "^3.12.4",
     "howler": "^2.2.4",
-    "gsap": "^3.12.4"
+    "pixi.js": "^7.3.2"
   },
   "devDependencies": {
+    "@types/howler": "^2.2.11",
+    "gh-pages": "^6.3.0",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8",
-    "@types/howler": "^2.2.11"
+    "vite": "^5.0.8"
   }
-} 
+}

@@ -1,56 +1,55 @@
-// Entity types will be defined here 
 
-// Vector and Transform types
+//Vector and Transform types
 export interface Vector2 {
-  x: number;
-  y: number;
+    x: number;
+    y: number;
 }
 
 export interface Transform {
-  position: Vector2;
-  rotation: number;
-  scale: Vector2;
+    position : Vector2;
+    rotation: number;
+    scale: Vector2;
 }
 
-// Input types
+//Input type
 export interface InputState {
-  isPointerDown: boolean;
-  previousPosition: Vector2;
-  currentPosition: Vector2;
-  frameMovement: Vector2; // Movement in current frame
+    isPointerDown: boolean;
+    previousPosition: Vector2;
+    currentPosition: Vector2;
+    frameMovement: Vector2; //Movement in current frame
 }
 
-// Player types
+//Player type
 export interface PlayerConfig {
-  speed: number;
-  shootingRate: number; // bullets per second
-  size: { width: number; height: number };
+    speed: number;
+    shootingRate: number; //bullets per secon
+    size: { width: number; height: number};
 }
 
 export interface PlayerState {
-  isMoving: boolean;
-  isShooting: boolean;
-  health: number;
-  maxHealth: number;
+    isMoving: boolean;
+    isShooting: boolean;
+    health: number;
+    maxHealth: number;
 }
 
-// Bullet types
+//Bullet types
 export interface BulletConfig {
-  speed: number;
-  damage: number;
-  size: { width: number; height: number };
+    speed: number;
+    damage: number;
+    size: { width: number; height: number};
 }
 
 export interface BulletState {
-  isActive: boolean;
-  direction: Vector2;
+    isActive: boolean;
+    direction: Vector2;
 }
 
-// Entity base interface
+//Entity base interface
 export interface Entity {
-  velocity: Vector2;
-  isActive: boolean;
-  update(deltaTime: number): void;
-  destroy(): void;
-  getPosition(): Vector2;
-} 
+    velocity: Vector2;
+    isActive: boolean;
+    update(deltaTime: number): void;
+    destroy(): void;
+    getPosition(): Vector2;
+}
