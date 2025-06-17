@@ -4,46 +4,46 @@ export class AssetManager {
     private static instance: AssetManager;
     private loadedTextures: Map<string, Texture> = new Map();
 
-    // Asset paths configuration
+    // ✅ Fix asset paths - bỏ leading slash
     private static readonly ASSET_PATHS = {
         // Animations
-        ENEMY_1_ANIMATIONS: '/assets/textures/animations/anim_enemy_1_',
-        ENEMY_2_ANIMATIONS: '/assets/textures/animations/anim_enemy_2_',
-        HIT_ANIMATION: '/assets/textures/animations/anim_hit.png',
-        BOSS_ANIMATION: '/assets/textures/animations/anim_boss.png',
+        ENEMY_1_ANIMATIONS: 'assets/textures/animations/anim_enemy_1_',
+        ENEMY_2_ANIMATIONS: 'assets/textures/animations/anim_enemy_2_',
+        HIT_ANIMATION: 'assets/textures/animations/anim_hit.png',
+        BOSS_ANIMATION: 'assets/textures/animations/anim_boss.png',
 
         // Backgrounds
-        MAIN_BACKGROUND: '/assets/textures/backgrounds/bg.jpg',
-        CIRCLE_BACKGROUND: '/assets/textures/backgrounds/circle.png',
+        MAIN_BACKGROUND: 'assets/textures/backgrounds/bg.jpg',
+        CIRCLE_BACKGROUND: 'assets/textures/backgrounds/circle.png',
 
         // Characters - Player
-        PLAYER_SHIP: '/assets/textures/characters/player/ship_phoenix_dark.png',
+        PLAYER_SHIP: 'assets/textures/characters/player/ship_phoenix_dark.png',
 
         // Characters - Enemies
-        ENEMY_BASIC: '/assets/textures/characters/enemies/basic/',
-        ENEMY_DIVER: '/assets/textures/characters/enemies/diver/',
-        ENEMY_GREEN: '/assets/textures/characters/enemies/green/',
-        ENEMY_INFERIOR: '/assets/textures/characters/enemies/inferior/',
-        ENEMY_NA: '/assets/textures/characters/enemies/na/',
-        ENEMY_SATURATION: '/assets/textures/characters/enemies/saturation/',
-        ENEMY_SOLDIER: '/assets/textures/characters/enemies/soldier/',
+        ENEMY_BASIC: 'assets/textures/characters/enemies/basic/',
+        ENEMY_DIVER: 'assets/textures/characters/enemies/diver/',
+        ENEMY_GREEN: 'assets/textures/characters/enemies/green/',
+        ENEMY_INFERIOR: 'assets/textures/characters/enemies/inferior/',
+        ENEMY_NA: 'assets/textures/characters/enemies/na/',
+        ENEMY_SATURATION: 'assets/textures/characters/enemies/saturation/',
+        ENEMY_SOLDIER: 'assets/textures/characters/enemies/soldier/',
 
         // Effects
-        EFFECTS: '/assets/textures/effects/',
+        EFFECTS: 'assets/textures/effects/',
 
         // Projectiles
-        BULLET_ENEMY: '/assets/textures/projectiles/bullet_enemy.png',
-        BULLET_GREEN: '/assets/textures/projectiles/bullet_green.png',
-        BULLET_PHOENIX: '/assets/textures/projectiles/bullet_phoenix.png',
+        BULLET_ENEMY: 'assets/textures/projectiles/bullet_enemy.png',
+        BULLET_GREEN: 'assets/textures/projectiles/bullet_green.png',
+        BULLET_PHOENIX: 'assets/textures/projectiles/bullet_phoenix.png',
 
         // UI
-        UI_BUTTONS: '/assets/textures/ui/buttons/',
-        UI_ICONS: '/assets/textures/ui/icons/',
-        UI_COINS: '/assets/textures/ui/collectibles/coins/',
-        UI_COLLECTIBLES: '/assets/textures/ui/collectibles/',
+        UI_BUTTONS: 'assets/textures/ui/buttons/',
+        UI_ICONS: 'assets/textures/ui/icons/',
+        UI_COINS: 'assets/textures/ui/collectibles/coins/',
+        UI_COLLECTIBLES: 'assets/textures/ui/collectibles/',
 
         // Misc
-        MISC: '/assets/textures/misc/'
+        MISC: 'assets/textures/misc/'
     };
 
     public static get paths() {
@@ -204,16 +204,17 @@ export class AssetManager {
     }
 
     /**
-     * Get a loaded texture
+     * Get cached texture
      */
     public getTexture(key: string): Texture | null {
         return this.loadedTextures.get(key) || null;
     }
 
     /**
-     * Clear all loaded textures from memory
+     * Clear texture cache
      */
     public clearCache(): void {
         this.loadedTextures.clear();
+        console.log('🗑️ Texture cache cleared');
     }
 } 
