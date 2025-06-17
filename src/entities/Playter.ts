@@ -11,8 +11,11 @@ export class Player extends PIXI.Sprite implements Entity {
   private inputManager: InputManager;
   private bulletManager: BulletManager;
   private lastShootTime: number;
+  
+  // Engine trail - chỉ 1 sprite
+  public engineTrail: PIXI.Sprite | null = null;
 
-  constructor(texture: PIXI.Texture, inputManager: InputManager, bulletManager: BulletManager) {
+  constructor(texture: PIXI.Texture, inputManager: InputManager, bulletManager: BulletManager, smokeTexture?: PIXI.Texture) {
     super(texture);
     
     this.inputManager = inputManager;
@@ -29,6 +32,26 @@ export class Player extends PIXI.Sprite implements Entity {
     };
 
     this.setupPlayer();
+    
+    // Setup trail ngay nếu có texture
+    if (smokeTexture) {
+      this.createEngineTrail(smokeTexture);
+    }
+  }
+
+  private createEngineTrail(texture: PIXI.Texture): void {
+    // Tạo 1 sprite khói đơn giản
+    this.engineTrail = new PIXI.Sprite(texture);
+    
+    this.engineTrail.anchor.set(0.5);
+    this.engineTrail.scale.set(0.9); // Size vừa phải
+    this.engineTrail.alpha = 0.9;
+    this.engineTrail.zIndex = -1; // Khói ở phía sau
+    
+    // Add vào parent nếu có
+    if (this.parent) {
+      this.parent.addChild(this.engineTrail);
+    }
   }
 
   private setupPlayer(): void {
@@ -36,6 +59,7 @@ export class Player extends PIXI.Sprite implements Entity {
     this.width = GameConfig.player.size.width;
     this.height = GameConfig.player.size.height;
     this.anchor.set(0.5);
+    this.zIndex = 0; // Tàu ở phía trước
     
     // Set initial position
     this.x = GameConfig.player.startPosition.x;
@@ -46,8 +70,23 @@ export class Player extends PIXI.Sprite implements Entity {
     if (!this.isActive) return;
 
     this.handleInput(deltaTime);
-    this.handleShooting(deltaTime);
-    // boundaries are already applied in moveByFrameMovement
+    this.handleShooting();
+    this.updateEngineTrail();
+  }
+
+  private updateEngineTrail(): void {
+    if (!this.engineTrail) return;
+
+    // Position khói ở đít tàu
+    this.engineTrail.x = this.x;
+    this.engineTrail.y = this.y + this.height/2 ;
+
+    // Hiệu ứng nhấp nháy như khói
+    const time = Date.now() * 0.01; // Tốc độ nhấp nháy
+    this.engineTrail.alpha = 0.5 + Math.sin(time) * 0.1; // Nhấp nháy từ 0.2 đến 0.8
+    
+    // Thêm hiệu ứng scale nhẹ để sống động
+    this.engineTrail.scale.set(0.35 + Math.sin(time * 1.5) * 0.05);
   }
 
   private handleInput(deltaTime: number): void {
@@ -102,12 +141,7 @@ export class Player extends PIXI.Sprite implements Entity {
     }
   }
 
-  private updateMovement(deltaTime: number): void {
-    this.x += this.velocity.x * deltaTime;
-    this.y += this.velocity.y * deltaTime;
-  }
-
-  private handleShooting(deltaTime: number): void {
+  private handleShooting(): void {
     if (!this.state.isShooting) return;
 
     const currentTime = Date.now();
@@ -165,6 +199,13 @@ export class Player extends PIXI.Sprite implements Entity {
 
   public destroy(): void {
     this.isActive = false;
+    
+    // Clean up engine trail
+    if (this.engineTrail && this.engineTrail.parent) {
+      this.engineTrail.parent.removeChild(this.engineTrail);
+      this.engineTrail.destroy();
+    }
+    
     super.destroy();
   }
 

@@ -119,17 +119,19 @@ export class AnimationManager {
      * Preload tất cả animations cần thiết
      */
     public async preloadAllAnimations(): Promise<void> {
-        console.log('🎬 Preloading all animations...');
+        console.log('Preloading all animations...');
         
         try {
+            const assetManager = AssetManager.getInstance();
+            
             // Load enemy animations
             await this.preloadEnemyAnimations();
             
-            // Load coin animations
+            // Load coin animations  
             await this.preloadCoinAnimations();
             
-            // Load hit animation
-            await this.preloadHitAnimation();
+            // Load animation assets through AssetManager
+            await assetManager.loadAnimationAssets();
             
             console.log('All animations preloaded successfully!');
         } catch (error) {

@@ -4,8 +4,13 @@ export class AssetManager {
     private static instance: AssetManager;
     private loadedTextures: Map<string, Texture> = new Map();
 
-    // Paths sẽ trở thành:
+    // Asset paths configuration
     private static readonly ASSET_PATHS = {
+        // Essential Game Assets
+        PLAYER_SHIP: 'assets/textures/characters/player/ship_phoenix_dark.png',
+        BULLET_PHOENIX: 'assets/textures/projectiles/bullet_phoenix.png',
+        SMOKE_BLUE: 'assets/textures/effects/smoke_blue.png',
+        
         // Animations
         ENEMY_1_ANIMATIONS: 'assets/textures/animations/anim_enemy_1_',
         ENEMY_2_ANIMATIONS: 'assets/textures/animations/anim_enemy_2_',
@@ -15,9 +20,6 @@ export class AssetManager {
         // Backgrounds
         MAIN_BACKGROUND: 'assets/textures/backgrounds/bg.jpg',
         CIRCLE_BACKGROUND: 'assets/textures/backgrounds/circle.png',
-
-        // Characters - Player
-        PLAYER_SHIP: 'assets/textures/characters/player/ship_phoenix_dark.png',
 
         // Characters - Enemies
         ENEMY_BASIC: 'assets/textures/characters/enemies/basic/',
@@ -34,7 +36,6 @@ export class AssetManager {
         // Projectiles
         BULLET_ENEMY: 'assets/textures/projectiles/bullet_enemy.png',
         BULLET_GREEN: 'assets/textures/projectiles/bullet_green.png',
-        BULLET_PHOENIX: 'assets/textures/projectiles/bullet_phoenix.png',
 
         // UI
         UI_BUTTONS: 'assets/textures/ui/buttons/',
@@ -63,6 +64,104 @@ export class AssetManager {
     }
 
     /**
+     * Load essential game assets (player, bullet, smoke)
+     */
+    public async loadEssentialGameAssets(): Promise<{
+        player: Texture;
+        bullet: Texture;
+        smoke: Texture;
+        background: Texture;
+    }> {
+        console.log('Loading essential game assets...');
+
+        const essentialAssets = [
+            { alias: 'player', src: AssetManager.ASSET_PATHS.PLAYER_SHIP },
+            { alias: 'bullet', src: AssetManager.ASSET_PATHS.BULLET_PHOENIX },
+            { alias: 'smoke', src: AssetManager.ASSET_PATHS.SMOKE_BLUE },
+            { alias: 'background', src: AssetManager.ASSET_PATHS.MAIN_BACKGROUND }
+        ];
+
+        try {
+            await Assets.load(essentialAssets);
+            
+            const result = {
+                player: Assets.get('player'),
+                bullet: Assets.get('bullet'),
+                smoke: Assets.get('smoke'),
+                background: Assets.get('background')
+            };
+
+            // Cache textures
+            this.loadedTextures.set('player', result.player);
+            this.loadedTextures.set('bullet', result.bullet);
+            this.loadedTextures.set('smoke', result.smoke);
+            this.loadedTextures.set('background', result.background);
+
+            console.log('Essential game assets loaded successfully!');
+            return result;
+
+        } catch (error) {
+            console.error('Failed to load essential assets:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Load animation assets
+     */
+    public async loadAnimationAssets(): Promise<void> {
+        console.log('Loading animation assets...');
+        
+        const animationAssets = [
+            { alias: 'hitAnimation', src: AssetManager.ASSET_PATHS.HIT_ANIMATION },
+            { alias: 'bossAnimation', src: AssetManager.ASSET_PATHS.BOSS_ANIMATION },
+        ];
+
+        try {
+            await Assets.load(animationAssets);
+            
+            animationAssets.forEach(asset => {
+                this.loadedTextures.set(asset.alias, Assets.get(asset.alias));
+            });
+
+            console.log('Animation assets loaded successfully!');
+
+        } catch (error) {
+            console.error('Failed to load animation assets:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Create fallback textures
+     */
+    public createFallbackTextures(): {
+        player: Texture;
+        bullet: Texture;
+        smoke: Texture;
+    } {
+        console.log('Creating fallback textures...');
+        
+        return {
+            player: this.createColorTexture(0x00ff88, 64, 64), // Green player
+            bullet: this.createColorTexture(0xffff00, 8, 16),  // Yellow bullet
+            smoke: this.createColorTexture(0x4444ff, 16, 16)   // Blue smoke
+        };
+    }
+
+    private createColorTexture(color: number, width: number, height: number): Texture {
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        
+        ctx.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+        ctx.fillRect(0, 0, width, height);
+        
+        return Texture.from(canvas);
+    }
+
+    /**
      * Load a single texture
      */
     public async loadTexture(path: string, alias?: string): Promise<Texture> {
@@ -86,25 +185,6 @@ export class AssetManager {
     }
 
     /**
-     * Load multiple textures
-     */
-    public async loadTextures(paths: { [key: string]: string }): Promise<{ [key: string]: Texture }> {
-        const promises = Object.entries(paths).map(async ([key, path]) => {
-            const texture = await this.loadTexture(path, key);
-            return { key, texture };
-        });
-
-        const results = await Promise.all(promises);
-        const textureMap: { [key: string]: Texture } = {};
-        
-        results.forEach(({ key, texture }) => {
-            textureMap[key] = texture;
-        });
-
-        return textureMap;
-    }
-
-    /**
      * Load enemy animation frames
      */
     public async loadEnemyAnimations(enemyType: 1 | 2): Promise<Texture[]> {
@@ -112,7 +192,7 @@ export class AssetManager {
             AssetManager.ASSET_PATHS.ENEMY_1_ANIMATIONS : 
             AssetManager.ASSET_PATHS.ENEMY_2_ANIMATIONS;
 
-        const frameCount = enemyType === 1 ? 20 : 13; // enemy_1 has 0-19, enemy_2 has 1-13
+        const frameCount = enemyType === 1 ? 20 : 13;
         const startIndex = enemyType === 1 ? 0 : 1;
         
         const promises: Promise<Texture>[] = [];
@@ -137,70 +217,6 @@ export class AssetManager {
         }
 
         return Promise.all(promises);
-    }
-
-    /**
-     * Load all enemy parts for a specific enemy type
-     */
-    public async loadEnemyParts(enemyType: 'diver' | 'green' | 'inferior' | 'na' | 'saturation' | 'soldier'): Promise<{ [key: string]: Texture }> {
-        const basePath = AssetManager.ASSET_PATHS[`ENEMY_${enemyType.toUpperCase()}` as keyof typeof AssetManager.ASSET_PATHS];
-        
-        // Common parts for most enemies
-        const commonParts = ['body'];
-        let specificParts: string[] = [];
-
-        switch (enemyType) {
-            case 'diver':
-                specificParts = ['leg_l', 'leg_r', 'wing_l', 'wing_r'];
-                break;
-            case 'green':
-                specificParts = ['leg_l', 'leg_r', 'wing_l', 'wing_r'];
-                break;
-            case 'inferior':
-                specificParts = ['wing_l', 'wing_r'];
-                break;
-            case 'na':
-                specificParts = ['wing_l', 'wing_r'];
-                break;
-            case 'saturation':
-                specificParts = ['wing_l', 'wing_r'];
-                break;
-            case 'soldier':
-                specificParts = ['horn_l', 'horn_r', 'leg_l', 'leg_r', 'leg_1_l', 'leg_1_r'];
-                break;
-        }
-
-        const allParts = [...commonParts, ...specificParts];
-        const texturePaths: { [key: string]: string } = {};
-
-        allParts.forEach(part => {
-            texturePaths[part] = `${basePath}enemy_${enemyType}_${part}.png`;
-        });
-
-        return this.loadTextures(texturePaths);
-    }
-
-    /**
-     * Preload essential game assets
-     */
-    public async preloadEssentialAssets(): Promise<void> {
-        console.log('Preloading essential assets...');
-
-        const essentialAssets = {
-            playerShip: AssetManager.ASSET_PATHS.PLAYER_SHIP,
-            mainBackground: AssetManager.ASSET_PATHS.MAIN_BACKGROUND,
-            bulletEnemy: AssetManager.ASSET_PATHS.BULLET_ENEMY,
-            bulletGreen: AssetManager.ASSET_PATHS.BULLET_GREEN,
-            bulletPhoenix: AssetManager.ASSET_PATHS.BULLET_PHOENIX,
-        };
-
-        try {
-            await this.loadTextures(essentialAssets);
-            console.log(' Essential assets loaded successfully!');
-        } catch (error) {
-            console.error(' Failed to load essential assets:', error);
-            throw error;
-        }
     }
 
     /**

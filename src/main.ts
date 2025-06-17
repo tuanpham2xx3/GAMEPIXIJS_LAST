@@ -3,6 +3,7 @@ import { Player } from './entities/Playter';
 import { InputManager } from './managers/InputManager';
 import { BulletManager } from './managers/BulletManager';
 import { GameConfig, updateScreenSize } from './core/Config';
+import { AssetManager } from './managers/AssetManager';
 
 class Game {
   private app: PIXI.Application;
@@ -34,6 +35,7 @@ class Game {
     // Create containers for layering
     this.backgroundContainer = new PIXI.Container();
     this.gameContainer = new PIXI.Container();
+    this.gameContainer.sortableChildren = true;
     this.uiContainer = new PIXI.Container();
 
     this.app.stage.addChild(this.backgroundContainer);
@@ -196,43 +198,34 @@ class Game {
 
   private async loadAssets(): Promise<void> {
     try {
-      // Load player and bullet assets
-      await PIXI.Assets.load([
-        { alias: 'player', src: 'assets/textures/characters/player/ship_phoenix_dark.png' },
-        { alias: 'bullet', src: 'assets/textures/projectiles/bullet_phoenix.png' }
-      ]);
+      const assetManager = AssetManager.getInstance();
+      const assets = await assetManager.loadEssentialGameAssets();
 
-      let playerTexture: PIXI.Texture;
-      let bulletTexture: PIXI.Texture;
-
-      // Try to get real textures, fallback to colored rectangles
-      try {
-        playerTexture = PIXI.Assets.get('player');
-        bulletTexture = PIXI.Assets.get('bullet');
-        console.log('Loaded game assets');
-      } catch (assetError) {
-        console.warn('Could not load assets, using fallback textures');
-        playerTexture = this.createColorTexture(0x00ff88, 64, 64); // Green player
-        bulletTexture = this.createColorTexture(0xffff00, 8, 16);  // Yellow bullets
-      }
-
-      // Initialize managers
       this.inputManager = new InputManager(this.app.view as HTMLCanvasElement);
-      this.bulletManager = new BulletManager(this.gameContainer, bulletTexture);
+      this.bulletManager = new BulletManager(this.gameContainer, assets.bullet);
 
       // Create player
-      this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
+      this.player = new Player(assets.player, this.inputManager, this.bulletManager, assets.smoke);
       this.gameContainer.addChild(this.player);
+      
+      // Add trail manually sau khi player đã được add
+      if (this.player.engineTrail) {
+        this.gameContainer.addChild(this.player.engineTrail);
+      }
+
+      // Set background texture
+      this.backgroundTexture = assets.background;
 
     } catch (error) {
       console.error('Failed to load assets:', error);
-      // Fallback
-      const playerTexture = this.createColorTexture(0x00ff88, 64, 64);
-      const bulletTexture = this.createColorTexture(0xffff00, 8, 16);
+      
+      // Use fallback textures
+      const assetManager = AssetManager.getInstance();
+      const fallbackAssets = assetManager.createFallbackTextures();
       
       this.inputManager = new InputManager(this.app.view as HTMLCanvasElement);
-      this.bulletManager = new BulletManager(this.gameContainer, bulletTexture);
-      this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
+      this.bulletManager = new BulletManager(this.gameContainer, fallbackAssets.bullet);
+      this.player = new Player(fallbackAssets.player, this.inputManager, this.bulletManager, fallbackAssets.smoke);
       this.gameContainer.addChild(this.player);
     }
   }
