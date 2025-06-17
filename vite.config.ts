@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: '/GAMEPIXIJS_LAST/',
   server: {
     host: true,
     port: 3000
