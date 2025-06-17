@@ -9,6 +9,8 @@ export default defineConfig({
   build: {
     sourcemap: true,
     assetsDir: 'assets',
-    outDir: 'dist'
-  }
+    outDir: 'dist',
+    copyPublicDir: true
+  },
+  assetsInclude: ['**/*.jpg', '**/*.png', '**/*.gif', '**/*.svg']
 }); 

@@ -4,7 +4,7 @@ export class AssetManager {
     private static instance: AssetManager;
     private loadedTextures: Map<string, Texture> = new Map();
 
-    // ✅ Fix asset paths - bỏ leading slash
+    // Paths sẽ trở thành:
     private static readonly ASSET_PATHS = {
         // Animations
         ENEMY_1_ANIMATIONS: 'assets/textures/animations/anim_enemy_1_',
@@ -51,12 +51,12 @@ export class AssetManager {
     }
 
     private constructor() {
-        console.log('📦 Initializing AssetManager...');
+        console.log('Initializing AssetManager...');
     }
 
     public static getInstance(): AssetManager {
         if (!AssetManager.instance) {
-            console.log('🆕 Creating new AssetManager instance...');
+            console.log('Creating new AssetManager instance...');
             AssetManager.instance = new AssetManager();
         }
         return AssetManager.instance;
@@ -66,21 +66,21 @@ export class AssetManager {
      * Load a single texture
      */
     public async loadTexture(path: string, alias?: string): Promise<Texture> {
-        console.log(`🖼️ Loading texture: ${path}`);
+        console.log(`Loading texture: ${path}`);
         const key = alias || path;
         
         if (this.loadedTextures.has(key)) {
-            console.log(`✅ Texture already loaded: ${key}`);
+            console.log(`Texture already loaded: ${key}`);
             return this.loadedTextures.get(key)!;
         }
 
         try {
             const texture = await Assets.load(path);
             this.loadedTextures.set(key, texture);
-            console.log(`✅ Texture loaded successfully: ${key}`);
+            console.log(`Texture loaded successfully: ${key}`);
             return texture;
         } catch (error) {
-            console.error(`❌ Failed to load texture: ${path}`, error);
+            console.error(`Failed to load texture: ${path}`, error);
             throw error;
         }
     }
@@ -184,7 +184,7 @@ export class AssetManager {
      * Preload essential game assets
      */
     public async preloadEssentialAssets(): Promise<void> {
-        console.log('📦 Preloading essential assets...');
+        console.log('Preloading essential assets...');
 
         const essentialAssets = {
             playerShip: AssetManager.ASSET_PATHS.PLAYER_SHIP,
@@ -196,9 +196,9 @@ export class AssetManager {
 
         try {
             await this.loadTextures(essentialAssets);
-            console.log('✅ Essential assets loaded successfully!');
+            console.log(' Essential assets loaded successfully!');
         } catch (error) {
-            console.error('❌ Failed to load essential assets:', error);
+            console.error(' Failed to load essential assets:', error);
             throw error;
         }
     }
@@ -215,6 +215,6 @@ export class AssetManager {
      */
     public clearCache(): void {
         this.loadedTextures.clear();
-        console.log('🗑️ Texture cache cleared');
+        console.log('Texture cache cleared');
     }
 } 
