@@ -5,6 +5,12 @@ on:
     branches: [ main ]
   workflow_dispatch: # Cho phép trigger manual
 
+# ✅ Thêm permissions
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -30,4 +36,5 @@ jobs:
       if: github.ref == 'refs/heads/main'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./dist 
+        publish_dir: ./dist
+        force_orphan: true  # ✅ Thêm để tạo gh-pages branch mới 
