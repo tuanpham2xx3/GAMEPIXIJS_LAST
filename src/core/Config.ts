@@ -1,4 +1,4 @@
-import { PlayerConfig, BulletConfig } from "../types/EntityTypes";
+import { PlayerConfig, BulletConfig, EnemyConfig, EnemyType } from "../types/EntityTypes";
 
 export const GameConfig = {
     // Screen configuration - set dynamically to windown size
@@ -27,8 +27,55 @@ export const GameConfig = {
         padding: 32 // pixels from screen
     },
 
+    //Enemy configuration
+    enemies: {
+        diver: {
+            health: 30,
+            speed: 120,
+            scoreValue: 100,
+            size: { width: 48, height: 48},
+            movementPattern: 'zigzag'
+        },
+        green: {
+            health: 40,
+            speed: 100,
+            scoreValue: 150,
+            size: { width: 52, height: 52},
+            movementPattern: 'sine'
+        },
+        inferior: {
+            health: 20,
+            speed: 150,
+            scoreValue: 80,
+            size: { width: 40, height: 40},
+            movementPattern: 'straight'
+        },
+        na: {
+            health: 25,
+            speed: 110,
+            scoreValue: 120,
+            size: { width: 44, height: 4},
+            movementPattern: 'circular'
+        },
+        soldier: {
+            health: 60,
+            speed: 80,
+            scoreValue: 200,
+            size: { width: 56, height: 56},
+            movementPattern: 'straight'
+        },
+        boss: {
+            health: 500,
+            speed: 60,
+            scoreValue: 1000,
+            size: { width: 240, height: 240},
+            movementPattern: 'boss'
+        }        
+    } as Record<EnemyType, EnemyConfig>,
+
     //Performance
     maxBullets: 50,
+    maxEnemies: 30,
 
     //Background scrolling
     background: {
