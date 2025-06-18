@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js';
-import { Vector2, BulletState, Entity } from '../types/EntityTypes';
+import { Vector2, BulletState, Entity, EntityCategory, CollidableEntity } from '../types/EntityTypes';
 import { GameConfig } from '../core/Config';
 
-export class Bullet extends PIXI.Sprite implements Entity {
+export class Bullet extends PIXI.Sprite implements Entity, CollidableEntity {
   public velocity: Vector2;
   public isActive: boolean;
   private state: BulletState;
@@ -84,5 +84,16 @@ export class Bullet extends PIXI.Sprite implements Entity {
 
   public getState(): BulletState {
     return { ...this.state };
+  }
+
+  // CollidableEntity interface implementation
+  public getCategory(): EntityCategory {
+    return EntityCategory.PLAYER_BULLET;
+  }
+
+  // takeDamage not needed for bullets, but required by interface
+  public takeDamage?(damage: number): boolean {
+    this.deactivate();
+    return true; // Bullet is destroyed
   }
 } 

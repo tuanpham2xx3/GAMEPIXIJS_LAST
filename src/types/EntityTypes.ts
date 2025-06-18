@@ -1,4 +1,3 @@
-
 //Vector and Transform types
 export interface Vector2 {
     x: number;
@@ -84,4 +83,53 @@ export interface Entity {
     update(deltaTime: number): void;
     destroy(): void;
     getPosition(): Vector2;
+}
+
+// Collision System Types - Simplified Approach
+export enum EntityCategory {
+  PLAYER = 'player',
+  PLAYER_BULLET = 'player_bullet',
+  ENEMY = 'enemy',
+  ENEMY_BULLET = 'enemy_bullet',
+  BOSS = 'boss',
+  BOSS_BULLET = 'boss_bullet',
+  POWERUP = 'powerup'
+}
+
+export interface CollisionResult {
+  entityA: any;
+  entityB: any;
+  categoryA: EntityCategory;
+  categoryB: EntityCategory;
+  damage?: number;
+  score?: number;
+  shouldDestroyA?: boolean;
+  shouldDestroyB?: boolean;
+  shouldDeactivateA?: boolean;
+  shouldDeactivateB?: boolean;
+}
+
+export interface CollidableEntity {
+  getCategory(): EntityCategory;
+  getBounds(): any; // PIXI.Rectangle
+  isActive?: boolean;
+  takeDamage?(damage: number): boolean; // returns true if destroyed
+  deactivate?(): void;
+  destroy?(): void;
+  getScoreValue?(): number;
+  getDamage?(): number;
+}
+
+export interface CollisionRule {
+  categoryA: EntityCategory;
+  categoryB: EntityCategory;
+  enabled: boolean;
+  damageToA?: number;
+  damageToB?: number;
+  scoreValue?: number;
+  destroyA?: boolean;
+  destroyB?: boolean;
+  deactivateA?: boolean;
+  deactivateB?: boolean;
+  callback?: (entityA: any, entityB: any) => CollisionResult | null;
 }

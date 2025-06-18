@@ -1,8 +1,9 @@
 import * as PIXI from 'pixi.js';
-import { Vector2, EnemyState, Entity, EnemyType, MovementPattern } from '../types/EntityTypes';
+import { Vector2, EnemyState, Entity, EnemyType, MovementPattern, EntityCategory, CollidableEntity } from '../types/EntityTypes';
 import { GameConfig } from '../core/Config';
+import { AnimationManager } from '../managers/AnimationManager';
 
-export abstract class Enemy extends PIXI.Container implements Entity {
+export abstract class Enemy extends PIXI.Container implements Entity, CollidableEntity {
     public velocity: Vector2;
     public isActive: boolean;
     protected state: EnemyState;
@@ -123,12 +124,15 @@ export abstract class Enemy extends PIXI.Container implements Entity {
     }
 
     public takeDamage(damage: number): boolean {
+        console.log(`Enemy ${this.enemyType} taking ${damage} damage. Health: ${this.state.health} -> ${this.state.health - damage}`);
         this.state.health = Math.max(0, this.state.health - damage);
         
         if (this.state.health <= 0) {
+            console.log(`Enemy ${this.enemyType} destroyed!`);
             this.deactivate();
             return true; // Enemy destroyed
         }
+        console.log(`Enemy ${this.enemyType} still alive with ${this.state.health} health`);
         return false; // Enemy still alive
     }
 
@@ -176,4 +180,15 @@ export abstract class Enemy extends PIXI.Container implements Entity {
 
     // Abstract method for setting up visuals - implement in subclasses
     abstract setupVisuals(): Promise<void>;
+
+    // CollidableEntity interface implementation
+    public getCategory(): EntityCategory {
+        const enemyType = this.getEnemyType();
+        return enemyType === 'boss' ? EntityCategory.BOSS : EntityCategory.ENEMY;
+    }
+
+    public getDamage?(): number {
+        // Return default damage for enemy collision with player
+        return 20;
+    }
 } 

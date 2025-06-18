@@ -1,10 +1,10 @@
 import * as PIXI from 'pixi.js';
-import { Vector2, PlayerState, Entity } from '../types/EntityTypes';
+import { Vector2, PlayerState, Entity, EntityCategory, CollidableEntity } from '../types/EntityTypes';
 import { GameConfig, getBoundaries } from '../core/Config';
 import { InputManager } from '../managers/InputManager';
 import { BulletManager } from '../managers/BulletManager';
 
-export class Player extends PIXI.Sprite implements Entity {
+export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   public velocity: Vector2;
   public isActive: boolean;
   private state: PlayerState;
@@ -152,11 +152,13 @@ export class Player extends PIXI.Sprite implements Entity {
   }
 
   // Public methods
-  public takeDamage(damage: number): void {
+  public takeDamage(damage: number): boolean {
     this.state.health = Math.max(0, this.state.health - damage);
     if (this.state.health <= 0) {
       this.isActive = false;
+      return true; // Player is destroyed
     }
+    return false; // Player still alive
   }
 
   public heal(amount: number): void {
@@ -191,5 +193,14 @@ export class Player extends PIXI.Sprite implements Entity {
 
   public isShooting(): boolean {
     return this.state.isShooting;
+  }
+
+  // CollidableEntity interface implementation
+  public getCategory(): EntityCategory {
+    return EntityCategory.PLAYER;
+  }
+
+  public deactivate(): void {
+    this.isActive = false;
   }
 } 

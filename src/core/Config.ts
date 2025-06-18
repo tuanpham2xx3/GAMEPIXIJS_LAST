@@ -1,4 +1,3 @@
-
 import { PlayerConfig, BulletConfig, EnemyConfig, EnemyType } from "../types/EntityTypes";
 
 export const GameConfig = {
@@ -85,7 +84,38 @@ export const GameConfig = {
     },
 
     //Debug
-    debug: true
+    debug: true,
+
+    // Collision Configuration
+    collision: {
+        // Global collision settings
+        enabled: true,
+        maxChecksPerFrame: 100,
+        
+        // Default damage values
+        defaultDamage: {
+            player: 20,
+            playerBullet: 25,
+            enemy: 20,
+            enemyBullet: 15,
+            boss: 30,
+            bossBullet: 25
+        },
+        
+        // Score values when destroying entities
+        scoreValues: {
+            inferior: 80,
+            diver: 100,
+            green: 150,
+            na: 120,
+            soldier: 200,
+            boss: 1000
+        }
+    },
+
+    // Input Configuration
+    input: {
+    }
 };
 
 //Function to update screen size

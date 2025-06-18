@@ -1,10 +1,13 @@
 import * as PIXI from 'pixi.js';
-import { Player } from './entities/Playter';
+import { Player } from './entities/Player';
 import { InputManager } from './managers/InputManager';
 import { BulletManager } from './managers/BulletManager';
 import { EnemyManager } from './managers/EnemyManager';
 import { LevelManager } from './managers/LevelManager';
+import { CollisionManager } from './managers/CollisionManager';
+import { AnimationManager } from './managers/AnimationManager';
 import { GameConfig, updateScreenSize } from './core/Config';
+import { EntityCategory, CollidableEntity } from './types/EntityTypes';
 
 class Game {
   private app: PIXI.Application;
@@ -13,6 +16,7 @@ class Game {
   private bulletManager: BulletManager | null = null;
   private enemyManager: EnemyManager | null = null;
   private levelManager: LevelManager | null = null;
+  private collisionManager: CollisionManager | null = null;
   private gameContainer: PIXI.Container;
   private backgroundContainer: PIXI.Container;
   private uiContainer: PIXI.Container;
@@ -234,7 +238,15 @@ class Game {
       
       this.enemyManager = new EnemyManager(this.gameContainer);
       await this.enemyManager.initialize();
-      this.levelManager = new LevelManager(this.enemyManager);
+
+      // Initialize CollisionManager
+      this.collisionManager = new CollisionManager();
+      console.log('CollisionManager initialized');
+
+              // Initialize LevelManager
+        this.levelManager = new LevelManager(this.enemyManager);
+        this.levelManager.setLevelCompleteCallback(this.onLevelComplete.bind(this));
+        console.log('LevelManager initialized');
 
       // Create player
       this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
@@ -389,6 +401,7 @@ class Game {
     const levelProgress = this.levelManager?.getLevelProgress() || 0;
     const remainingTime = this.levelManager?.getRemainingTime() || 0;
     const isBossLevel = this.levelManager?.isBossLevel() || false;
+    const collisionStats = this.collisionManager?.getCollisionStats() || { totalChecks: 0, totalRules: 0 };
 
     const statsText = new PIXI.Text(
       `Score: ${this.score}\n` +
@@ -398,6 +411,7 @@ class Game {
       `Health: ${playerState.health}/${this.player.getMaxHealth()}\n` +
       `Active Enemies: ${activeEnemyCount}\n` +
       `Active Bullets: ${bulletStats.active}\n` +
+      `Collision Checks: ${collisionStats.totalChecks}\n` +
       `Position: (${Math.round(playerPos.x)}, ${Math.round(playerPos.y)})\n` +
       `Status: ${playerState.isMoving ? 'Moving & Shooting' : 'Idle'}`,
       style
@@ -412,28 +426,76 @@ class Game {
   }
 
   private handleCollisions(): void {
-    if (!this.enemyManager || !this.bulletManager || !this.player) return;
+    if (!this.collisionManager || !this.enemyManager || !this.bulletManager || !this.player) return;
 
-    // Check bullet-enemy collisions
-    const activeBullets = this.bulletManager.getActiveBullets();
-    const collisions = this.enemyManager.checkBulletCollisions(activeBullets);
+    // Prepare entity groups for collision detection
+    const entityGroups = new Map<EntityCategory, CollidableEntity[]>();
     
-    for (const collision of collisions) {
-      this.score += collision.score;
-      console.log(`Enemy destroyed! Score: +${collision.score}, Total: ${this.score}`);
+    // Add player
+    entityGroups.set(EntityCategory.PLAYER, [this.player as CollidableEntity]);
+    
+    // Add player bullets
+    const activeBullets = this.bulletManager.getActiveBullets();
+    entityGroups.set(EntityCategory.PLAYER_BULLET, activeBullets as CollidableEntity[]);
+    
+    // Add enemies
+    const activeEnemies = this.enemyManager.getActiveEnemies();
+    const regularEnemies = activeEnemies.filter(enemy => enemy.getEnemyType() !== 'boss');
+    const bosses = activeEnemies.filter(enemy => enemy.getEnemyType() === 'boss');
+    
+    entityGroups.set(EntityCategory.ENEMY, regularEnemies as CollidableEntity[]);
+    if (bosses.length > 0) {
+      entityGroups.set(EntityCategory.BOSS, bosses as CollidableEntity[]);
     }
 
-    // Check player-enemy collisions
-    const collidedEnemy = this.enemyManager.checkPlayerCollisions(this.player);
-    if (collidedEnemy) {
-      const damage = 20; // Base collision damage
-      this.player.takeDamage(damage);
-      collidedEnemy.deactivate(); // Remove enemy on collision
-      console.log(`Player hit! Health: ${this.player.getHealth()}`);
+    // Check all collisions
+    const collisions = this.collisionManager.checkAllCollisions(entityGroups);
+    
+    // Process collision results
+    for (const collision of collisions) {
+      console.log('Processing collision:', collision);
       
-      if (this.player.getHealth() <= 0) {
-        console.log('Game Over!');
-        this.gameOver();
+      // Handle damage
+      if (collision.damage) {
+        if (collision.categoryA === EntityCategory.PLAYER) {
+          collision.entityA.takeDamage(collision.damage);
+          if (collision.entityA.getHealth() <= 0) {
+            console.log('Game Over!');
+            this.gameOver();
+          }
+        } else if (collision.categoryB === EntityCategory.PLAYER) {
+          collision.entityB.takeDamage(collision.damage);
+          if (collision.entityB.getHealth() <= 0) {
+            console.log('Game Over!');
+            this.gameOver();
+          }
+        }
+      }
+      
+      // Handle score
+      if (collision.score && collision.score > 0) {
+        this.score += collision.score;
+        console.log(`Enemy destroyed! Score: +${collision.score}, Total: ${this.score}`);
+      }
+      
+      // Handle entity deactivation
+      if (collision.shouldDeactivateA && collision.entityA.deactivate) {
+        console.log('Deactivating entityA:', collision.entityA);
+        collision.entityA.deactivate();
+      }
+      if (collision.shouldDeactivateB && collision.entityB.deactivate) {
+        console.log('Deactivating entityB:', collision.entityB);
+        collision.entityB.deactivate();
+      }
+      
+      // Handle entity destruction
+      if (collision.shouldDestroyA && collision.entityA.destroy) {
+        console.log('Destroying entityA:', collision.entityA);
+        collision.entityA.destroy();
+      }
+      if (collision.shouldDestroyB && collision.entityB.destroy) {
+        console.log('Destroying entityB:', collision.entityB);
+        collision.entityB.destroy();
       }
     }
   }
@@ -476,6 +538,10 @@ class Game {
     }
     if (this.levelManager) {
       this.levelManager.stopLevel();
+    }
+    if (this.collisionManager) {
+      // CollisionManager doesn't need explicit cleanup
+      this.collisionManager = null;
     }
     if (this.player) {
       this.player.destroy();

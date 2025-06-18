@@ -6,7 +6,6 @@ import { InferiorEnemy } from '../entities/InferiorEnemy';
 import { NaEnemy } from '../entities/NaEnemy';
 import { SoldierEnemy } from '../entities/SoldierEnemy';
 import { BossEnemy } from '../entities/BossEnemy';
-import { TestEnemy } from '../entities/TestEnemy';
 import { Vector2, EnemyType } from '../types/EntityTypes';
 import { GameConfig } from '../core/Config';
 
