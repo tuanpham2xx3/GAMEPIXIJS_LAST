@@ -556,6 +556,45 @@ window.onload = () => {
   console.log('Starting Space Shooter Game...');
   const game = new Game();
   
+  // Debug commands for testing formations
+  if (GameConfig.debug) {
+    (window as any).gameDebug = {
+      testFormation: (id: string) => {
+        if (game['levelManager']) {
+          game['levelManager'].testFormation(id);
+        }
+      },
+      listFormations: () => {
+        if (game['levelManager']) {
+          const formations = game['levelManager'].getAvailableFormations();
+          console.log('Available formations:', formations);
+          return formations;
+        }
+      },
+      getInfo: () => {
+        if (game['levelManager']) {
+          return {
+            currentLevel: game['levelManager'].getCurrentLevel(),
+            waveProgress: game['levelManager'].getWaveProgress(),
+            usingFormations: game['levelManager'].isUsingFormations(),
+            isActive: game['levelManager'].isActive()
+          };
+        }
+      },
+      restartLevel: () => {
+        if (game['levelManager']) {
+          game['levelManager'].restartCurrentLevel();
+        }
+      }
+    };
+    
+    console.log('🎮 Debug commands available:');
+    console.log('gameDebug.testFormation("wave_1")');
+    console.log('gameDebug.listFormations()');
+    console.log('gameDebug.getInfo()');
+    console.log('gameDebug.restartLevel()');
+  }
+  
   // Cleanup on page unload
   window.addEventListener('beforeunload', () => {
     game.destroy();

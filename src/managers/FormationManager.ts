@@ -39,7 +39,7 @@ export class FormationManager {
 
     public async loadFormations(): Promise<boolean> {
         try {
-            const response = await fetch('/src/data/enemy-formations.json');
+            const response = await fetch('/enemy-formations.json');
             this.formationData = await response.json();
             console.log('Formation data loaded successfully');
             return true;
