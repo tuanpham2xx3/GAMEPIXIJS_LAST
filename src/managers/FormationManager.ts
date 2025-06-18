@@ -39,7 +39,8 @@ export class FormationManager {
 
     public async loadFormations(): Promise<boolean> {
         try {
-            const response = await fetch('/enemy-formations.json');
+            const basePath = document.querySelector('base')?.href || window.location.origin + '/GAMEPIXIJS_LAST/';
+            const response = await fetch(`${basePath}enemy-formations.json`);
             this.formationData = await response.json();
             console.log('Formation data loaded successfully');
             return true;
