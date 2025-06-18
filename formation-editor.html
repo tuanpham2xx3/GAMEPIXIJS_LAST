@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enemy Formation Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .editor-panel {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            width: 300px;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            background: #333;
+            border-radius: 8px;
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+        }
+        
+        #formation-canvas {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #001122 0%, #003366 100%);
+            position: relative;
+            cursor: crosshair;
+        }
+        
+        .enemy-sprite {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .enemy-inferior { background: #ff6b6b; }
+        .enemy-diver { background: #4ecdc4; }
+        .enemy-green { background: #45b7d1; }
+        .enemy-na { background: #f9ca24; }
+        .enemy-soldier { background: #f0932b; }
+        .enemy-boss { background: #eb4d4b; width: 64px; height: 64px; }
+        
+        .controls h3 {
+            margin-top: 0;
+            color: #4ecdc4;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+        
+        select, input, button {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            background: #1a1a1a;
+            color: white;
+            margin-bottom: 5px;
+        }
+        
+        button {
+            background: #4ecdc4;
+            color: #1a1a1a;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #45b7d1;
+        }
+        
+        .enemy-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .enemy-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            margin-bottom: 5px;
+            background: #333;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        
+        .output {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .json-output {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Enemy Formation Editor</h1>
+        
+        <div class="editor-panel">
+            <div class="controls">
+                <h3>Add Enemy</h3>
+                
+                <div class="control-group">
+                    <label>Enemy Type:</label>
+                    <select id="enemy-type">
+                        <option value="inferior">Inferior</option>
+                        <option value="diver">Diver</option>
+                        <option value="green">Green</option>
+                        <option value="na">Na</option>
+                        <option value="soldier">Soldier</option>
+                        <option value="boss">Boss</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>X Position:</label>
+                    <input type="number" id="enemy-x" value="400" min="0" max="800">
+                </div>
+                
+                <div class="control-group">
+                    <label>Y Position:</label>
+                    <input type="number" id="enemy-y" value="-50" min="-200" max="600">
+                </div>
+                
+                <div class="control-group">
+                    <label>Spawn Delay (seconds):</label>
+                    <input type="number" id="enemy-delay" value="0" min="0" max="10" step="0.1">
+                </div>
+                
+                <button onclick="addEnemy()">Add Enemy</button>
+                
+                <h3>Formation Info</h3>
+                
+                <div class="control-group">
+                    <label>Formation Name:</label>
+                    <input type="text" id="formation-name" value="custom_formation">
+                </div>
+                
+                <button onclick="clearFormation()">Clear All</button>
+                
+                <h3>Current Enemies</h3>
+                <div class="enemy-list" id="enemy-list"></div>
+            </div>
+            
+            <div class="canvas-container">
+                <div id="formation-canvas" onclick="addEnemyAtPosition(event)"></div>
+            </div>
+        </div>
+        
+        <div class="output">
+            <h3>JSON Output</h3>
+            <div class="json-output" id="json-output"></div>
+            <button onclick="copyToClipboard()">Copy to Clipboard</button>
+            <button onclick="downloadJSON()">Download JSON</button>
+        </div>
+    </div>
+
+    <script>
+        let enemies = [];
+        let enemyCounter = 0;
+
+        function addEnemy() {
+            const type = document.getElementById('enemy-type').value;
+            const x = parseInt(document.getElementById('enemy-x').value);
+            const y = parseInt(document.getElementById('enemy-y').value);
+            const delay = parseFloat(document.getElementById('enemy-delay').value);
+            
+            const enemy = { type, x, y, delay, id: enemyCounter++ };
+            enemies.push(enemy);
+            
+            createEnemySprite(enemy);
+            updateEnemyList();
+            updateJSONOutput();
+        }
+
+        function addEnemyAtPosition(event) {
+            const rect = event.target.getBoundingClientRect();
+            const x = Math.round(event.clientX - rect.left);
+            const y = Math.round(event.clientY - rect.top - 50); // Offset for spawn above screen
+            
+            document.getElementById('enemy-x').value = x;
+            document.getElementById('enemy-y').value = y;
+            
+            addEnemy();
+        }
+
+        function createEnemySprite(enemy) {
+            const sprite = document.createElement('div');
+            sprite.className = `enemy-sprite enemy-${enemy.type}`;
+            sprite.style.left = `${enemy.x}px`;
+            sprite.style.top = `${enemy.y + 50}px`; // Offset for display
+            sprite.textContent = enemy.type.charAt(0).toUpperCase();
+            sprite.title = `${enemy.type} (${enemy.x}, ${enemy.y}) delay: ${enemy.delay}s`;
+            sprite.dataset.id = enemy.id;
+            
+            // Make draggable
+            sprite.addEventListener('mousedown', startDrag);
+            sprite.addEventListener('dblclick', () => removeEnemy(enemy.id));
+            
+            document.getElementById('formation-canvas').appendChild(sprite);
+        }
+
+        function startDrag(event) {
+            const sprite = event.target;
+            const startX = event.clientX - parseInt(sprite.style.left);
+            const startY = event.clientY - parseInt(sprite.style.top);
+            
+            function drag(event) {
+                const newX = event.clientX - startX;
+                const newY = event.clientY - startY;
+                
+                sprite.style.left = `${Math.max(0, Math.min(800, newX))}px`;
+                sprite.style.top = `${Math.max(0, Math.min(600, newY))}px`;
+                
+                // Update enemy data
+                const enemyId = parseInt(sprite.dataset.id);
+                const enemy = enemies.find(e => e.id === enemyId);
+                if (enemy) {
+                    enemy.x = newX;
+                    enemy.y = newY - 50; // Offset for actual position
+                    updateJSONOutput();
+                }
+            }
+            
+            function stopDrag() {
+                document.removeEventListener('mousemove', drag);
+                document.removeEventListener('mouseup', stopDrag);
+                updateEnemyList();
+            }
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function removeEnemy(id) {
+            enemies = enemies.filter(e => e.id !== id);
+            const sprite = document.querySelector(`[data-id="${id}"]`);
+            if (sprite) sprite.remove();
+            updateEnemyList();
+            updateJSONOutput();
+        }
+
+        function clearFormation() {
+            enemies = [];
+            document.getElementById('formation-canvas').innerHTML = '';
+            updateEnemyList();
+            updateJSONOutput();
+        }
+
+        function updateEnemyList() {
+            const list = document.getElementById('enemy-list');
+            list.innerHTML = enemies.map(enemy => `
+                <div class="enemy-item">
+                    <span>${enemy.type} (${enemy.x}, ${enemy.y}) ${enemy.delay}s</span>
+                    <button class="delete-btn" onclick="removeEnemy(${enemy.id})">×</button>
+                </div>
+            `).join('');
+        }
+
+        function updateJSONOutput() {
+            const formationName = document.getElementById('formation-name').value;
+            const formation = {
+                [formationName]: {
+                    name: formationName.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                    enemies: enemies.map(e => ({
+                        type: e.type,
+                        x: e.x,
+                        y: e.y,
+                        delay: e.delay
+                    }))
+                }
+            };
+            
+            document.getElementById('json-output').textContent = JSON.stringify(formation, null, 2);
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById('json-output').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('JSON copied to clipboard!');
+            });
+        }
+
+        function downloadJSON() {
+            const text = document.getElementById('json-output').textContent;
+            const blob = new Blob([text], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${document.getElementById('formation-name').value}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize
+        updateJSONOutput();
+    </script>
+</body>
+</html> 

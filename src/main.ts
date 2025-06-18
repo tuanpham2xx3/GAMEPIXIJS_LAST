@@ -3,7 +3,7 @@ import { Player } from './entities/Player';
 import { InputManager } from './managers/InputManager';
 import { BulletManager } from './managers/BulletManager';
 import { EnemyManager } from './managers/EnemyManager';
-import { LevelManager } from './managers/LevelManager';
+import { LevelManagerWithFormations } from './managers/LevelManagerWithFormations';
 import { CollisionManager } from './managers/CollisionManager';
 import { AnimationManager } from './managers/AnimationManager';
 import { GameConfig, updateScreenSize } from './core/Config';
@@ -15,7 +15,7 @@ class Game {
   private inputManager: InputManager | null = null;
   private bulletManager: BulletManager | null = null;
   private enemyManager: EnemyManager | null = null;
-  private levelManager: LevelManager | null = null;
+  private levelManager: LevelManagerWithFormations | null = null;
   private collisionManager: CollisionManager | null = null;
   private gameContainer: PIXI.Container;
   private backgroundContainer: PIXI.Container;
@@ -244,7 +244,7 @@ class Game {
       console.log('CollisionManager initialized');
 
               // Initialize LevelManager
-        this.levelManager = new LevelManager(this.enemyManager);
+        this.levelManager = new LevelManagerWithFormations(this.enemyManager);
         this.levelManager.setLevelCompleteCallback(this.onLevelComplete.bind(this));
         console.log('LevelManager initialized');
 
@@ -279,7 +279,7 @@ class Game {
       
       this.enemyManager = new EnemyManager(this.gameContainer);
       await this.enemyManager.initialize();
-      this.levelManager = new LevelManager(this.enemyManager);
+      this.levelManager = new LevelManagerWithFormations(this.enemyManager);
       this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
       this.gameContainer.addChild(this.player);
 
@@ -398,9 +398,9 @@ class Game {
     const enemyStats = this.enemyManager?.getPoolStats() || {};
     const activeEnemyCount = this.enemyManager?.getActiveEnemyCount() || 0;
     const currentLevel = this.levelManager?.getCurrentLevel() || 0;
-    const levelProgress = this.levelManager?.getLevelProgress() || 0;
-    const remainingTime = this.levelManager?.getRemainingTime() || 0;
-    const isBossLevel = this.levelManager?.isBossLevel() || false;
+    const levelProgress = this.levelManager?.getLevelElapsedTime() || 0;
+    const remainingTime = 0; // Not available in formation system
+    const isBossLevel = false; // Use formation name instead
     const collisionStats = this.collisionManager?.getCollisionStats() || { totalChecks: 0, totalRules: 0 };
 
     const statsText = new PIXI.Text(
