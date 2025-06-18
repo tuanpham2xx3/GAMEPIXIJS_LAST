@@ -45,6 +45,38 @@ export interface BulletState {
     direction: Vector2;
 }
 
+//Enemy types
+export type EnemyType = 'diver' | 'green' | 'inferior' | 'na' | 'soldier' | 'boss';
+
+export type MovementPattern = 'straight' | 'zigzag' | 'sine' | 'circular' | 'boss';
+
+export interface EnemyConfig {
+    health: number;
+    speed: number;
+    scoreValue: number;
+    size: { width: number; height: number };
+    movementPattern: MovementPattern;
+}
+
+export interface EnemyState {
+    isActive: boolean;
+    health: number;
+    maxHealth: number;
+    movementPhase: number;
+}
+
+export interface LevelConfig {
+    level: number;
+    enemies: Array<{
+        type: EnemyType;
+        count: number;
+        spawnDelay: number;
+        spawnStartDelay?: number;
+    }>;
+    duration: number;
+    isBossLevel?: boolean;
+}
+
 //Entity base interface
 export interface Entity {
     velocity: Vector2;

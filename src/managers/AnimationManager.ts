@@ -187,7 +187,7 @@ export class AnimationManager {
      * Tạo Hit Effect Animation (4x4 sprite sheet)
      */
     public async createHitAnimation(config: AnimationConfig = {}): Promise<AnimatedSprite> {
-        const hitTexture = await this.assetManager.loadTexture('/assets/textures/animations/anim_hit.jpg');
+        const hitTexture = await this.assetManager.loadTexture('assets/textures/animations/anim_hit.jpg');
         
         // Tạo frames từ sprite sheet 4x4
         const frames: Texture[] = [];
@@ -250,14 +250,17 @@ export class AnimationManager {
      * Load các phần của enemy từ thư mục characters/enemies
      */
     private async loadEnemyParts(enemyType: string): Promise<{ [key: string]: Texture }> {
-        const basePath = `/assets/textures/characters/enemies/${enemyType}/enemy_${enemyType}_`;
+        console.log(`Loading enemy parts for: ${enemyType}`);
+        const basePath = `assets/textures/characters/enemies/${enemyType}/enemy_${enemyType}_`;
         const parts: { [key: string]: Texture } = {};
 
         // Load body
         try {
+            console.log(`Loading body: ${basePath}body.png`);
             parts.body = await this.assetManager.loadTexture(basePath + 'body.png');
+            console.log(`Body loaded successfully for ${enemyType}`);
         } catch (error) {
-            console.log(`No body found for ${enemyType}`);
+            console.warn(`No body found for ${enemyType}:`, error);
         }
 
         // Load wings nếu có
@@ -603,7 +606,7 @@ export class AnimationManager {
         // Load basic enemy frames
         const frames: Texture[] = [];
         for (let i = 0; i < 4; i++) {
-            const texture = await this.assetManager.loadTexture(`/assets/textures/characters/enemies/basic/enemy_01_${i}.png`);
+            const texture = await this.assetManager.loadTexture(`assets/textures/characters/enemies/basic/enemy_01_${i}.png`);
             frames.push(texture);
         }
 

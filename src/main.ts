@@ -2,6 +2,8 @@ import * as PIXI from 'pixi.js';
 import { Player } from './entities/Playter';
 import { InputManager } from './managers/InputManager';
 import { BulletManager } from './managers/BulletManager';
+import { EnemyManager } from './managers/EnemyManager';
+import { LevelManager } from './managers/LevelManager';
 import { GameConfig, updateScreenSize } from './core/Config';
 
 class Game {
@@ -9,9 +11,12 @@ class Game {
   private player: Player | null = null;
   private inputManager: InputManager | null = null;
   private bulletManager: BulletManager | null = null;
+  private enemyManager: EnemyManager | null = null;
+  private levelManager: LevelManager | null = null;
   private gameContainer: PIXI.Container;
   private backgroundContainer: PIXI.Container;
   private uiContainer: PIXI.Container;
+  private score: number = 0;
 
   private scrollingBackground: PIXI.TilingSprite | null = null;
   private backgroundTexture: PIXI.Texture | null = null;
@@ -222,10 +227,30 @@ class Game {
       // Initialize managers
       this.inputManager = new InputManager(this.app.view as HTMLCanvasElement);
       this.bulletManager = new BulletManager(this.gameContainer, bulletTexture);
+      
+      // Initialize AnimationManager with app
+      const animationManager = (await import('./managers/AnimationManager')).AnimationManager.getInstance();
+      animationManager.initWithApp(this.app);
+      
+      this.enemyManager = new EnemyManager(this.gameContainer);
+      await this.enemyManager.initialize();
+      this.levelManager = new LevelManager(this.enemyManager);
 
       // Create player
       this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
       this.gameContainer.addChild(this.player);
+
+      // Setup level completion callback
+      this.levelManager.setLevelCompleteCallback(() => {
+        this.onLevelComplete();
+      });
+
+      // Start first level after a short delay
+      setTimeout(() => {
+        if (this.levelManager) {
+          this.levelManager.startLevel(1);
+        }
+      }, 2000);
 
     } catch (error) {
       console.error('Failed to load assets:', error);
@@ -235,8 +260,28 @@ class Game {
       
       this.inputManager = new InputManager(this.app.view as HTMLCanvasElement);
       this.bulletManager = new BulletManager(this.gameContainer, bulletTexture);
+      
+      // Initialize AnimationManager with app
+      const animationManager = (await import('./managers/AnimationManager')).AnimationManager.getInstance();
+      animationManager.initWithApp(this.app);
+      
+      this.enemyManager = new EnemyManager(this.gameContainer);
+      await this.enemyManager.initialize();
+      this.levelManager = new LevelManager(this.enemyManager);
       this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
       this.gameContainer.addChild(this.player);
+
+      // Setup level completion callback
+      this.levelManager.setLevelCompleteCallback(() => {
+        this.onLevelComplete();
+      });
+
+      // Start first level after a short delay
+      setTimeout(() => {
+        if (this.levelManager) {
+          this.levelManager.startLevel(1);
+        }
+      }, 2000);
 
     }
   }
@@ -291,6 +336,19 @@ class Game {
       this.bulletManager.update(deltaTime);
     }
 
+    // Update enemy manager
+    if (this.enemyManager) {
+      this.enemyManager.update(deltaTime);
+    }
+
+    // Update level manager
+    if (this.levelManager) {
+      this.levelManager.update(deltaTime);
+    }
+
+    // Handle collisions
+    this.handleCollisions();
+
     // Update UI with game stats
     this.updateGameStats();
   }
@@ -325,13 +383,23 @@ class Game {
     const inputState = this.inputManager?.getInputState();
     const frameMovement = this.inputManager?.getFrameMovement();
 
+    const enemyStats = this.enemyManager?.getPoolStats() || {};
+    const activeEnemyCount = this.enemyManager?.getActiveEnemyCount() || 0;
+    const currentLevel = this.levelManager?.getCurrentLevel() || 0;
+    const levelProgress = this.levelManager?.getLevelProgress() || 0;
+    const remainingTime = this.levelManager?.getRemainingTime() || 0;
+    const isBossLevel = this.levelManager?.isBossLevel() || false;
+
     const statsText = new PIXI.Text(
+      `Score: ${this.score}\n` +
+      `Level: ${currentLevel}${isBossLevel ? ' (BOSS)' : ''}\n` +
+      `Time: ${Math.ceil(remainingTime)}s\n` +
+      `Progress: ${Math.round(levelProgress * 100)}%\n` +
       `Health: ${playerState.health}/${this.player.getMaxHealth()}\n` +
-      `Position: (${Math.round(playerPos.x)}, ${Math.round(playerPos.y)})\n` +
+      `Active Enemies: ${activeEnemyCount}\n` +
       `Active Bullets: ${bulletStats.active}\n` +
-      `Status: ${playerState.isMoving ? 'Moving & Shooting' : 'Idle'}\n` +
-      `Input: ${inputState?.isPointerDown ? 'Holding' : 'Released'}\n` +
-      `Frame Movement: (${frameMovement ? Math.round(frameMovement.x) : 0}, ${frameMovement ? Math.round(frameMovement.y) : 0})`,
+      `Position: (${Math.round(playerPos.x)}, ${Math.round(playerPos.y)})\n` +
+      `Status: ${playerState.isMoving ? 'Moving & Shooting' : 'Idle'}`,
       style
     );
 
@@ -343,12 +411,71 @@ class Game {
     this.uiContainer.addChild(statsText);
   }
 
+  private handleCollisions(): void {
+    if (!this.enemyManager || !this.bulletManager || !this.player) return;
+
+    // Check bullet-enemy collisions
+    const activeBullets = this.bulletManager.getActiveBullets();
+    const collisions = this.enemyManager.checkBulletCollisions(activeBullets);
+    
+    for (const collision of collisions) {
+      this.score += collision.score;
+      console.log(`Enemy destroyed! Score: +${collision.score}, Total: ${this.score}`);
+    }
+
+    // Check player-enemy collisions
+    const collidedEnemy = this.enemyManager.checkPlayerCollisions(this.player);
+    if (collidedEnemy) {
+      const damage = 20; // Base collision damage
+      this.player.takeDamage(damage);
+      collidedEnemy.deactivate(); // Remove enemy on collision
+      console.log(`Player hit! Health: ${this.player.getHealth()}`);
+      
+      if (this.player.getHealth() <= 0) {
+        console.log('Game Over!');
+        this.gameOver();
+      }
+    }
+  }
+
+  private onLevelComplete(): void {
+    console.log(`Level ${this.levelManager?.getCurrentLevel()} completed!`);
+    
+    // Try to start next level
+    if (this.levelManager?.nextLevel()) {
+      console.log(`Starting level ${this.levelManager.getCurrentLevel()}`);
+    } else {
+      console.log('All levels completed! Game finished!');
+      this.gameComplete();
+    }
+  }
+
+  private gameOver(): void {
+    if (this.levelManager) {
+      this.levelManager.stopLevel();
+    }
+    console.log('Game Over! Final Score:', this.score);
+  }
+
+  private gameComplete(): void {
+    if (this.levelManager) {
+      this.levelManager.stopLevel();
+    }
+    console.log('Congratulations! Game completed! Final Score:', this.score);
+  }
+
   public destroy(): void {
     if (this.inputManager) {
       this.inputManager.destroy();
     }
     if (this.bulletManager) {
       this.bulletManager.destroy();
+    }
+    if (this.enemyManager) {
+      this.enemyManager.destroy();
+    }
+    if (this.levelManager) {
+      this.levelManager.stopLevel();
     }
     if (this.player) {
       this.player.destroy();

@@ -66,21 +66,22 @@ export class AssetManager {
      * Load a single texture
      */
     public async loadTexture(path: string, alias?: string): Promise<Texture> {
-        console.log(`Loading texture: ${path}`);
+        console.log(`[AssetManager] Loading texture: ${path}`);
         const key = alias || path;
         
         if (this.loadedTextures.has(key)) {
-            console.log(`Texture already loaded: ${key}`);
+            console.log(`[AssetManager] Texture already loaded: ${key}`);
             return this.loadedTextures.get(key)!;
         }
 
         try {
+            console.log(`[AssetManager] Attempting to load from path: ${path}`);
             const texture = await Assets.load(path);
             this.loadedTextures.set(key, texture);
-            console.log(`Texture loaded successfully: ${key}`);
+            console.log(`[AssetManager] Texture loaded successfully: ${key}`);
             return texture;
         } catch (error) {
-            console.error(`Failed to load texture: ${path}`, error);
+            console.error(`[AssetManager] Failed to load texture: ${path}`, error);
             throw error;
         }
     }
