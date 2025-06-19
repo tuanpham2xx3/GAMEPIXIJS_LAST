@@ -177,7 +177,7 @@ export class GameOrchestrator {
     entityGroups.set(EntityCategory.BOSS, bosses as CollidableEntity[]);
 
     // Perform collision detection
-    const collisionResults = this.collisionManager.detectCollisions(entityGroups);
+    const collisionResults = this.collisionManager.checkAllCollisions(entityGroups);
 
     // Process collision results
     for (const result of collisionResults) {

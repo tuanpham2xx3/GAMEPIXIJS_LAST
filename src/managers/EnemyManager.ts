@@ -122,7 +122,7 @@ export class EnemyManager {
         }
     }
 
-    public checkBulletCollisions(bullets: any[]): { enemy: Enemy; bullet: any; score: number }[] {
+    public async checkBulletCollisions(bullets: any[]): Promise<{ enemy: Enemy; bullet: any; score: number; }[]> {
         const collisions: { enemy: Enemy; bullet: any; score: number }[] = [];
 
         for (const enemy of this.activeEnemies) {
@@ -141,7 +141,7 @@ export class EnemyManager {
                     
                     bullet.deactivate();
                     
-                    if (enemyDestroyed) {
+                    if (await enemyDestroyed) {
                         const score = enemy.getScoreValue();
                         collisions.push({ enemy, bullet, score });
                     }
