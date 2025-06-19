@@ -44,16 +44,7 @@ export interface BulletState {
     direction: Vector2;
 }
 
-//Entity base interface
-export interface Entity {
-    velocity: Vector2;
-    isActive: boolean;
-    update(deltaTime: number): void;
-    destroy(): void;
-    getPosition(): Vector2;
-}
-
-// Enemy types
+//Enemy types
 export type EnemyType = 'diver' | 'green' | 'inferior' | 'na' | 'soldier' | 'boss';
 
 export type MovementPattern = 'straight' | 'zigzag' | 'sine' | 'circular' | 'boss';
@@ -62,7 +53,7 @@ export interface EnemyConfig {
     health: number;
     speed: number;
     scoreValue: number;
-    size: {width: number; height: number};
+    size: { width: number; height: number };
     movementPattern: MovementPattern;
 }
 
@@ -83,4 +74,64 @@ export interface LevelConfig {
     }>;
     duration: number;
     isBossLevel?: boolean;
+}
+
+//Entity base interface
+export interface Entity {
+    velocity: Vector2;
+    isActive: boolean;
+    update(deltaTime: number): void;
+    destroy(): void;
+    getPosition(): Vector2;
+}
+
+// Collision System Types - Simplified Approach
+export enum EntityCategory {
+  PLAYER = 'player',
+  PLAYER_BULLET = 'player_bullet',
+  ENEMY = 'enemy',
+  ENEMY_BULLET = 'enemy_bullet',
+  BOSS = 'boss',
+  BOSS_BULLET = 'boss_bullet',
+  POWERUP = 'powerup'
+}
+
+export interface CollisionResult {
+  entityA: any;
+  entityB: any;
+  categoryA: EntityCategory;
+  categoryB: EntityCategory;
+  damage?: number; // Kept for backward compatibility
+  damageToA?: number;
+  damageToB?: number;
+  score?: number;
+  shouldDestroyA?: boolean;
+  shouldDestroyB?: boolean;
+  shouldDeactivateA?: boolean;
+  shouldDeactivateB?: boolean;
+}
+
+export interface CollidableEntity {
+  getCategory(): EntityCategory;
+  getBounds(): any; // PIXI.Rectangle
+  isActive?: boolean;
+  takeDamage?(damage: number): boolean | Promise<boolean>; // returns true if destroyed, now supports async
+  deactivate?(): void;
+  destroy?(): void;
+  getScoreValue?(): number;
+  getDamage?(): number;
+}
+
+export interface CollisionRule {
+  categoryA: EntityCategory;
+  categoryB: EntityCategory;
+  enabled: boolean;
+  damageToA?: number;
+  damageToB?: number;
+  scoreValue?: number;
+  destroyA?: boolean;
+  destroyB?: boolean;
+  deactivateA?: boolean;
+  deactivateB?: boolean;
+  callback?: (entityA: any, entityB: any) => CollisionResult | null;
 }

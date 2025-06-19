@@ -323,7 +323,6 @@ class Game {
       `Frame Movement: (${frameMovement ? Math.round(frameMovement.x) : 0}, ${frameMovement ? Math.round(frameMovement.y) : 0})`,
       style
     );
-
     statsText.x = 10;
     statsText.y = GameConfig.screen.height - 100;
     statsText.name = 'gameStats';
