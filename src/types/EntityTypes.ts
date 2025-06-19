@@ -101,7 +101,9 @@ export interface CollisionResult {
   entityB: any;
   categoryA: EntityCategory;
   categoryB: EntityCategory;
-  damage?: number;
+  damage?: number; // Kept for backward compatibility
+  damageToA?: number;
+  damageToB?: number;
   score?: number;
   shouldDestroyA?: boolean;
   shouldDestroyB?: boolean;
@@ -113,7 +115,7 @@ export interface CollidableEntity {
   getCategory(): EntityCategory;
   getBounds(): any; // PIXI.Rectangle
   isActive?: boolean;
-  takeDamage?(damage: number): boolean; // returns true if destroyed
+  takeDamage?(damage: number): boolean | Promise<boolean>; // returns true if destroyed, now supports async
   deactivate?(): void;
   destroy?(): void;
   getScoreValue?(): number;

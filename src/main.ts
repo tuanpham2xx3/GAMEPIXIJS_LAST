@@ -358,8 +358,10 @@ class Game {
       this.levelManager.update(deltaTime);
     }
 
-    // Handle collisions
-    this.handleCollisions();
+    // Handle collisions (async for explosion animations)
+    this.handleCollisions().catch(error => {
+      console.error('Error in collision handling:', error);
+    });
 
     // Update UI with game stats
     this.updateGameStats();
@@ -426,7 +428,7 @@ class Game {
     this.uiContainer.addChild(statsText);
   }
 
-  private handleCollisions(): void {
+  private async handleCollisions(): Promise<void> {
     if (!this.collisionManager || !this.enemyManager || !this.bulletManager || !this.player) return;
 
     // Prepare entity groups for collision detection
@@ -456,27 +458,44 @@ class Game {
     for (const collision of collisions) {
       console.log('Processing collision:', collision);
       
-      // Handle damage
-      if (collision.damage) {
-        if (collision.categoryA === EntityCategory.PLAYER) {
-          collision.entityA.takeDamage(collision.damage);
-          if (collision.entityA.getHealth() <= 0) {
-            console.log('Game Over!');
-            this.gameOver();
-          }
-        } else if (collision.categoryB === EntityCategory.PLAYER) {
-          collision.entityB.takeDamage(collision.damage);
-          if (collision.entityB.getHealth() <= 0) {
+      let entityADestroyed = false;
+      let entityBDestroyed = false;
+      
+      // Handle damage (now with async support for explosions)
+      if (collision.damageToA && collision.entityA.takeDamage) {
+        entityADestroyed = await collision.entityA.takeDamage(collision.damageToA);
+        if (entityADestroyed || collision.entityA.getHealth?.() <= 0) {
+          if (collision.categoryA === EntityCategory.PLAYER) {
             console.log('Game Over!');
             this.gameOver();
           }
         }
       }
       
-      // Handle score
+      if (collision.damageToB && collision.entityB.takeDamage) {
+        entityBDestroyed = await collision.entityB.takeDamage(collision.damageToB);
+        if (entityBDestroyed || collision.entityB.getHealth?.() <= 0) {
+          if (collision.categoryB === EntityCategory.PLAYER) {
+            console.log('Game Over!');
+            this.gameOver();
+          }
+        }
+      }
+      
+      // Handle score - only award if enemy was actually destroyed
       if (collision.score && collision.score > 0) {
-        this.score += collision.score;
-        console.log(`Enemy destroyed! Score: +${collision.score}, Total: ${this.score}`);
+        let shouldAwardScore = false;
+        
+        if (collision.categoryB === EntityCategory.ENEMY || collision.categoryB === EntityCategory.BOSS) {
+          shouldAwardScore = entityBDestroyed;
+        } else if (collision.categoryA === EntityCategory.ENEMY || collision.categoryA === EntityCategory.BOSS) {
+          shouldAwardScore = entityADestroyed;
+        }
+        
+        if (shouldAwardScore) {
+          this.score += collision.score;
+          console.log(`Enemy destroyed! Score: +${collision.score}, Total: ${this.score}`);
+        }
       }
       
       // Handle entity deactivation
@@ -484,17 +503,17 @@ class Game {
         console.log('Deactivating entityA:', collision.entityA);
         collision.entityA.deactivate();
       }
-      if (collision.shouldDeactivateB && collision.entityB.deactivate) {
+      if ((collision.shouldDeactivateB || entityBDestroyed) && collision.entityB.deactivate) {
         console.log('Deactivating entityB:', collision.entityB);
         collision.entityB.deactivate();
       }
       
       // Handle entity destruction
-      if (collision.shouldDestroyA && collision.entityA.destroy) {
+      if ((collision.shouldDestroyA || entityADestroyed) && collision.entityA.destroy) {
         console.log('Destroying entityA:', collision.entityA);
         collision.entityA.destroy();
       }
-      if (collision.shouldDestroyB && collision.entityB.destroy) {
+      if ((collision.shouldDestroyB || entityBDestroyed) && collision.entityB.destroy) {
         console.log('Destroying entityB:', collision.entityB);
         collision.entityB.destroy();
       }

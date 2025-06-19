@@ -3,6 +3,7 @@ import { Vector2, PlayerState, Entity, EntityCategory, CollidableEntity } from '
 import { GameConfig, getBoundaries } from '../core/Config';
 import { InputManager } from '../managers/InputManager';
 import { BulletManager } from '../managers/BulletManager';
+import { AnimationManager } from '../managers/AnimationManager';
 
 export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   public velocity: Vector2;
@@ -10,6 +11,7 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   private state: PlayerState;
   private inputManager: InputManager;
   private bulletManager: BulletManager;
+  private animationManager: AnimationManager;
   private lastShootTime: number;
 
   constructor(texture: PIXI.Texture, inputManager: InputManager, bulletManager: BulletManager) {
@@ -17,6 +19,7 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     
     this.inputManager = inputManager;
     this.bulletManager = bulletManager;
+    this.animationManager = AnimationManager.getInstance();
     this.velocity = { x: 0, y: 0 };
     this.isActive = true;
     this.lastShootTime = 0;
@@ -24,8 +27,8 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     this.state = {
       isMoving: false,
       isShooting: false,
-      health: 100,
-      maxHealth: 100
+      health: GameConfig.player.health,
+      maxHealth: GameConfig.player.health
     };
 
     this.setupPlayer();
@@ -156,9 +159,36 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   }
 
   // Public methods
-  public takeDamage(damage: number): boolean {
+  public async takeDamage(damage: number): Promise<boolean> {
     this.state.health = Math.max(0, this.state.health - damage);
     if (this.state.health <= 0) {
+      
+      // Create explosion animation before destroying player
+      try {
+        const explosionAnimation = await this.animationManager.createExplosionAnimation({
+          entityWidth: this.width,
+          entityHeight: this.height,
+          anchor: { x: 0.5, y: 0.5 }
+        });
+        
+        explosionAnimation.position.set(this.x, this.y);
+        
+        // Add explosion to parent container (game scene)
+        if (this.parent) {
+          this.parent.addChild(explosionAnimation);
+        }
+        
+        // Remove explosion after animation completes
+        explosionAnimation.onComplete = () => {
+          if (explosionAnimation.parent) {
+            explosionAnimation.parent.removeChild(explosionAnimation);
+          }
+          explosionAnimation.destroy();
+        };
+      } catch (error) {
+        console.error('Failed to create player explosion animation:', error);
+      }
+      
       this.isActive = false;
       return true; // Player is destroyed
     }

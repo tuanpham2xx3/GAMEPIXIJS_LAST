@@ -13,6 +13,7 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
 
     // Visual components
     protected sprite: PIXI.Sprite | PIXI.Container | null = null;
+    protected animationManager: AnimationManager;
 
     constructor(enemyType: EnemyType) {
         super();
@@ -22,6 +23,7 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
         this.isActive = false;
         this.movementPhase = 0;
         this.startTime = 0;
+        this.animationManager = AnimationManager.getInstance();
 
         const config = GameConfig.enemies[enemyType];
         this.state = {
@@ -123,12 +125,39 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
         }
     }
 
-    public takeDamage(damage: number): boolean {
+    public async takeDamage(damage: number): Promise<boolean> {
         console.log(`Enemy ${this.enemyType} taking ${damage} damage. Health: ${this.state.health} -> ${this.state.health - damage}`);
         this.state.health = Math.max(0, this.state.health - damage);
         
         if (this.state.health <= 0) {
             console.log(`Enemy ${this.enemyType} destroyed!`);
+            
+            // Create explosion animation before deactivating
+            try {
+                const explosionAnimation = await this.animationManager.createExplosionAnimation({
+                    entityWidth: this.width,
+                    entityHeight: this.height,
+                    anchor: { x: 0.5, y: 0.5 }
+                });
+                
+                explosionAnimation.position.set(this.x, this.y);
+                
+                // Add explosion to parent container (game scene)
+                if (this.parent) {
+                    this.parent.addChild(explosionAnimation);
+                }
+                
+                // Remove explosion after animation completes
+                explosionAnimation.onComplete = () => {
+                    if (explosionAnimation.parent) {
+                        explosionAnimation.parent.removeChild(explosionAnimation);
+                    }
+                    explosionAnimation.destroy();
+                };
+            } catch (error) {
+                console.error('Failed to create explosion animation:', error);
+            }
+            
             this.deactivate();
             return true; // Enemy destroyed
         }

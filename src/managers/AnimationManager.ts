@@ -186,7 +186,7 @@ export class AnimationManager {
     /**
      * Tạo Hit Effect Animation (4x4 sprite sheet)
      */
-    public async createHitAnimation(config: AnimationConfig = {}): Promise<AnimatedSprite> {
+    public async createExplosionAnimation(config: AnimationConfig & { entityWidth?: number; entityHeight?: number } = {}): Promise<AnimatedSprite> {
         const hitTexture = await this.assetManager.loadTexture('assets/textures/animations/anim_hit.jpg');
         
         // Tạo frames từ sprite sheet 4x4
@@ -210,11 +210,20 @@ export class AnimationManager {
             }
         }
         
+        // Calculate scale based on entity size if provided
+        let explosionScale = config.scale || 1.0;
+        if (config.entityWidth && config.entityHeight) {
+            // Scale explosion to be slightly larger than the entity
+            const entityMaxSize = Math.max(config.entityWidth, config.entityHeight);
+            const explosionBaseSize = Math.max(frameWidth, frameHeight);
+            explosionScale = (entityMaxSize * 2.5) / explosionBaseSize; // 1.2x for visual impact
+        }
+        
         return this.createAnimatedSprite(frames, {
             speed: 0.4,          // Nhanh hơn để hiệu ứng hit mượt
             loop: false,         // Chỉ chạy 1 lần
             autoPlay: true,
-            scale: 1.0,
+            scale: explosionScale,
             anchor: { x: 0.5, y: 0.5 },
             ...config
         });
@@ -417,7 +426,7 @@ export class AnimationManager {
         // Tạo hit animations
         if (configs.hits) {
             for (let i = 0; i < configs.hits.count; i++) {
-                result.hits.push(await this.createHitAnimation(configs.hits.config));
+                result.hits.push(await this.createExplosionAnimation(configs.hits.config));
             }
         }
 

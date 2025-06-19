@@ -52,10 +52,9 @@ export class CollisionManager {
         console.log('Bullet hit enemy!', bullet, enemy);
         const enemyType = enemy.getEnemyType?.();
         const damage = GameConfig.collision.defaultDamage.playerBullet;
-        const isDestroyed = enemy.takeDamage?.(damage);
         const score = enemyType ? (GameConfig.collision.scoreValues as any)[enemyType] || 100 : 100;
         
-        console.log(`Enemy ${enemyType} took ${damage} damage, destroyed: ${isDestroyed}, score: ${score}`);
+        console.log(`Enemy ${enemyType} hit by bullet for ${damage} damage`);
         
         return {
           entityA: bullet,
@@ -64,8 +63,8 @@ export class CollisionManager {
           categoryB: EntityCategory.ENEMY,
           damageToB: damage,
           shouldDeactivateA: true, // Deactivate bullet
-          shouldDeactivateB: isDestroyed, // Deactivate enemy if destroyed
-          score: isDestroyed ? score : 0 // Only give score if enemy is destroyed
+          shouldDeactivateB: false, // Will be determined after async takeDamage
+          score: score // Score will be applied if enemy is destroyed
         };
       }
     });
@@ -77,7 +76,7 @@ export class CollisionManager {
       scoreValue: GameConfig.collision.scoreValues.boss, // Only when boss is destroyed
       callback: (bullet: any, boss: any) => {
         const damage = GameConfig.collision.defaultDamage.playerBullet;
-        const isDestroyed = boss.takeDamage?.(damage);
+        console.log(`Boss hit by bullet for ${damage} damage`);
         return {
           entityA: bullet,
           entityB: boss,
@@ -85,7 +84,8 @@ export class CollisionManager {
           categoryB: EntityCategory.BOSS,
           damageToB: damage,
           shouldDeactivateA: true,
-          score: isDestroyed ? GameConfig.collision.scoreValues.boss : 0
+          shouldDeactivateB: false, // Will be determined after async takeDamage
+          score: GameConfig.collision.scoreValues.boss // Score will be applied if boss is destroyed
         };
       }
     });
@@ -227,7 +227,9 @@ export class CollisionManager {
       entityB,
       categoryA,
       categoryB,
-      damage: rule.damageToB || rule.damageToA,
+      damage: rule.damageToB || rule.damageToA, // Backward compatibility
+      damageToA: rule.damageToA,
+      damageToB: rule.damageToB,
       score: rule.scoreValue || 0,
       shouldDestroyA: rule.destroyA || false,
       shouldDestroyB: rule.destroyB || false,

@@ -12,8 +12,10 @@ export const GameConfig = {
         speed: 400,
         shootingRate: 5,
         size: { width: 64, height: 64},
-        startPosition: {x: 400, y: 500}
-    } as PlayerConfig & {startPosition: {x: number, y: number}},
+        startPosition: {x: 400, y: 500},
+        health: 100,
+        maxHealth: 100
+    } as PlayerConfig & {startPosition: {x: number, y: number}; health: number; maxHealth: number},
 
     //Bullet configuration
     bullet: {
