@@ -401,13 +401,14 @@ class Game {
     const levelProgress = this.levelManager?.getLevelElapsedTime() || 0;
     const remainingTime = 0; // Not available in formation system
     const isBossLevel = false; // Use formation name instead
+    const waveProgress = this.levelManager?.getWaveProgress() || 'Wave 0/0';
     const collisionStats = this.collisionManager?.getCollisionStats() || { totalChecks: 0, totalRules: 0 };
 
     const statsText = new PIXI.Text(
       `Score: ${this.score}\n` +
       `Level: ${currentLevel}${isBossLevel ? ' (BOSS)' : ''}\n` +
-      `Time: ${Math.ceil(remainingTime)}s\n` +
-      `Progress: ${Math.round(levelProgress * 100)}%\n` +
+      `Wave: ${waveProgress}\n` +
+      `Time: ${Math.round(levelProgress)}s\n` +
       `Health: ${playerState.health}/${this.player.getMaxHealth()}\n` +
       `Active Enemies: ${activeEnemyCount}\n` +
       `Active Bullets: ${bulletStats.active}\n` +
@@ -419,7 +420,7 @@ class Game {
 
     statsText.x = 10;
 
-    statsText.y = GameConfig.screen.height - 100;
+    statsText.y = GameConfig.screen.height - 150;
 
     statsText.name = 'gameStats';
     this.uiContainer.addChild(statsText);
