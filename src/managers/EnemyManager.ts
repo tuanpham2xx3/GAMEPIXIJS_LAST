@@ -95,10 +95,13 @@ export class EnemyManager {
 
     public spawnEnemyAtRandomX(type: EnemyType, y: number = -50): Promise<Enemy | null> {
         const config = GameConfig.enemies[type];
-        const margin = config.size.width;
+        const margin = config.size.width * GameConfig.scale.uniform;
+        const scaledY = y * GameConfig.scale.y;
         const randomX = margin + Math.random() * (GameConfig.screen.width - 2 * margin);
         
-        return this.spawnEnemy(type, { x: randomX, y });
+        console.log(`Spawning ${type} at random X: ${randomX.toFixed(1)}, Y: ${scaledY.toFixed(1)} (scaled from ref Y: ${y})`);
+        
+        return this.spawnEnemy(type, { x: randomX, y: scaledY });
     }
 
     public update(deltaTime: number): void {

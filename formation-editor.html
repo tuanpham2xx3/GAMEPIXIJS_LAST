@@ -40,6 +40,20 @@
             overflow: hidden;
         }
         
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #2a2a2a;
+            border-bottom: 1px solid #444;
+        }
+        
+        .canvas-info {
+            display: flex;
+            gap: 10px;
+        }
+        
         #formation-canvas {
             width: 100%;
             height: 100%;
@@ -211,6 +225,13 @@
             </div>
             
             <div class="canvas-container">
+                <div class="canvas-header">
+                    <h3>Formation Canvas</h3>
+                    <div class="canvas-info">
+                        <span>Reference Resolution: 800 x 600</span>
+                        <span>Current Scale: <span id="scale-info">1.0x</span></span>
+                    </div>
+                </div>
                 <div id="formation-canvas" ondblclick="addEnemyAtPosition(event)"></div>
             </div>
         </div>
@@ -226,6 +247,24 @@
     <script>
         let enemies = [];
         let enemyCounter = 0;
+
+        // Update scale info
+        function updateScaleInfo() {
+            const canvasWidth = 800;  // Reference width
+            const canvasHeight = 600; // Reference height
+            const actualWidth = document.getElementById('formation-canvas').clientWidth;
+            const actualHeight = document.getElementById('formation-canvas').clientHeight;
+            
+            const scaleX = actualWidth / canvasWidth;
+            const scaleY = actualHeight / canvasHeight;
+            const uniformScale = Math.min(scaleX, scaleY);
+            
+            document.getElementById('scale-info').textContent = `${uniformScale.toFixed(2)}x`;
+        }
+
+        // Update scale info on window resize
+        window.addEventListener('resize', updateScaleInfo);
+        window.addEventListener('load', updateScaleInfo);
 
         function addEnemy() {
             const type = document.getElementById('enemy-type').value;

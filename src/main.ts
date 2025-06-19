@@ -3,10 +3,10 @@ import { Player } from './entities/Player';
 import { InputManager } from './managers/InputManager';
 import { BulletManager } from './managers/BulletManager';
 import { EnemyManager } from './managers/EnemyManager';
-import { LevelManager } from './managers/LevelManager';
+import { SimpleLevelManager } from './managers/SimpleLevelManager';
 import { CollisionManager } from './managers/CollisionManager';
 import { AnimationManager } from './managers/AnimationManager';
-import { GameConfig, updateScreenSize } from './core/Config';
+import { GameConfig, updateScreenSize, scalePosition } from './core/Config';
 import { EntityCategory, CollidableEntity } from './types/EntityTypes';
 
 class Game {
@@ -15,7 +15,7 @@ class Game {
   private inputManager: InputManager | null = null;
   private bulletManager: BulletManager | null = null;
   private enemyManager: EnemyManager | null = null;
-  private levelManager: LevelManager | null = null;
+  private levelManager: SimpleLevelManager | null = null;
   private collisionManager: CollisionManager | null = null;
   private gameContainer: PIXI.Container;
   private backgroundContainer: PIXI.Container;
@@ -243,19 +243,13 @@ class Game {
       this.collisionManager = new CollisionManager();
       console.log('CollisionManager initialized');
 
-              // Initialize LevelManager
-        this.levelManager = new LevelManager(this.enemyManager);
-        this.levelManager.setLevelCompleteCallback(this.onLevelComplete.bind(this));
-        console.log('LevelManager initialized');
+                    // Initialize SimpleLevelManager
+      this.levelManager = new SimpleLevelManager(this.enemyManager);
+      console.log('SimpleLevelManager initialized');
 
       // Create player
       this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
       this.gameContainer.addChild(this.player);
-
-      // Setup level completion callback
-      this.levelManager.setLevelCompleteCallback(() => {
-        this.onLevelComplete();
-      });
 
       // Start first level after a short delay
       setTimeout(() => {
@@ -279,14 +273,9 @@ class Game {
       
       this.enemyManager = new EnemyManager(this.gameContainer);
       await this.enemyManager.initialize();
-      this.levelManager = new LevelManager(this.enemyManager);
+      this.levelManager = new SimpleLevelManager(this.enemyManager);
       this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
       this.gameContainer.addChild(this.player);
-
-      // Setup level completion callback
-      this.levelManager.setLevelCompleteCallback(() => {
-        this.onLevelComplete();
-      });
 
       // Start first level after a short delay
       setTimeout(() => {
@@ -356,6 +345,11 @@ class Game {
     // Update level manager
     if (this.levelManager) {
       this.levelManager.update(deltaTime);
+      
+      // Check level completion using simple polling instead of callbacks
+      if (this.levelManager.isLevelComplete()) {
+        this.onLevelComplete();
+      }
     }
 
     // Handle collisions (async for explosion animations)
@@ -605,6 +599,42 @@ window.onload = () => {
         if (game['levelManager']) {
           game['levelManager'].restartCurrentLevel();
         }
+      },
+      forceComplete: () => {
+        if (game['levelManager']) {
+          game['levelManager'].forceCompleteLevel();
+        }
+      },
+      getStatus: () => {
+        if (game['levelManager']) {
+          const status = game['levelManager'].getDebugStatus();
+          console.log('🔍 Game Status:', status);
+          return status;
+        }
+      },
+      // Scaling debug commands
+      getScaleInfo: () => {
+        console.log('Screen Resolution:', GameConfig.screen);
+        console.log('Reference Resolution:', GameConfig.referenceResolution);
+        console.log('Scale Factors:', GameConfig.scale);
+        return {
+          screen: GameConfig.screen,
+          reference: GameConfig.referenceResolution,
+          scale: GameConfig.scale
+        };
+      },
+      testScaling: () => {
+        console.log('Testing scaling system...');
+        const testPositions = [
+          { x: 100, y: -50, name: 'Left edge' },
+          { x: 400, y: -50, name: 'Center' },
+          { x: 700, y: -50, name: 'Right edge' }
+        ];
+        
+        testPositions.forEach(pos => {
+          const scaled = scalePosition(pos.x, pos.y);
+          console.log(`${pos.name}: ref(${pos.x}, ${pos.y}) -> screen(${scaled.x.toFixed(1)}, ${scaled.y.toFixed(1)})`);
+        });
       }
     };
     
@@ -613,6 +643,8 @@ window.onload = () => {
     console.log('gameDebug.listFormations()');
     console.log('gameDebug.getInfo()');
     console.log('gameDebug.restartLevel()');
+    console.log('gameDebug.forceComplete() - Force complete current level');
+    console.log('gameDebug.getStatus() - Get detailed game status');
   }
   
   // Cleanup on page unload
