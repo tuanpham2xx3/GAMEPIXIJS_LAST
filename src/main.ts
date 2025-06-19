@@ -3,7 +3,7 @@ import { Player } from './entities/Player';
 import { InputManager } from './managers/InputManager';
 import { BulletManager } from './managers/BulletManager';
 import { EnemyManager } from './managers/EnemyManager';
-import { SimpleLevelManager } from './managers/SimpleLevelManager';
+import { LevelManager } from './managers/LevelManager';
 import { CollisionManager } from './managers/CollisionManager';
 import { AnimationManager } from './managers/AnimationManager';
 import { GameConfig, updateScreenSize, scalePosition } from './core/Config';
@@ -15,7 +15,7 @@ class Game {
   private inputManager: InputManager | null = null;
   private bulletManager: BulletManager | null = null;
   private enemyManager: EnemyManager | null = null;
-  private levelManager: SimpleLevelManager | null = null;
+  private levelManager: LevelManager | null = null;
   private collisionManager: CollisionManager | null = null;
   private gameContainer: PIXI.Container;
   private backgroundContainer: PIXI.Container;
@@ -243,9 +243,10 @@ class Game {
       this.collisionManager = new CollisionManager();
       console.log('CollisionManager initialized');
 
-                    // Initialize SimpleLevelManager
-      this.levelManager = new SimpleLevelManager(this.enemyManager);
-      console.log('SimpleLevelManager initialized');
+      // Initialize LevelManager
+      this.levelManager = new LevelManager(this.enemyManager);
+      await this.levelManager.initialize();
+      console.log('LevelManager initialized');
 
       // Create player
       this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
@@ -273,7 +274,8 @@ class Game {
       
       this.enemyManager = new EnemyManager(this.gameContainer);
       await this.enemyManager.initialize();
-      this.levelManager = new SimpleLevelManager(this.enemyManager);
+      this.levelManager = new LevelManager(this.enemyManager);
+      await this.levelManager.initialize();
       this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
       this.gameContainer.addChild(this.player);
 
