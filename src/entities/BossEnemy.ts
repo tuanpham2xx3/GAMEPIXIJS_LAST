@@ -18,9 +18,9 @@ export class BossEnemy extends Enemy {
         try {
             const animationManager = AnimationManager.getInstance();
             // Using enemy1 animation for boss - larger scale
-            this.sprite = await animationManager.createEnemy1Animation({
+            this.sprite = await animationManager.createBossAnimation({
                 scale: 1.2,
-                speed: 0.05
+                speed: 0.1
             });
             
             if (this.sprite) {
