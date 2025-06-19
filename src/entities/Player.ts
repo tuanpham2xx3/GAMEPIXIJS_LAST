@@ -167,21 +167,24 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
 
   private applyBoundaries(): void {
     const boundaries = getBoundaries();
-    
-    // Keep player within screen boundaries
-    if (this.x < boundaries.left) {
-      this.x = boundaries.left;
+    const screenWidth = GameConfig.screen.width;
+    const screenHeight = GameConfig.screen.height;
+    const playerHalfWidth = this.width / 2;
+    const playerHalfHeight = this.height / 2;
+
+    if (this.x < playerHalfWidth) {
+      this.x = playerHalfWidth;
       this.velocity.x = 0;
-    } else if (this.x > boundaries.right) {
-      this.x = boundaries.right;
+    } else if (this.x > screenWidth - playerHalfWidth) {
+      this.x = screenWidth - playerHalfWidth;
       this.velocity.x = 0;
     }
 
-    if (this.y < boundaries.top) {
-      this.y = boundaries.top;
+    if (this.y < playerHalfHeight) {
+      this.y = playerHalfHeight;
       this.velocity.y = 0;
-    } else if (this.y > boundaries.bottom) {
-      this.y = boundaries.bottom;
+    } else if (this.y > screenHeight - playerHalfHeight) {
+      this.y = screenHeight - playerHalfHeight;
       this.velocity.y = 0;
     }
   }
