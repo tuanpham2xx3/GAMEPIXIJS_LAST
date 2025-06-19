@@ -3,7 +3,7 @@ import { Player } from './entities/Player';
 import { InputManager } from './managers/InputManager';
 import { BulletManager } from './managers/BulletManager';
 import { EnemyManager } from './managers/EnemyManager';
-import { LevelManagerWithFormations } from './managers/LevelManagerWithFormations';
+import { LevelManager } from './managers/LevelManager';
 import { CollisionManager } from './managers/CollisionManager';
 import { AnimationManager } from './managers/AnimationManager';
 import { GameConfig, updateScreenSize } from './core/Config';
@@ -15,7 +15,7 @@ class Game {
   private inputManager: InputManager | null = null;
   private bulletManager: BulletManager | null = null;
   private enemyManager: EnemyManager | null = null;
-  private levelManager: LevelManagerWithFormations | null = null;
+  private levelManager: LevelManager | null = null;
   private collisionManager: CollisionManager | null = null;
   private gameContainer: PIXI.Container;
   private backgroundContainer: PIXI.Container;
@@ -244,7 +244,7 @@ class Game {
       console.log('CollisionManager initialized');
 
               // Initialize LevelManager
-        this.levelManager = new LevelManagerWithFormations(this.enemyManager);
+        this.levelManager = new LevelManager(this.enemyManager);
         this.levelManager.setLevelCompleteCallback(this.onLevelComplete.bind(this));
         console.log('LevelManager initialized');
 
@@ -279,7 +279,7 @@ class Game {
       
       this.enemyManager = new EnemyManager(this.gameContainer);
       await this.enemyManager.initialize();
-      this.levelManager = new LevelManagerWithFormations(this.enemyManager);
+      this.levelManager = new LevelManager(this.enemyManager);
       this.player = new Player(playerTexture, this.inputManager, this.bulletManager);
       this.gameContainer.addChild(this.player);
 

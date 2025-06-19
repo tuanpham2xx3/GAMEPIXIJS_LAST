@@ -1,182 +1,67 @@
 import { EnemyManager } from './EnemyManager';
-import { LevelConfig, EnemyType } from '../types/EntityTypes';
-import { GameConfig } from '../core/Config';
+import { FormationManager } from './FormationManager';
 
 export class LevelManager {
     private enemyManager: EnemyManager;
+    private formationManager: FormationManager;
     private currentLevel: number;
     private levelStartTime: number;
-    private levelConfig: LevelConfig | null;
-    private spawnTimers: Map<EnemyType, number>;
-    private spawnCounts: Map<EnemyType, number>;
     private isLevelActive: boolean;
     private levelCompleteCallback?: () => void;
 
-    // Static level configurations
-    private static readonly LEVEL_CONFIGS: LevelConfig[] = [
-        {
-            level: 1,
-            enemies: [
-                { type: 'inferior', count: 8, spawnDelay: 2, spawnStartDelay: 1 },
-                { type: 'diver', count: 4, spawnDelay: 5, spawnStartDelay: 10 }
-            ],
-            duration: 45
-        },
-        {
-            level: 2,
-            enemies: [
-                { type: 'inferior', count: 10, spawnDelay: 1.8, spawnStartDelay: 1 },
-                { type: 'green', count: 5, spawnDelay: 4, spawnStartDelay: 8 },
-                { type: 'diver', count: 3, spawnDelay: 6, spawnStartDelay: 15 }
-            ],
-            duration: 60
-        },
-        {
-            level: 3,
-            enemies: [
-                { type: 'inferior', count: 12, spawnDelay: 1.5, spawnStartDelay: 1 },
-                { type: 'green', count: 8, spawnDelay: 3, spawnStartDelay: 5 },
-                { type: 'na', count: 4, spawnDelay: 7, spawnStartDelay: 20 }
-            ],
-            duration: 70
-        },
-        {
-            level: 4,
-            enemies: [
-                { type: 'green', count: 10, spawnDelay: 2.5, spawnStartDelay: 1 },
-                { type: 'diver', count: 8, spawnDelay: 4, spawnStartDelay: 10 },
-                { type: 'soldier', count: 3, spawnDelay: 8, spawnStartDelay: 25 },
-                { type: 'na', count: 6, spawnDelay: 5, spawnStartDelay: 15 }
-            ],
-            duration: 80
-        },
-        {
-            level: 5,
-            enemies: [
-                { type: 'soldier', count: 6, spawnDelay: 6, spawnStartDelay: 1 },
-                { type: 'green', count: 12, spawnDelay: 2, spawnStartDelay: 5 },
-                { type: 'diver', count: 10, spawnDelay: 3, spawnStartDelay: 10 },
-                { type: 'na', count: 8, spawnDelay: 4, spawnStartDelay: 20 }
-            ],
-            duration: 90
-        },
-        {
-            level: 6,
-            enemies: [
-                { type: 'boss', count: 1, spawnDelay: 0, spawnStartDelay: 5 }
-            ],
-            duration: 120,
-            isBossLevel: true
-        }
-    ];
-
     constructor(enemyManager: EnemyManager) {
         this.enemyManager = enemyManager;
+        this.formationManager = new FormationManager(enemyManager);
         this.currentLevel = 0;
         this.levelStartTime = 0;
-        this.levelConfig = null;
-        this.spawnTimers = new Map();
-        this.spawnCounts = new Map();
         this.isLevelActive = false;
+        
+        // Load formations (required)
+        this.initializeFormations();
+    }
+
+    private async initializeFormations(): Promise<void> {
+        const loaded = await this.formationManager.loadFormations();
+        if (!loaded) {
+            console.error('⚠️ Formation data failed to load! Game cannot start without formations.');
+            throw new Error('Formation system is required but failed to initialize');
+        } else {
+            console.log('✅ Formation system initialized successfully');
+            console.log('📋 Available formations:', this.formationManager.getFormationNames());
+            console.log('🎮 Available levels:', this.formationManager.getLevelNames());
+        }
     }
 
     public startLevel(level: number): boolean {
-        if (level < 1 || level > LevelManager.LEVEL_CONFIGS.length) {
-            console.error(`Invalid level: ${level}`);
+        const levelId = `level_${level}`;
+        const success = this.formationManager.startLevel(levelId);
+        
+        if (!success) {
+            console.error(`❌ Formation level ${level} not found`);
             return false;
         }
 
         this.currentLevel = level;
-        this.levelConfig = LevelManager.LEVEL_CONFIGS[level - 1];
         this.levelStartTime = Date.now();
         this.isLevelActive = true;
-
-        // Initialize spawn timers and counters
-        this.spawnTimers.clear();
-        this.spawnCounts.clear();
-
-        for (const enemyConfig of this.levelConfig.enemies) {
-            this.spawnTimers.set(enemyConfig.type, enemyConfig.spawnStartDelay || 0);
-            this.spawnCounts.set(enemyConfig.type, 0);
-        }
-
-        console.log(`Level ${level} started`);
+        console.log(`🚀 Formation level ${level} started`);
         return true;
     }
 
     public update(deltaTime: number): void {
-        if (!this.isLevelActive || !this.levelConfig) return;
+        if (!this.isLevelActive) return;
 
-        const currentTime = (Date.now() - this.levelStartTime) / 1000;
-
-        // Update spawn timers and spawn enemies
-        for (const enemyConfig of this.levelConfig.enemies) {
-            const currentTimer = this.spawnTimers.get(enemyConfig.type) || 0;
-            const currentCount = this.spawnCounts.get(enemyConfig.type) || 0;
-
-            // Update timer
-            const newTimer = currentTimer - deltaTime;
-            this.spawnTimers.set(enemyConfig.type, newTimer);
-
-            // Check if it's time to spawn and we haven't reached the limit
-            if (newTimer <= 0 && currentCount < enemyConfig.count) {
-                this.spawnEnemy(enemyConfig.type);
-                this.spawnCounts.set(enemyConfig.type, currentCount + 1);
-                this.spawnTimers.set(enemyConfig.type, enemyConfig.spawnDelay);
-            }
-        }
-
-        // Check level completion
-        if (this.isLevelComplete()) {
+        this.formationManager.update(deltaTime);
+        
+        // Check if formation level is complete
+        if (this.formationManager.isLevelComplete() && this.enemyManager.getActiveEnemyCount() === 0) {
             this.completeLevel();
         }
     }
 
-    private async spawnEnemy(type: EnemyType): Promise<void> {
-        try {
-            const enemy = await this.enemyManager.spawnEnemyAtRandomX(type);
-            if (enemy) {
-                console.log(`Spawned ${type} enemy`);
-            }
-        } catch (error) {
-            console.error(`Failed to spawn ${type} enemy:`, error);
-        }
-    }
-
-    private isLevelComplete(): boolean {
-        if (!this.levelConfig) return false;
-
-        const currentTime = (Date.now() - this.levelStartTime) / 1000;
-        
-        // For boss levels, check if boss is defeated
-        if (this.levelConfig.isBossLevel) {
-            const bossCount = this.enemyManager.getEnemyCountByType('boss');
-            return bossCount === 0 && this.getAllEnemiesSpawned();
-        }
-
-        // For normal levels, check if time is up and all enemies are cleared
-        const timeUp = currentTime >= this.levelConfig.duration;
-        const allEnemiesSpawned = this.getAllEnemiesSpawned();
-        const noActiveEnemies = this.enemyManager.getActiveEnemyCount() === 0;
-
-        return timeUp && allEnemiesSpawned && noActiveEnemies;
-    }
-
-    private getAllEnemiesSpawned(): boolean {
-        if (!this.levelConfig) return false;
-
-        for (const enemyConfig of this.levelConfig.enemies) {
-            const spawnedCount = this.spawnCounts.get(enemyConfig.type) || 0;
-            if (spawnedCount < enemyConfig.count) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private completeLevel(): void {
         this.isLevelActive = false;
-        console.log(`Level ${this.currentLevel} completed!`);
+        console.log(`🎉 Level ${this.currentLevel} completed!`);
         
         if (this.levelCompleteCallback) {
             this.levelCompleteCallback();
@@ -185,10 +70,15 @@ export class LevelManager {
 
     public nextLevel(): boolean {
         const nextLevelNumber = this.currentLevel + 1;
-        if (nextLevelNumber <= LevelManager.LEVEL_CONFIGS.length) {
+        const availableLevels = this.formationManager.getLevelNames();
+        const nextLevelId = `level_${nextLevelNumber}`;
+        
+        if (availableLevels.includes(nextLevelId)) {
             return this.startLevel(nextLevelNumber);
         }
-        return false; // No more levels
+        
+        console.log(`🏁 No more levels available after level ${this.currentLevel}`);
+        return false;
     }
 
     public restartCurrentLevel(): boolean {
@@ -199,26 +89,36 @@ export class LevelManager {
         return false;
     }
 
-    public pauseLevel(): void {
-        this.isLevelActive = false;
+    // Formation testing methods
+    public async testFormation(formationId: string): Promise<void> {
+        console.log(`🧪 Testing formation: ${formationId}`);
+        await this.formationManager.spawnFormation(formationId);
     }
 
-    public resumeLevel(): void {
-        if (this.levelConfig) {
-            this.isLevelActive = true;
-            // Adjust start time to account for pause duration
-            this.levelStartTime = Date.now() - this.getLevelElapsedTime() * 1000;
-        }
+    public getAvailableFormations(): string[] {
+        return this.formationManager.getFormationNames();
     }
 
-    public stopLevel(): void {
-        this.isLevelActive = false;
-        this.enemyManager.clearAllEnemies();
-        this.currentLevel = 0;
-        this.levelConfig = null;
+    public getAvailableLevels(): string[] {
+        return this.formationManager.getLevelNames();
     }
 
-    // Getters
+    // Progress tracking
+    public getCurrentWave(): number {
+        return this.formationManager.getCurrentWave();
+    }
+
+    public getTotalWaves(): number {
+        return this.formationManager.getTotalWaves();
+    }
+
+    public getWaveProgress(): string {
+        const current = this.getCurrentWave();
+        const total = this.getTotalWaves();
+        return `Wave ${current}/${total}`;
+    }
+
+    // Standard getters
     public getCurrentLevel(): number {
         return this.currentLevel;
     }
@@ -227,48 +127,29 @@ export class LevelManager {
         return this.isLevelActive;
     }
 
+    public isUsingFormations(): boolean {
+        return true; // Always using formations now
+    }
+
     public getLevelElapsedTime(): number {
-        if (!this.isLevelActive) return 0;
-        return (Date.now() - this.levelStartTime) / 1000;
-    }
-
-    public getLevelProgress(): number {
-        if (!this.levelConfig) return 0;
-        const elapsed = this.getLevelElapsedTime();
-        return Math.min(elapsed / this.levelConfig.duration, 1);
-    }
-
-    public getRemainingTime(): number {
-        if (!this.levelConfig) return 0;
-        const elapsed = this.getLevelElapsedTime();
-        return Math.max(this.levelConfig.duration - elapsed, 0);
-    }
-
-    public isBossLevel(): boolean {
-        return this.levelConfig?.isBossLevel || false;
-    }
-
-    public getTotalLevels(): number {
-        return LevelManager.LEVEL_CONFIGS.length;
-    }
-
-    public getLevelSpawnStatus(): { [key: string]: { spawned: number; total: number } } {
-        const status: { [key: string]: { spawned: number; total: number } } = {};
-        
-        if (this.levelConfig) {
-            for (const enemyConfig of this.levelConfig.enemies) {
-                const spawned = this.spawnCounts.get(enemyConfig.type) || 0;
-                status[enemyConfig.type] = {
-                    spawned,
-                    total: enemyConfig.count
-                };
-            }
-        }
-        
-        return status;
+        return this.isLevelActive ? (Date.now() - this.levelStartTime) / 1000 : 0;
     }
 
     public setLevelCompleteCallback(callback: () => void): void {
         this.levelCompleteCallback = callback;
+    }
+
+    // Control methods
+    public pauseLevel(): void {
+        this.isLevelActive = false;
+    }
+
+    public resumeLevel(): void {
+        this.isLevelActive = true;
+    }
+
+    public stopLevel(): void {
+        this.isLevelActive = false;
+        this.enemyManager.clearAllEnemies();
     }
 } 
