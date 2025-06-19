@@ -190,21 +190,28 @@
                 
                 <button onclick="addEnemy()">Add Enemy</button>
                 
-                <h3>Formation Info</h3>
-                
-                <div class="control-group">
-                    <label>Formation Name:</label>
-                    <input type="text" id="formation-name" value="custom_formation">
-                </div>
-                
-                <button onclick="clearFormation()">Clear All</button>
+                                 <h3>Formation Info</h3>
+                 
+                 <div class="control-group">
+                     <label>Formation Name:</label>
+                     <input type="text" id="formation-name" value="custom_formation">
+                 </div>
+                 
+                 <div style="background: #1a1a1a; padding: 10px; border-radius: 4px; margin: 10px 0; font-size: 12px;">
+                     <strong>🎮 Controls:</strong><br/>
+                     • <strong>Double-click</strong> canvas to add enemy<br/>
+                     • <strong>Drag</strong> to move enemies<br/>
+                     • <strong>Right-click</strong> to delete enemy
+                 </div>
+                 
+                 <button onclick="clearFormation()">Clear All</button>
                 
                 <h3>Current Enemies</h3>
                 <div class="enemy-list" id="enemy-list"></div>
             </div>
             
             <div class="canvas-container">
-                <div id="formation-canvas" onclick="addEnemyAtPosition(event)"></div>
+                <div id="formation-canvas" ondblclick="addEnemyAtPosition(event)"></div>
             </div>
         </div>
         
@@ -234,16 +241,19 @@
             updateJSONOutput();
         }
 
-        function addEnemyAtPosition(event) {
-            const rect = event.target.getBoundingClientRect();
-            const x = Math.round(event.clientX - rect.left);
-            const y = Math.round(event.clientY - rect.top - 50); // Offset for spawn above screen
-            
-            document.getElementById('enemy-x').value = x;
-            document.getElementById('enemy-y').value = y;
-            
-            addEnemy();
-        }
+                 function addEnemyAtPosition(event) {
+             // Only add enemy on double-click, not on child elements
+             if (event.target.id !== 'formation-canvas') return;
+             
+             const rect = event.target.getBoundingClientRect();
+             const x = Math.round(event.clientX - rect.left);
+             const y = Math.round(event.clientY - rect.top - 50); // Offset for spawn above screen
+             
+             document.getElementById('enemy-x').value = x;
+             document.getElementById('enemy-y').value = y;
+             
+             addEnemy();
+         }
 
         function createEnemySprite(enemy) {
             const sprite = document.createElement('div');
@@ -254,19 +264,25 @@
             sprite.title = `${enemy.type} (${enemy.x}, ${enemy.y}) delay: ${enemy.delay}s`;
             sprite.dataset.id = enemy.id;
             
-            // Make draggable
+            // Make draggable and add right-click to delete
             sprite.addEventListener('mousedown', startDrag);
-            sprite.addEventListener('dblclick', () => removeEnemy(enemy.id));
+            sprite.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                removeEnemy(enemy.id);
+            });
             
             document.getElementById('formation-canvas').appendChild(sprite);
         }
 
-        function startDrag(event) {
-            const sprite = event.target;
-            const startX = event.clientX - parseInt(sprite.style.left);
-            const startY = event.clientY - parseInt(sprite.style.top);
-            
-            function drag(event) {
+                 function startDrag(event) {
+             // Prevent dragging on right-click
+             if (event.button === 2) return;
+             
+             const sprite = event.target;
+             const startX = event.clientX - parseInt(sprite.style.left);
+             const startY = event.clientY - parseInt(sprite.style.top);
+             
+             function drag(event) {
                 const newX = event.clientX - startX;
                 const newY = event.clientY - startY;
                 
