@@ -45,7 +45,7 @@ export interface BulletState {
 }
 
 //Enemy types
-export type EnemyType = 'diver' | 'green' | 'inferior' | 'na' | 'soldier' | 'boss';
+export type EnemyType = 'diver' | 'green' | 'inferior' | 'na' | 'soldier' | 'boss' | 'enemy1' | 'enemy2';
 
 export type MovementPattern = 'straight' | 'zigzag' | 'sine' | 'circular' | 'boss';
 

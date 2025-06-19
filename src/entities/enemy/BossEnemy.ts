@@ -1,6 +1,6 @@
 import { Enemy } from './Enemy';
-import { AnimationManager } from '../managers/AnimationManager';
-import { GameConfig } from '../core/Config';
+import { AnimationManager } from '../../managers/AnimationManager';
+import { GameConfig } from '../../core/Config';
 import * as PIXI from 'pixi.js';
 
 export class BossEnemy extends Enemy {
@@ -15,37 +15,23 @@ export class BossEnemy extends Enemy {
     public async setupVisuals(): Promise<void> {
         console.log('Setting up BossEnemy visuals...');
         
-        try {
-            const animationManager = AnimationManager.getInstance();
-            // Using enemy1 animation for boss - larger scale
-            this.sprite = await animationManager.createEnemy1Animation({
-                scale: 1.2,
-                speed: 0.05
-            });
-            
-            if (this.sprite) {
-                this.addChild(this.sprite);
-                console.log('BossEnemy animation created successfully');
-            } else {
-                throw new Error('Animation manager returned null sprite');
-            }
-        } catch (error) {
-            console.warn('Failed to load BossEnemy animation, using fallback:', error);
-            this.createFallbackSprite();
+        const animationManager = AnimationManager.getInstance();
+        this.sprite = await animationManager.createBossAnimation({
+            scale: 1.2,
+            speed: 0.05
+        });
+        
+        if (!this.sprite) {
+            throw new Error('Failed to create Boss animation');
         }
-    }
-
-    private createFallbackSprite(): void {
-        const graphics = new PIXI.Graphics();
-        graphics.beginFill(0xff0000);
-        graphics.drawRect(-60, -60, 120, 120);
-        graphics.endFill();
-        this.sprite = graphics;
+        
         this.addChild(this.sprite);
+        console.log('BossEnemy animation created successfully');
     }
 
     protected updateBossMovement(deltaTime: number, currentTime: number): void {
-        const config = GameConfig.enemies[this.enemyType];
+        // Fix: Explicitly type enemyType as keyof typeof GameConfig.enemies
+        const config = GameConfig.enemies['boss'];
         
         // Phase management
         if (currentTime - this.phaseChangeTime > 10) { // Change phase every 10 seconds
