@@ -34,7 +34,7 @@ export class FormationManager {
     private enemyManager: EnemyManager;
     private formationData: FormationData | null = null;
     
-    // Current state - simple properties
+
     private currentLevel: string = '';
     private currentWaveIndex: number = 0;
     private currentWaveSpawns: SpawnTimer[] = [];
@@ -60,52 +60,26 @@ export class FormationManager {
             this.formationData = await response.json();
             this.isInitialized = true;
             
-            console.log('✅ Simple Formation Manager initialized');
-            console.log('📋 Available formations:', this.getFormationNames());
-            console.log('🎮 Available levels:', this.getLevelNames());
+            console.log('Simple Formation Manager initialized');
+            console.log('Available formations:', this.getFormationNames());
+            console.log('Available levels:', this.getLevelNames());
             
             return true;
         } catch (error) {
             console.error('Failed to load formations:', error);
-            this.createDefaultFormations();
+            this.isInitialized = false;
             return false;
         }
     }
 
-    /**
-     * Create default formations if loading fails
-     */
-    private createDefaultFormations(): void {
-        this.formationData = {
-            formations: {
-                "wave_1": {
-                    name: "Simple Infantry Wave",
-                    enemies: [
-                        { type: "inferior", x: 100, y: -50, delay: 0 },
-                        { type: "inferior", x: 250, y: -50, delay: 0.5 },
-                        { type: "inferior", x: 400, y: -50, delay: 1.0 },
-                        { type: "inferior", x: 550, y: -50, delay: 1.5 },
-                        { type: "inferior", x: 700, y: -50, delay: 2.0 }
-                    ]
-                }
-            },
-            levels: {
-                "level_1": {
-                    waves: ["wave_1"],
-                    waveDelay: 10
-                }
-            }
-        };
-        this.isInitialized = true;
-        console.log('✅ Default formations created');
-    }
+
 
     /**
      * Start a level - simple and direct
      */
     public startLevel(levelId: string): boolean {
         if (!this.isInitialized || !this.formationData || !this.formationData.levels[levelId]) {
-            console.error(`❌ Level ${levelId} not found or not initialized`);
+            console.error(`Level ${levelId} not found or not initialized`);
             return false;
         }
 
@@ -115,7 +89,7 @@ export class FormationManager {
         this.timeBetweenWaves = 0;
         this.isActive = true;
 
-        console.log(`🚀 Starting level: ${levelId}`);
+        console.log(`Starting level: ${levelId}`);
         this.startCurrentWave();
         return true;
     }
@@ -128,7 +102,7 @@ export class FormationManager {
         
         const level = this.formationData.levels[this.currentLevel];
         if (!level || this.currentWaveIndex >= level.waves.length) {
-            console.log('🎉 All waves completed!');
+            console.log('All waves completed!');
             this.isActive = false;
             return;
         }
@@ -137,17 +111,17 @@ export class FormationManager {
         const formation = this.formationData.formations[waveId];
         
         if (!formation) {
-            console.error(`❌ Formation ${waveId} not found`);
+            console.error(`Formation ${waveId} not found`);
             return;
         }
 
-        console.log(`🌊 Starting wave ${this.currentWaveIndex + 1}/${level.waves.length}: ${formation.name}`);
+        console.log(`Starting wave ${this.currentWaveIndex + 1}/${level.waves.length}: ${formation.name}`);
 
-        // Setup spawn timers for this wave
+
         this.currentWaveSpawns = formation.enemies.map(enemy => ({
             enemy: {
                 ...enemy,
-                // Scale positions immediately when setting up
+
                 ...scalePosition(enemy.x, enemy.y)
             },
             timeLeft: enemy.delay,
@@ -163,7 +137,7 @@ export class FormationManager {
     public update(deltaTime: number): void {
         if (!this.isActive) return;
 
-        // Update spawn timers
+
         let allSpawned = true;
         for (const spawn of this.currentWaveSpawns) {
             if (!spawn.spawned) {
@@ -176,7 +150,7 @@ export class FormationManager {
             }
         }
 
-        // If all enemies spawned, wait for wave delay then start next wave
+
         if (allSpawned && this.timeBetweenWaves > 0) {
             this.timeBetweenWaves -= deltaTime;
             if (this.timeBetweenWaves <= 0) {
@@ -192,7 +166,7 @@ export class FormationManager {
     private spawnEnemy(spawn: EnemySpawn): void {
         const position: Vector2 = { x: spawn.x, y: spawn.y };
         this.enemyManager.spawnEnemy(spawn.type, position);
-        console.log(`👾 Spawned ${spawn.type} at (${spawn.x.toFixed(1)}, ${spawn.y.toFixed(1)})`);
+        console.log(`Spawned ${spawn.type} at (${spawn.x.toFixed(1)}, ${spawn.y.toFixed(1)})`);
     }
 
     /**
@@ -201,11 +175,11 @@ export class FormationManager {
     public testFormation(formationId: string): void {
         const formation = this.formationData?.formations[formationId];
         if (!formation) {
-            console.error(`❌ Formation ${formationId} not found`);
+            console.error(`Formation ${formationId} not found`);
             return;
         }
 
-        console.log(`🧪 Testing formation: ${formation.name}`);
+        console.log(`Testing formation: ${formation.name}`);
         formation.enemies.forEach(enemy => {
             const scaledPos = scalePosition(enemy.x, enemy.y);
             setTimeout(() => {
@@ -218,7 +192,7 @@ export class FormationManager {
         });
     }
 
-    // Simple getters
+
     public getFormationNames(): string[] {
         return Object.keys(this.formationData?.formations || {});
     }
@@ -247,6 +221,6 @@ export class FormationManager {
     public stop(): void {
         this.isActive = false;
         this.currentWaveSpawns = [];
-        console.log('⏹️ Formation manager stopped');
+        console.log('Formation manager stopped');
     }
 } 

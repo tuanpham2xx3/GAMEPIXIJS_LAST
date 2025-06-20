@@ -46,59 +46,59 @@ export const GameConfig = {
     enemies: {
         diver: {
             health: 30,
-            speed: 120,
+            speed: 50,
             scoreValue: 100,
             size: { width: 48, height: 48 },
-            movementPattern: 'zigzag'
+            movementPattern: 'straight'
         },
         green: {
             health: 40,
-            speed: 100,
+            speed: 50,
             scoreValue: 150,
             size: { width: 52, height: 52 },
-            movementPattern: 'sine'
+            movementPattern: 'straight'
         },
         inferior: {
             health: 20,
-            speed: 150,
+            speed: 50,
             scoreValue: 80,
             size: { width: 40, height: 40 },
             movementPattern: 'straight'
         },
         na: {
             health: 25,
-            speed: 110,
+            speed: 50,
             scoreValue: 120,
             size: { width: 44, height: 44 },
-            movementPattern: 'circular'
+            movementPattern: 'straight'
         },
         soldier: {
             health: 60,
-            speed: 80,
+            speed: 50,
             scoreValue: 200,
             size: { width: 56, height: 56 },
             movementPattern: 'straight'
         },
         boss: {
             health: 500,
-            speed: 60,
+            speed: 50,
             scoreValue: 1000,
             size: { width: 240, height: 240 },
-            movementPattern: 'boss'
+            movementPattern: 'straight'
         },
         enemy1: {
             health: 35,
-            speed: 130,
+            speed: 50,
             scoreValue: 110,
             size: { width: 46, height: 46 },
-            movementPattern: 'sine'
+            movementPattern: 'straight'
         },
         enemy2: {
             health: 45,
-            speed: 90,
+            speed: 50,
             scoreValue: 160,
             size: { width: 50, height: 50 },
-            movementPattern: 'zigzag'
+            movementPattern: 'straight'
         }
     } as Record<EnemyType, EnemyConfig>,
 

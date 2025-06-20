@@ -155,8 +155,6 @@ export class UIRenderer {
     const playerPos = player.getPosition();
     const playerState = player.getState();
     const bulletStats = bulletManager.getPoolStats();
-
-    const enemyStats = enemyManager?.getPoolStats() || {};
     const activeEnemyCount = enemyManager?.getActiveEnemyCount() || 0;
     const currentLevel = levelManager?.getCurrentLevel() || 0;
     const levelProgress = levelManager?.getLevelElapsedTime() || 0;

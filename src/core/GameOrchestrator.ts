@@ -184,31 +184,44 @@ export class GameOrchestrator {
    * Process individual collision result
    */
   private async processCollision(result: any): Promise<void> {
-    const { entityA, entityB, damage } = result;
+    const { entityA, entityB, damageToA, damageToB, damage } = result;
 
+    console.log('Processing collision:', {
+      categoryA: entityA.getCategory(),
+      categoryB: entityB.getCategory(),
+      damageToA,
+      damageToB,
+      damage: damage || 'undefined'
+    });
 
-    if (entityA.getCategory() === EntityCategory.PLAYER) {
-      const isDestroyed = await (entityA as any).takeDamage(damage);
+    // Use damageToA or fallback to damage
+    if (entityA.getCategory() === EntityCategory.PLAYER && (damageToA || damage)) {
+      const playerDamage = damageToA || damage;
+      console.log(`Player taking ${playerDamage} damage`);
+      const isDestroyed = await (entityA as any).takeDamage(playerDamage);
       if (isDestroyed) {
         console.log('Player destroyed!');
         this.gameOver();
       }
     }
 
-
+    // Use damageToB or fallback to damage
     if (entityB.getCategory() === EntityCategory.ENEMY || entityB.getCategory() === EntityCategory.BOSS) {
-      const isDestroyed = await (entityB as any).takeDamage(damage);
+      const enemyDamage = damageToB || damage || 25; // Default damage if undefined
+      console.log(`Enemy taking ${enemyDamage} damage`);
+      const isDestroyed = await (entityB as any).takeDamage(enemyDamage);
       if (isDestroyed) {
         this.score += (entityB as any).getScoreValue ? (entityB as any).getScoreValue() : 100;
         console.log(`Enemy destroyed! Score: ${this.score}`);
       }
     }
 
-
-    entityA.deactivate();
-    if (entityB.getCategory() !== EntityCategory.PLAYER) {
-      entityB.deactivate();
+    // Deactivate bullet
+    if (entityA.getCategory() === EntityCategory.PLAYER_BULLET) {
+      entityA.deactivate();
     }
+    
+    // Don't deactivate enemy here - let takeDamage handle it with explosion
   }
 
   /**

@@ -4,8 +4,6 @@ import { GameConfig } from '../../core/Config';
 import * as PIXI from 'pixi.js';
 
 export class BossEnemy extends Enemy {
-    private phase: number = 1;
-    private phaseChangeTime: number = 0;
     private shootTimer: number = 0;
 
     constructor() {
@@ -29,43 +27,7 @@ export class BossEnemy extends Enemy {
         console.log('BossEnemy animation created successfully');
     }
 
-    protected updateBossMovement(deltaTime: number, currentTime: number): void {
-        // Fix: Explicitly type enemyType as keyof typeof GameConfig.enemies
-        const config = GameConfig.enemies['boss'];
-        
-        // Phase management
-        if (currentTime - this.phaseChangeTime > 10) { // Change phase every 10 seconds
-            this.phase = this.phase === 1 ? 2 : 1;
-            this.phaseChangeTime = currentTime;
-        }
 
-        // Movement patterns based on phase
-        if (this.phase === 1) {
-            // Phase 1: Horizontal movement at top of screen
-            this.velocity.y = 0;
-            this.velocity.x = Math.sin(currentTime * 2) * 100;
-            
-            // Keep boss at top quarter of screen
-            if (this.y > GameConfig.screen.height * 0.25) {
-                this.y = GameConfig.screen.height * 0.25;
-            }
-        } else {
-            // Phase 2: Circular movement
-            const centerX = GameConfig.screen.width / 2;
-            const centerY = GameConfig.screen.height * 0.3;
-            const radius = 100;
-            
-            this.x = centerX + Math.cos(currentTime * 1.5) * radius;
-            this.y = centerY + Math.sin(currentTime * 1.5) * 40;
-            this.velocity.x = 0;
-            this.velocity.y = 0;
-        }
-
-        // Keep boss within screen bounds
-        if (this.x < 60) this.x = 60;
-        if (this.x > GameConfig.screen.width - 60) this.x = GameConfig.screen.width - 60;
-        if (this.y < 60) this.y = 60;
-    }
 
     public update(deltaTime: number): void {
         super.update(deltaTime);
@@ -87,7 +49,5 @@ export class BossEnemy extends Enemy {
         if (this.y > GameConfig.screen.height + 60) this.y = GameConfig.screen.height + 60;
     }
 
-    public getPhase(): number {
-        return this.phase;
-    }
+
 } 

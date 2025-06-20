@@ -3,11 +3,28 @@
     "wave_1": {
       "name": "Simple Infantry Wave",
       "enemies": [
-        { "type": "inferior", "x": 100, "y": -50, "delay": 0 },
-        { "type": "inferior", "x": 250, "y": -50, "delay": 0.5 },
-        { "type": "inferior", "x": 400, "y": -50, "delay": 1.0 },
-        { "type": "inferior", "x": 550, "y": -50, "delay": 1.5 },
-        { "type": "inferior", "x": 700, "y": -50, "delay": 2.0 }
+        { "type": "enemy1", "x": 211, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 286, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 361, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 436, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 511, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 586, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 661, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 136, "y": -212, "delay": 0 },
+        { "type": "enemy2", "x": 247, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 322, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 397, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 472, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 547, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 622, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 172, "y": -150, "delay": 0 },
+        { "type": "enemy2", "x": 174, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 249, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 324, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 399, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 474, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 549, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 624, "y": -268, "delay": 0 }
       ]
     },
     "wave_2": {

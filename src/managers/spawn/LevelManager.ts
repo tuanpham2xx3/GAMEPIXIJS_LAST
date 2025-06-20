@@ -21,10 +21,10 @@ export class LevelManager {
         this.isInitialized = true;
         
         if (!loaded) {
-            console.warn('⚠️ Formation data failed to load! Using default formations.');
+            console.warn('Formation data failed to load! Using default formations.');
         }
         
-        console.log('✅ Simple Level Manager initialized');
+        console.log('Simple Level Manager initialized');
     }
 
     /**
@@ -32,21 +32,21 @@ export class LevelManager {
      */
     public startLevel(levelNumber: number): boolean {
         if (!this.isInitialized) {
-            console.error('❌ Manager not initialized! Call initialize() first.');
+            console.error('Manager not initialized! Call initialize() first.');
             return false;
         }
         
         const levelId = `level_${levelNumber}`;
         
         if (!this.formationManager.getLevelNames().includes(levelId)) {
-            console.error(`❌ Level ${levelNumber} not found`);
+            console.error(`Level ${levelNumber} not found`);
             return false;
         }
 
         this.currentLevel = levelNumber;
         this.isLevelActive = true;
         
-        console.log(`🎮 Starting Level ${levelNumber}`);
+        console.log(`Starting Level ${levelNumber}`);
         return this.formationManager.startLevel(levelId);
     }
 
@@ -56,10 +56,10 @@ export class LevelManager {
     public update(deltaTime: number): void {
         if (!this.isLevelActive) return;
 
-        // Update formation manager
+
         this.formationManager.update(deltaTime);
 
-        // Check if level is complete
+
         if (this.formationManager.isLevelComplete()) {
             this.completeLevel();
         }
@@ -70,18 +70,18 @@ export class LevelManager {
      */
     private completeLevel(): void {
         this.isLevelActive = false;
-        console.log(`🎉 Level ${this.currentLevel} completed!`);
+        console.log(`Level ${this.currentLevel} completed!`);
     }
 
     /**
      * Test formation for development
      */
     public testFormation(formationId: string): void {
-        console.log(`🧪 Testing formation: ${formationId}`);
+        console.log(`Testing formation: ${formationId}`);
         this.formationManager.testFormation(formationId);
     }
 
-    // Simple getters - no callbacks needed
+
     public getCurrentLevel(): number {
         return this.currentLevel;
     }
@@ -113,12 +113,12 @@ export class LevelManager {
     public stop(): void {
         this.isLevelActive = false;
         this.formationManager.stop();
-        console.log('⏹️ Level manager stopped');
+        console.log('Level manager stopped');
     }
 
-    // Additional methods for compatibility with existing code
+
     public getLevelElapsedTime(): number {
-        // Simple implementation - could track time if needed
+
         return 0;
     }
 
@@ -129,9 +129,9 @@ export class LevelManager {
     public nextLevel(): void {
         const nextLevelNumber = this.currentLevel + 1;
         if (this.startLevel(nextLevelNumber)) {
-            console.log(`🚀 Advanced to level ${nextLevelNumber}`);
+            console.log(`Advanced to level ${nextLevelNumber}`);
         } else {
-            console.log('🎉 Game completed! No more levels available.');
+            console.log('Game completed! No more levels available.');
         }
     }
 
@@ -140,7 +140,7 @@ export class LevelManager {
     }
 
     public isUsingFormations(): boolean {
-        return true; // Simple system always uses formations
+        return true;
     }
 
     public restartCurrentLevel(): void {

@@ -187,46 +187,76 @@ export class AnimationManager {
      * Tạo Hit Effect Animation (4x4 sprite sheet)
      */
     public async createExplosionAnimation(config: AnimationConfig & { entityWidth?: number; entityHeight?: number } = {}): Promise<AnimatedSprite> {
-        const hitTexture = await this.assetManager.loadTexture('assets/textures/animations/anim_hit.jpg');
-        
-        // Tạo frames từ sprite sheet 4x4
-        const frames: Texture[] = [];
-        const frameWidth = hitTexture.width / 4;  // 4 columns
-        const frameHeight = hitTexture.height / 4; // 4 rows
+        try {
+            const hitTexture = await this.assetManager.loadTexture('assets/textures/animations/anim_hit.jpg');
+            
+            // Tạo frames từ sprite sheet 4x4 bằng cách clone texture và set frame
+            const frames: Texture[] = [];
+            const frameWidth = hitTexture.width / 4;  // 4 columns
+            const frameHeight = hitTexture.height / 4; // 4 rows
 
-        // Đọc frames theo thứ tự từ trái qua phải, trên xuống dưới
-        for (let row = 0; row < 4; row++) {
-            for (let col = 0; col < 4; col++) {
-                const frame = new Texture(
-                    hitTexture.baseTexture,
-                    new Rectangle(
+            // Đọc frames theo thứ tự từ trái qua phải, trên xuống dưới
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
+                    // Use proper PIXI.js texture slicing
+                    const frameRect = new Rectangle(
                         col * frameWidth,    // x position
                         row * frameHeight,   // y position
                         frameWidth,          // width
                         frameHeight          // height
-                    )
-                );
-                frames.push(frame);
+                    );
+                    
+                    const frame = new Texture(hitTexture.baseTexture, frameRect);
+                    frames.push(frame);
+                }
             }
+            
+            // Calculate scale based on entity size if provided
+            let explosionScale = config.scale || 1.0;
+            if (config.entityWidth && config.entityHeight) {
+                // Scale explosion to be slightly larger than the entity
+                const entityMaxSize = Math.max(config.entityWidth, config.entityHeight);
+                const explosionBaseSize = Math.max(frameWidth, frameHeight);
+                explosionScale = (entityMaxSize * 1.5) / explosionBaseSize; // Reasonable scale
+            }
+            
+            console.log(`Creating explosion with ${frames.length} frames, scale: ${explosionScale}`);
+            
+            return this.createAnimatedSprite(frames, {
+                speed: 0.6,          // Nhanh hơn để hiệu ứng hit mượt
+                loop: false,         // Chỉ chạy 1 lần
+                autoPlay: true,
+                scale: explosionScale,
+                anchor: { x: 0.5, y: 0.5 },
+                ...config
+            });
+        } catch (error) {
+            console.error('Failed to load explosion texture, creating fallback:', error);
+            
+            // Fallback: tạo simple explosion texture
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d')!;
+            
+            // Draw simple explosion circle
+            ctx.fillStyle = '#FF6600';
+            ctx.beginPath();
+            ctx.arc(32, 32, 30, 0, Math.PI * 2);
+            ctx.fill();
+            
+            const fallbackTexture = Texture.from(canvas);
+            const frames = [fallbackTexture];
+            
+            return this.createAnimatedSprite(frames, {
+                speed: 0.1,
+                loop: false,
+                autoPlay: true,
+                scale: config.scale || 1.0,
+                anchor: { x: 0.5, y: 0.5 },
+                ...config
+            });
         }
-        
-        // Calculate scale based on entity size if provided
-        let explosionScale = config.scale || 1.0;
-        if (config.entityWidth && config.entityHeight) {
-            // Scale explosion to be slightly larger than the entity
-            const entityMaxSize = Math.max(config.entityWidth, config.entityHeight);
-            const explosionBaseSize = Math.max(frameWidth, frameHeight);
-            explosionScale = (entityMaxSize * 2.5) / explosionBaseSize; // 1.2x for visual impact
-        }
-        
-        return this.createAnimatedSprite(frames, {
-            speed: 0.4,          // Nhanh hơn để hiệu ứng hit mượt
-            loop: false,         // Chỉ chạy 1 lần
-            autoPlay: true,
-            scale: explosionScale,
-            anchor: { x: 0.5, y: 0.5 },
-            ...config
-        });
     }
     /**
      * Tạo custom animation từ enemy parts (cho boss hoặc special enemies)
