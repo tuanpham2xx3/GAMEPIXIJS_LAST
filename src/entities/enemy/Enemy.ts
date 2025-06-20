@@ -129,6 +129,7 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
             const explosionAnimation = await this.animationManager.createExplosionAnimation({
                 entityWidth: this.width,
                 entityHeight: this.height,
+                scale: 1.5,
                 anchor: { x: 0.5, y: 0.5 }
             });
             
