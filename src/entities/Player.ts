@@ -1,10 +1,10 @@
 import * as PIXI from 'pixi.js';
-import { Vector2, PlayerState, Entity } from '../types/EntityTypes';
+import { Vector2, PlayerState, Entity, CollidableEntity, EntityCategory } from '../types/EntityTypes';
 import { GameConfig, getBoundaries } from '../core/Config';
 import { InputManager } from '../managers/InputManager';
 import { BulletManager } from '../managers/BulletManager';
 
-export class Player extends PIXI.Sprite implements Entity {
+export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   public velocity: Vector2;
   public isActive: boolean;
   private state: PlayerState;
@@ -47,11 +47,7 @@ export class Player extends PIXI.Sprite implements Entity {
     this.engineTrail.scale.set(0.9); // Size vừa phải
     this.engineTrail.alpha = 0.9;
     this.engineTrail.zIndex = -1; // Khói ở phía sau
-    
-    // Add vào parent nếu có
-    if (this.parent) {
-      this.parent.addChild(this.engineTrail);
-    }
+    this.engineTrail.visible = true; // Đảm bảo visible
   }
 
   private setupPlayer(): void {
@@ -76,6 +72,11 @@ export class Player extends PIXI.Sprite implements Entity {
 
   private updateEngineTrail(): void {
     if (!this.engineTrail) return;
+
+    // Đảm bảo engineTrail được add vào parent nếu chưa có
+    if (!this.engineTrail.parent && this.parent) {
+      this.parent.addChild(this.engineTrail);
+    }
 
     // Position khói ở đít tàu
     this.engineTrail.x = this.x;
@@ -166,31 +167,40 @@ export class Player extends PIXI.Sprite implements Entity {
 
   private applyBoundaries(): void {
     const boundaries = getBoundaries();
-    
-    // Keep player within screen boundaries
-    if (this.x < boundaries.left) {
-      this.x = boundaries.left;
+    const screenWidth = GameConfig.screen.width;
+    const screenHeight = GameConfig.screen.height;
+    const playerHalfWidth = this.width / 2;
+    const playerHalfHeight = this.height / 2;
+
+    if (this.x < playerHalfWidth) {
+      this.x = playerHalfWidth;
       this.velocity.x = 0;
-    } else if (this.x > boundaries.right) {
-      this.x = boundaries.right;
+    } else if (this.x > screenWidth - playerHalfWidth) {
+      this.x = screenWidth - playerHalfWidth;
       this.velocity.x = 0;
     }
 
-    if (this.y < boundaries.top) {
-      this.y = boundaries.top;
+    if (this.y < playerHalfHeight) {
+      this.y = playerHalfHeight;
       this.velocity.y = 0;
-    } else if (this.y > boundaries.bottom) {
-      this.y = boundaries.bottom;
+    } else if (this.y > screenHeight - playerHalfHeight) {
+      this.y = screenHeight - playerHalfHeight;
       this.velocity.y = 0;
     }
   }
 
   // Public methods
-  public takeDamage(damage: number): void {
+  public takeDamage(damage: number): boolean {
     this.state.health = Math.max(0, this.state.health - damage);
     if (this.state.health <= 0) {
       this.isActive = false;
+      return true; // Player destroyed
     }
+    return false; // Player still alive
+  }
+
+  public getCategory(): EntityCategory {
+    return EntityCategory.PLAYER;
   }
 
   public heal(amount: number): void {
@@ -232,5 +242,16 @@ export class Player extends PIXI.Sprite implements Entity {
 
   public isShooting(): boolean {
     return this.state.isShooting;
+  }
+
+  // Method để đảm bảo engineTrail được add vào scene
+  public addToParent(parent: PIXI.Container): void {
+    // Add engineTrail vào parent trước (để nằm dưới)
+    if (this.engineTrail && !this.engineTrail.parent) {
+      parent.addChild(this.engineTrail);
+    }
+    
+    // Add player vào parent sau (để nằm trên)
+    parent.addChild(this);
   }
 } 

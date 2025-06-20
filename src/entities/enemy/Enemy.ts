@@ -1,15 +1,13 @@
 import * as PIXI from 'pixi.js';
-import { Vector2, EnemyState, Entity, EnemyType, MovementPattern, EntityCategory, CollidableEntity } from '../types/EntityTypes';
-import { GameConfig } from '../core/Config';
-import { AnimationManager } from '../managers/AnimationManager';
+import { Vector2, EnemyState, Entity, EnemyType, MovementPattern, EntityCategory, CollidableEntity } from '../../types/EntityTypes';
+import { GameConfig } from '../../core/Config';
+import { AnimationManager } from '../../managers/AnimationManager';
 
 export abstract class Enemy extends PIXI.Container implements Entity, CollidableEntity {
     public velocity: Vector2;
     public isActive: boolean;
     protected state: EnemyState;
     protected enemyType: EnemyType;
-    protected movementPhase: number;
-    protected startTime: number;
 
     // Visual components
     protected sprite: PIXI.Sprite | PIXI.Container | null = null;
@@ -21,16 +19,13 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
         this.enemyType = enemyType;
         this.velocity = { x: 0, y: 0 };
         this.isActive = false;
-        this.movementPhase = 0;
-        this.startTime = 0;
         this.animationManager = AnimationManager.getInstance();
 
         const config = GameConfig.enemies[enemyType];
         this.state = {
             isActive: false,
             health: config.health,
-            maxHealth: config.health,
-            movementPhase: 0
+            maxHealth: config.health
         };
 
         this.setupEnemy();
@@ -47,18 +42,14 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
         this.isActive = true;
         this.state.isActive = true;
         this.visible = true;
-        this.movementPhase = 0;
-        this.startTime = Date.now();
         
         const config = GameConfig.enemies[this.enemyType];
         this.state.health = config.health;
         this.state.maxHealth = config.health;
         
-        // Reset velocity
         this.velocity.x = 0;
         this.velocity.y = config.speed;
         
-        // Debug logging
         console.log(`Initializing ${this.enemyType} enemy at position (${startPosition.x}, ${startPosition.y})`);
         console.log(`Enemy visible: ${this.visible}, active: ${this.isActive}`);
     }
@@ -73,43 +64,11 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
 
     protected updateMovement(deltaTime: number): void {
         const config = GameConfig.enemies[this.enemyType];
-        const currentTime = (Date.now() - this.startTime) / 1000;
-        
-        switch (config.movementPattern) {
-            case 'straight':
-                this.velocity.y = config.speed;
-                this.velocity.x = 0;
-                break;
-                
-            case 'zigzag':
-                this.velocity.y = config.speed;
-                this.velocity.x = Math.sin(currentTime * 3) * 100;
-                break;
-                
-            case 'sine':
-                this.velocity.y = config.speed;
-                this.velocity.x = Math.sin(currentTime * 2) * 80;
-                break;
-                
-            case 'circular':
-                const radius = 60;
-                const centerX = this.x;
-                this.velocity.y = config.speed * 0.7;
-                this.velocity.x = Math.cos(currentTime * 4) * 50;
-                break;
-                
-            case 'boss':
-                this.updateBossMovement(deltaTime, currentTime);
-                break;
-        }
+        this.velocity.y = config.speed;
+        this.velocity.x = 0;
     }
 
-    protected updateBossMovement(deltaTime: number, currentTime: number): void {
-        // Override in boss class
-        const config = GameConfig.enemies[this.enemyType];
-        this.velocity.y = config.speed * 0.3;
-        this.velocity.x = Math.sin(currentTime * 1.5) * 30;
-    }
+
 
     protected updatePosition(deltaTime: number): void {
         this.x += this.velocity.x * deltaTime;
@@ -132,33 +91,17 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
         if (this.state.health <= 0) {
             console.log(`Enemy ${this.enemyType} destroyed!`);
             
-            // Create explosion animation before deactivating
-            try {
-                const explosionAnimation = await this.animationManager.createExplosionAnimation({
-                    entityWidth: this.width,
-                    entityHeight: this.height,
-                    anchor: { x: 0.5, y: 0.5 }
-                });
-                
-                explosionAnimation.position.set(this.x, this.y);
-                
-                // Add explosion to parent container (game scene)
-                if (this.parent) {
-                    this.parent.addChild(explosionAnimation);
-                }
-                
-                // Remove explosion after animation completes
-                explosionAnimation.onComplete = () => {
-                    if (explosionAnimation.parent) {
-                        explosionAnimation.parent.removeChild(explosionAnimation);
-                    }
-                    explosionAnimation.destroy();
-                };
-            } catch (error) {
-                console.error('Failed to create explosion animation:', error);
-            }
+            // Store position and parent before deactivating
+            const explosionX = this.x;
+            const explosionY = this.y;
+            const explosionParent = this.parent;
             
+            // Deactivate enemy immediately (hide it)
             this.deactivate();
+            
+            // Create texture-based explosion asynchronously
+            this.createTextureExplosion(explosionX, explosionY, explosionParent);
+            
             return true; // Enemy destroyed
         }
         console.log(`Enemy ${this.enemyType} still alive with ${this.state.health} health`);
@@ -171,6 +114,79 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
         this.visible = false;
         this.velocity.x = 0;
         this.velocity.y = 0;
+    }
+
+    private async createTextureExplosion(x: number, y: number, parent: PIXI.Container | null): Promise<void> {
+        if (!parent) {
+            console.warn('No parent container for explosion');
+            return;
+        }
+
+        console.log(`Creating texture explosion at (${x}, ${y})`);
+        
+        try {
+            // Create explosion animation using AnimationManager
+            const explosionAnimation = await this.animationManager.createExplosionAnimation({
+                entityWidth: this.width,
+                entityHeight: this.height,
+                anchor: { x: 0.5, y: 0.5 }
+            });
+            
+            // Position and add to parent
+            explosionAnimation.position.set(x, y);
+            parent.addChild(explosionAnimation);
+            console.log('Texture explosion added to scene');
+            
+            // Set up completion handler for cleanup
+            explosionAnimation.onComplete = () => {
+                console.log('Texture explosion animation completed');
+                if (explosionAnimation.parent) {
+                    explosionAnimation.parent.removeChild(explosionAnimation);
+                }
+                explosionAnimation.destroy();
+                console.log('Texture explosion cleaned up');
+            };
+            
+            // Ensure animation starts playing
+            if (!explosionAnimation.playing) {
+                explosionAnimation.play();
+                console.log('Started texture explosion animation manually');
+            }
+            
+        } catch (error) {
+            console.error('Failed to create texture explosion, using fallback:', error);
+            
+            // Fallback to graphics explosion
+            const explosion = new PIXI.Graphics();
+            explosion.beginFill(0xFFAA00, 0.8); 
+            explosion.drawCircle(0, 0, Math.max(this.width, this.height) / 2);
+            explosion.endFill();
+            explosion.position.set(x, y);
+            
+            parent.addChild(explosion);
+            console.log('Fallback explosion added to scene');
+            
+            // Simple animation
+            let scale = 0.5;
+            let alpha = 0.8;
+            const animateExplosion = () => {
+                scale += 1.5;
+                alpha -= 0.04;
+                explosion.scale.set(scale);
+                explosion.alpha = alpha;
+                
+                if (alpha <= 0 || scale >= 3.0) {
+                    if (explosion.parent) {
+                        explosion.parent.removeChild(explosion);
+                    }
+                    explosion.destroy();
+                    console.log('Fallback explosion completed');
+                } else {
+                    requestAnimationFrame(animateExplosion);
+                }
+            };
+            requestAnimationFrame(animateExplosion);
+        }
     }
 
     public destroy(): void {

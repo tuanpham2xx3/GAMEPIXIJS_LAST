@@ -1,0 +1,118 @@
+{
+  "formations": {
+    "wave_1": {
+      "name": "Simple Infantry Wave",
+      "enemies": [
+        { "type": "enemy1", "x": 211, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 286, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 361, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 436, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 511, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 586, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 661, "y": -212, "delay": 0 },
+        { "type": "enemy1", "x": 136, "y": -212, "delay": 0 },
+        { "type": "enemy2", "x": 247, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 322, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 397, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 472, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 547, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 622, "y": -152, "delay": 0 },
+        { "type": "enemy2", "x": 172, "y": -150, "delay": 0 },
+        { "type": "enemy2", "x": 174, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 249, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 324, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 399, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 474, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 549, "y": -268, "delay": 0 },
+        { "type": "enemy2", "x": 624, "y": -268, "delay": 0 }
+      ]
+    },
+    "wave_2": {
+      "name": "V Formation",
+      "enemies": [
+        { "type": "diver", "x": 400, "y": -50, "delay": 0 },
+        { "type": "green", "x": 350, "y": -100, "delay": 0.5 },
+        { "type": "green", "x": 450, "y": -100, "delay": 0.5 },
+        { "type": "inferior", "x": 300, "y": -150, "delay": 1.0 },
+        { "type": "inferior", "x": 500, "y": -150, "delay": 1.0 }
+      ]
+    },
+    "wave_3": {
+      "name": "Diamond Formation",
+      "enemies": [
+        { "type": "soldier", "x": 400, "y": -50, "delay": 0 },
+        { "type": "green", "x": 350, "y": -100, "delay": 0.3 },
+        { "type": "green", "x": 450, "y": -100, "delay": 0.3 },
+        { "type": "diver", "x": 400, "y": -150, "delay": 0.6 },
+        { "type": "inferior", "x": 300, "y": -120, "delay": 0.9 },
+        { "type": "inferior", "x": 500, "y": -120, "delay": 0.9 }
+      ]
+    },
+    "wave_4": {
+      "name": "Left Side Attack",
+      "enemies": [
+        { "type": "green", "x": 100, "y": -50, "delay": 0 },
+        { "type": "diver", "x": 150, "y": -100, "delay": 0.3 },
+        { "type": "inferior", "x": 200, "y": -150, "delay": 0.6 },
+        { "type": "soldier", "x": 250, "y": -200, "delay": 0.9 },
+        { "type": "na", "x": 300, "y": -250, "delay": 1.2 }
+      ]
+    },
+    "wave_5": {
+      "name": "Right Side Attack", 
+      "enemies": [
+        { "type": "green", "x": 700, "y": -50, "delay": 0 },
+        { "type": "diver", "x": 650, "y": -100, "delay": 0.3 },
+        { "type": "inferior", "x": 600, "y": -150, "delay": 0.6 },
+        { "type": "soldier", "x": 550, "y": -200, "delay": 0.9 },
+        { "type": "na", "x": 500, "y": -250, "delay": 1.2 }
+      ]
+    },
+    "wave_6": {
+      "name": "Cross Formation",
+      "enemies": [
+        { "type": "soldier", "x": 400, "y": -50, "delay": 0 },
+        { "type": "green", "x": 300, "y": -100, "delay": 0.5 },
+        { "type": "green", "x": 500, "y": -100, "delay": 0.5 },
+        { "type": "diver", "x": 200, "y": -150, "delay": 1.0 },
+        { "type": "diver", "x": 600, "y": -150, "delay": 1.0 },
+        { "type": "inferior", "x": 100, "y": -200, "delay": 1.5 },
+        { "type": "inferior", "x": 700, "y": -200, "delay": 1.5 }
+      ]
+    },
+    "boss_wave": {
+      "name": "Boss with Guards",
+      "enemies": [
+        { "type": "boss", "x": 400, "y": -200, "delay": 2.0 },
+        { "type": "soldier", "x": 200, "y": -50, "delay": 0 },
+        { "type": "soldier", "x": 600, "y": -50, "delay": 0 },
+        { "type": "green", "x": 150, "y": -100, "delay": 1.0 },
+        { "type": "green", "x": 650, "y": -100, "delay": 1.0 },
+        { "type": "na", "x": 100, "y": -150, "delay": 1.5 },
+        { "type": "na", "x": 700, "y": -150, "delay": 1.5 }
+      ]
+    },
+    "test_formation": {
+      "name": "Test Formation for Scaling",
+      "enemies": [
+        { "type": "inferior", "x": 50, "y": -50, "delay": 0 },
+        { "type": "inferior", "x": 400, "y": -50, "delay": 0.5 },
+        { "type": "inferior", "x": 750, "y": -50, "delay": 1.0 }
+      ]
+    }
+  },
+  "levels": {
+    "level_1": {
+      "waves": ["wave_1", "wave_2"],
+      "waveDelay": 10
+    },
+    "level_2": {
+      "waves": ["wave_2", "wave_3", "wave_4", "wave_5", "wave_6"],
+      "waveDelay": 15
+    },
+    "level_3": {
+      "waves": ["wave_3", "wave_4", "wave_5", "wave_6", "boss_wave"],
+      "waveDelay": 20
+    }
+  }
+} 
