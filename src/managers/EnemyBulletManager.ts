@@ -22,7 +22,6 @@ export class EnemyBulletManager {
 
     private initializeBulletPool(): void {
         const maxEnemyBullets = GameConfig.maxEnemyBullets || 100;
-        console.log(`🔫 Initializing enemy bullet pool with ${maxEnemyBullets} bullets`);
         
         for (let i = 0; i < maxEnemyBullets; i++) {
             const bullet = new EnemyBullet(this.bulletTexture, 20);
@@ -31,8 +30,6 @@ export class EnemyBulletManager {
             this.inactiveBullets.push(bullet);
             this.container.addChild(bullet);
         }
-        
-        console.log(`✅ Enemy bullet pool initialized: ${this.bullets.length} bullets created`);
     }
 
     public shootBullet(
@@ -43,18 +40,14 @@ export class EnemyBulletManager {
     ): EnemyBullet | null {
         const bullet = this.inactiveBullets.pop();
         if (!bullet) {
-            console.warn('⚠️ No available enemy bullets in pool');
+            console.warn('No available enemy bullets in pool');
             return null;
         }
 
-        // Set damage
         bullet.setDamage(damage);
-
-        // Initialize bullet với target position
         bullet.initialize(startPosition, direction, targetPosition);
         this.activeBullets.push(bullet);
 
-        console.log(`🎯 Enemy bullet shot from (${startPosition.x.toFixed(1)}, ${startPosition.y.toFixed(1)}) with ${damage} damage`);
         return bullet;
     }
 
@@ -88,7 +81,6 @@ export class EnemyBulletManager {
             this.inactiveBullets.push(bullet);
         }
         this.activeBullets = [];
-        console.log('🧹 All enemy bullets destroyed');
     }
 
     public destroy(): void {
@@ -99,7 +91,6 @@ export class EnemyBulletManager {
         this.bullets = [];
         this.activeBullets = [];
         this.inactiveBullets = [];
-        console.log('💥 EnemyBulletManager destroyed');
     }
 
     // Debug methods

@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { Enemy } from './Enemy';
-import { AnimationManager } from '../../managers/AnimationManager';
+import { AnimationManager } from '../../managers/animations/AnimationManager';
 
 export class DiverEnemy extends Enemy {
     constructor() {

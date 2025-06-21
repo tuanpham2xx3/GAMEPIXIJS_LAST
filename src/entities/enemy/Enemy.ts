@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Vector2, EnemyState, Entity, EnemyType, MovementPattern, EntityCategory, CollidableEntity } from '../../types/EntityTypes';
 import { GameConfig } from '../../core/Config';
-import { AnimationManager } from '../../managers/AnimationManager';
+import { AnimationManager } from '../../managers/animations/AnimationManager';
 import { EnemyBulletManager } from '../../managers/EnemyBulletManager';
 
 export abstract class Enemy extends PIXI.Container implements Entity, CollidableEntity {

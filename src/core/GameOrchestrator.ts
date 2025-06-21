@@ -6,7 +6,7 @@ import { EnemyBulletManager } from '../managers/EnemyBulletManager';
 import { EnemyManager } from '../managers/spawn/EnemyManager';
 import { LevelManager } from '../managers/spawn/LevelManager';
 import { CollisionManager } from '../managers/CollisionManager';
-import { AnimationManager } from '../managers/AnimationManager';
+import { AnimationManager } from '../managers/animations/AnimationManager';
 import { EntityCategory, CollidableEntity } from '../types/EntityTypes';
 import { BackgroundRenderer } from '../rendering/BackgroundRenderer';
 import { UIRenderer, GameStats } from '../rendering/UIRenderer';
