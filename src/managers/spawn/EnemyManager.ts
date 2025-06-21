@@ -12,10 +12,12 @@ import {
 } from '../../entities/enemy';
 import { Vector2, EnemyType } from '../../types/EntityTypes';
 import { GameConfig, scalePosition } from '../../core/Config';
+import { EnemyBulletManager } from '../EnemyBulletManager';
 
 export class EnemyManager {
     private container: PIXI.Container;
     private activeEnemies: Enemy[];
+    private enemyBulletManager: EnemyBulletManager | null = null;
 
     constructor(container: PIXI.Container) {
         this.container = container;
@@ -54,6 +56,11 @@ export class EnemyManager {
         const enemy = this.createEnemyByType(type);
         await enemy.setupVisuals();
         enemy.initialize(position);
+        
+        // Setup enemy bullet manager nếu có
+        if (this.enemyBulletManager) {
+            enemy.setEnemyBulletManager(this.enemyBulletManager);
+        }
         
         this.container.addChild(enemy);
         this.activeEnemies.push(enemy);
@@ -98,6 +105,23 @@ export class EnemyManager {
             enemy.destroy();
         }
         this.activeEnemies = [];
+    }
+
+    public setEnemyBulletManager(bulletManager: EnemyBulletManager): void {
+        this.enemyBulletManager = bulletManager;
+        console.log('🔫 EnemyManager: Enemy bullet manager set');
+        
+        // Setup cho tất cả enemies hiện tại
+        for (const enemy of this.activeEnemies) {
+            enemy.setEnemyBulletManager(bulletManager);
+        }
+    }
+
+    public setPlayerPosition(playerPosition: Vector2): void {
+        // Update player position cho tất cả enemies
+        for (const enemy of this.activeEnemies) {
+            enemy.setPlayerPosition(playerPosition);
+        }
     }
 
     public destroy(): void {

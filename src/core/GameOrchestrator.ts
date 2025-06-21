@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import { Player } from '../entities/Player';
 import { InputManager } from '../managers/InputManager';
 import { BulletManager } from '../managers/BulletManager';
+import { EnemyBulletManager } from '../managers/EnemyBulletManager';
 import { EnemyManager } from '../managers/spawn/EnemyManager';
 import { LevelManager } from '../managers/spawn/LevelManager';
 import { CollisionManager } from '../managers/CollisionManager';
@@ -23,6 +24,7 @@ export class GameOrchestrator {
   private player: Player | null = null;
   private inputManager: InputManager | null = null;
   private bulletManager: BulletManager | null = null;
+  private enemyBulletManager: EnemyBulletManager | null = null;
   private enemyManager: EnemyManager | null = null;
   private levelManager: LevelManager | null = null;
   private collisionManager: CollisionManager | null = null;
@@ -57,6 +59,7 @@ export class GameOrchestrator {
 
       this.inputManager = new InputManager(this.app.view as HTMLCanvasElement);
       this.bulletManager = new BulletManager(this.gameContainer, assets.bulletTexture);
+      this.enemyBulletManager = new EnemyBulletManager(this.gameContainer, assets.enemyBulletTexture);
       
 
       const animationManager = AnimationManager.getInstance();
@@ -77,6 +80,12 @@ export class GameOrchestrator {
 
       this.player = new Player(assets.playerTexture, this.inputManager, this.bulletManager, assets.smokeTexture);
       this.player.addToParent(this.gameContainer);
+
+      // Setup enemies với enemy bullet manager
+      if (this.enemyManager && this.enemyBulletManager) {
+        this.enemyManager.setEnemyBulletManager(this.enemyBulletManager);
+        console.log('🔫 Enemy bullet manager setup complete');
+      }
 
       console.log('Game systems initialized successfully');
 
@@ -126,9 +135,18 @@ export class GameOrchestrator {
       this.bulletManager.update(deltaTime);
     }
 
+    // Update enemy bullet manager
+    if (this.enemyBulletManager) {
+      this.enemyBulletManager.update(deltaTime);
+    }
 
     if (this.enemyManager) {
       this.enemyManager.update(deltaTime);
+      
+      // Update player position cho enemies để bắn
+      if (this.player) {
+        this.enemyManager.setPlayerPosition(this.player.getPosition());
+      }
     }
 
 
@@ -155,15 +173,22 @@ export class GameOrchestrator {
   private async handleCollisions(): Promise<void> {
     if (!this.collisionManager || !this.enemyManager || !this.bulletManager || !this.player) return;
 
-
     const entityGroups = new Map<EntityCategory, CollidableEntity[]>();
     
     // Add player
     entityGroups.set(EntityCategory.PLAYER, [this.player as CollidableEntity]);
 
+    // Add player bullets
     const activeBullets = this.bulletManager.getActiveBullets();
     entityGroups.set(EntityCategory.PLAYER_BULLET, activeBullets as CollidableEntity[]);
 
+    // Add enemy bullets
+    if (this.enemyBulletManager) {
+      const activeEnemyBullets = this.enemyBulletManager.getActiveBullets();
+      entityGroups.set(EntityCategory.ENEMY_BULLET, activeEnemyBullets as CollidableEntity[]);
+    }
+
+    // Add enemies
     const activeEnemies = this.enemyManager.getActiveEnemies();
     const regularEnemies = activeEnemies.filter(enemy => enemy.getEnemyType() !== 'boss');
     const bosses = activeEnemies.filter(enemy => enemy.getEnemyType() === 'boss');
@@ -171,9 +196,7 @@ export class GameOrchestrator {
     entityGroups.set(EntityCategory.ENEMY, regularEnemies as CollidableEntity[]);
     entityGroups.set(EntityCategory.BOSS, bosses as CollidableEntity[]);
 
-
     const collisionResults = this.collisionManager.checkAllCollisions(entityGroups);
-
 
     for (const result of collisionResults) {
       await this.processCollision(result);
@@ -216,9 +239,15 @@ export class GameOrchestrator {
       }
     }
 
-    // Deactivate bullet
-    if (entityA.getCategory() === EntityCategory.PLAYER_BULLET) {
+    // Deactivate bullets after collision
+    if (entityA.getCategory() === EntityCategory.PLAYER_BULLET || 
+        entityA.getCategory() === EntityCategory.ENEMY_BULLET) {
       entityA.deactivate();
+    }
+    
+    if (entityB.getCategory() === EntityCategory.PLAYER_BULLET || 
+        entityB.getCategory() === EntityCategory.ENEMY_BULLET) {
+      entityB.deactivate();
     }
     
     // Don't deactivate enemy here - let takeDamage handle it with explosion
@@ -303,6 +332,9 @@ export class GameOrchestrator {
     }
     if (this.bulletManager) {
       this.bulletManager.destroy();
+    }
+    if (this.enemyBulletManager) {
+      this.enemyBulletManager.destroy();
     }
     if (this.enemyManager) {
       this.enemyManager.destroy();
