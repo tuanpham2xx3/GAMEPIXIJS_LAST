@@ -7,6 +7,8 @@ import { AssetLoader, LoadingProgress } from './core/AssetLoader';
 import { BackgroundRenderer } from './rendering/BackgroundRenderer';
 import { UIRenderer } from './rendering/UIRenderer';
 import { GameOrchestrator } from './core/GameOrchestrator';
+import { GameStateManager } from './managers/GameStateManager';
+import { GameState } from './types/GameStateTypes';
 
 /**
  * Main Game class - now follows Single Responsibility Principle
@@ -50,6 +52,7 @@ class Game {
       this.gameOrchestrator = new GameOrchestrator(
         this.app,
         this.containers.gameContainer,
+        this.containers.uiContainer,
         this.backgroundRenderer,
         this.uiRenderer
       );
@@ -95,6 +98,8 @@ class Game {
 
     setTimeout(() => {
       this.uiRenderer.hideLoadingScreen();
+      const gameStateManager = GameStateManager.getInstance();
+      gameStateManager.changeState(GameState.MENU);
       this.gameOrchestrator.startGame();
     }, 500);
     

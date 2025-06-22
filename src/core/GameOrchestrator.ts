@@ -12,16 +12,16 @@ import { EntityCategory, CollidableEntity } from '../types/EntityTypes';
 import { BackgroundRenderer } from '../rendering/BackgroundRenderer';
 import { UIRenderer, GameStats } from '../rendering/UIRenderer';
 import { GameAssets } from './AssetLoader';
+import { GameStateManager } from '../managers/GameStateManager';
+import { GameState } from '../types/GameStateTypes';
+import { UniversalMenu } from '../ui/UniversalMenu';
+import { MenuConfigs } from '../ui/MenuConfigs';
 
-/**
- * Responsible for orchestrating the game loop and coordinating between managers
- * Single Responsibility: Game loop coordination
- */
 export class GameOrchestrator {
   private app: PIXI.Application;
   private gameContainer: PIXI.Container;
+  private uiContainer: PIXI.Container;
   
-  // Game entities and managers
   private player: Player | null = null;
   private inputManager: InputManager | null = null;
   private bulletManager: BulletManager | null = null;
@@ -31,30 +31,137 @@ export class GameOrchestrator {
   private collisionManager: CollisionManager | null = null;
   private itemManager: ItemManager | null = null;
   
-  // Renderers
   private backgroundRenderer: BackgroundRenderer;
   private uiRenderer: UIRenderer;
   
-  // Game state
+  private gameStateManager: GameStateManager;
+  private universalMenu: UniversalMenu;
+  
   private score: number = 0;
   private coins: number = 0;
-  private isGameRunning: boolean = false;
 
   constructor(
     app: PIXI.Application,
     gameContainer: PIXI.Container,
+    uiContainer: PIXI.Container,
     backgroundRenderer: BackgroundRenderer,
     uiRenderer: UIRenderer
   ) {
     this.app = app;
     this.gameContainer = gameContainer;
+    this.uiContainer = uiContainer;
     this.backgroundRenderer = backgroundRenderer;
     this.uiRenderer = uiRenderer;
+    
+    this.gameStateManager = GameStateManager.getInstance();
+    this.universalMenu = new UniversalMenu();
+    this.uiContainer.addChild(this.universalMenu);
+    
+    MenuConfigs.initialize(this.gameStateManager, this.universalMenu, this);
+    this.setupStateListeners();
+    this.setupKeyboardListeners();
   }
 
-  /**
-   * Initialize all game managers and entities
-   */
+  private setupStateListeners(): void {
+    this.gameStateManager.onStateChange(GameState.MENU, () => {
+      this.showMainMenu();
+    });
+
+    this.gameStateManager.onStateChange(GameState.PLAYING, () => {
+      this.hideMenu();
+      this.startGameplay();
+    });
+
+    this.gameStateManager.onStateChange(GameState.PAUSED, () => {
+      this.showPauseMenu();
+    });
+
+    this.gameStateManager.onStateChange(GameState.GAME_OVER, () => {
+      this.handleGameOver();
+    });
+  }
+
+  private setupKeyboardListeners(): void {
+    window.addEventListener('keydown', (event) => {
+      if (this.universalMenu.isShowing()) {
+        if (this.universalMenu.handleInput(event.key)) {
+          event.preventDefault();
+        }
+      } else if (this.gameStateManager.getCurrentState() === GameState.PLAYING) {
+        if (event.key === 'Escape') {
+          this.gameStateManager.pause();
+          event.preventDefault();
+        }
+      }
+    });
+  }
+
+  private showMainMenu(): void {
+    const config = MenuConfigs.getMainMenuConfig();
+    this.universalMenu.configure(config);
+    this.universalMenu.show();
+  }
+
+  private showPauseMenu(): void {
+    const config = MenuConfigs.getPauseMenuConfig();
+    this.universalMenu.configure(config);
+    this.universalMenu.show();
+  }
+
+  private hideMenu(): void {
+    this.universalMenu.hide();
+  }
+
+  private startGameplay(): void {
+    this.cleanupGameEntities();
+    this.resetGameState();
+    
+    if (this.levelManager) {
+      this.levelManager.startLevel(1);
+    }
+  }
+
+  private cleanupGameEntities(): void {
+    if (this.bulletManager) {
+      this.bulletManager.destroyAllBullets();
+    }
+    
+    if (this.enemyBulletManager) {
+      this.enemyBulletManager.destroyAllBullets();
+    }
+    
+    if (this.enemyManager) {
+      this.enemyManager.clearAllEnemies();
+    }
+    
+    if (this.itemManager) {
+      this.itemManager.reset();
+    }
+    
+    if (this.player) {
+      this.player.heal(this.player.getMaxHealth());
+      this.player.x = this.app.screen.width / 2;
+      this.player.y = this.app.screen.height - 100;
+      this.player.isActive = true;
+    }
+  }
+
+  private resetGameState(): void {
+    this.score = 0;
+    this.coins = 0;
+    
+    if (this.levelManager) {
+      this.levelManager.stopLevel();
+    }
+  }
+
+  private handleGameOver(): void {
+    console.log('Game Over! Final Score:', this.score);
+    setTimeout(() => {
+      this.gameStateManager.changeState(GameState.MENU);
+    }, 2000);
+  }
+
   public async initialize(assets: GameAssets): Promise<void> {
     try {
       console.log('Initializing game systems...');
@@ -98,30 +205,18 @@ export class GameOrchestrator {
     }
   }
 
-  /**
-   * Start the game
-   */
   public startGame(): void {
-    if (!this.isGameRunning) {
-      this.isGameRunning = true;
-
-      this.app.ticker.add(this.gameLoop.bind(this));
-
-      setTimeout(() => {
-        if (this.levelManager) {
-          this.levelManager.startLevel(1);
-        }
-      }, 2000);
-
-      console.log('Game started!');
-    }
+    this.app.ticker.add(this.gameLoop.bind(this));
+    console.log('Game started!');
   }
 
-  /**
-   * Main game loop
-   */
+  public restartGame(): void {
+    this.gameStateManager.resetSession();
+    this.gameStateManager.changeState(GameState.PLAYING);
+  }
+
   private gameLoop(delta: number): void {
-    if (!this.isGameRunning) return;
+    if (!this.gameStateManager.isPlaying()) return;
 
     const deltaTime = delta / 60;
 
@@ -340,22 +435,15 @@ export class GameOrchestrator {
     }
   }
 
-  /**
-   * Handle game over
-   */
   private gameOver(): void {
-    this.isGameRunning = false;
+    this.gameStateManager.changeState(GameState.GAME_OVER);
     if (this.levelManager) {
       this.levelManager.stopLevel();
     }
-    console.log('Game Over! Final Score:', this.score);
   }
 
-  /**
-   * Handle game completion
-   */
   private gameComplete(): void {
-    this.isGameRunning = false;
+    this.gameStateManager.changeState(GameState.GAME_OVER);
     if (this.levelManager) {
       this.levelManager.stopLevel();
     }
@@ -370,11 +458,8 @@ export class GameOrchestrator {
     this.uiRenderer.onResize();
   }
 
-  /**
-   * Cleanup and destroy
-   */
   public destroy(): void {
-    this.isGameRunning = false;
+    this.gameStateManager.destroy();
 
     if (this.app && this.app.ticker) {
       this.app.ticker.remove(this.gameLoop);
