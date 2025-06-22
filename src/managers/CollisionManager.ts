@@ -97,6 +97,40 @@ export class CollisionManager {
       deactivateB: true,
       scoreValue: 10
     });
+
+    // Player vs Items (collection)
+    this.addCollisionRule(EntityCategory.PLAYER, EntityCategory.ITEM, {
+      enabled: true,
+      damageToA: 0, // No damage to player
+      damageToB: 0, // No damage to item
+      deactivateA: false, // Don't deactivate player
+      deactivateB: true, // Deactivate item (collect it)
+      scoreValue: 0, // Items handle their own effects
+      callback: (player: any, item: any) => {
+        console.log('Player collected item!', item);
+        
+        // Get item type and apply effects
+        const itemType = item.getItemType?.();
+        
+        if (itemType === 'coin') {
+          // Will be handled by GameOrchestrator.collectCoin()
+        } else if (itemType === 'booster') {
+          // Will be handled by GameOrchestrator.collectBooster()
+        }
+        
+        return {
+          entityA: player,
+          entityB: item,
+          categoryA: EntityCategory.PLAYER,
+          categoryB: EntityCategory.ITEM,
+          damageToA: 0,
+          damageToB: 0,
+          shouldDeactivateA: false,
+          shouldDeactivateB: true, // Collect the item
+          score: 0 // Items provide their own effects
+        };
+      }
+    });
   }
 
   public addCollisionRule(categoryA: EntityCategory, categoryB: EntityCategory, rule: Partial<CollisionRule>): void {

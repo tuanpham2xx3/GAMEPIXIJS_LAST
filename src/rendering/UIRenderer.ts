@@ -9,13 +9,18 @@ import { InputManager } from '../managers/InputManager';
 
 export interface GameStats {
   score: number;
+  coins: number;
+  activeItemCount: number;
+  health: number;
+  maxHealth: number;
+  playerLevel: number;
+  enemyCount: number;
+  bulletCount: number;
+  level: number;
+  // Additional detailed stats
   currentLevel: number;
   waveProgress: string;
   levelProgress: number;
-  activeEnemyCount: number;
-  activeBulletCount: number;
-  playerHealth: number;
-  playerMaxHealth: number;
   playerPosition: { x: number; y: number };
   isPlayerMoving: boolean;
   collisionChecks: number;
@@ -63,7 +68,7 @@ export class UIRenderer {
   /**
    * Update game statistics display
    */
-  public updateGameStats(stats: GameStats): void {
+  public render(stats: GameStats): void {
     // Remove previous stats
     const existingStats = this.uiContainer.getChildByName('gameStats');
     if (existingStats) {
@@ -79,21 +84,28 @@ export class UIRenderer {
     });
 
     const statsText = new PIXI.Text(
+      `=== GAME STATS ===\n` +
       `Score: ${stats.score}\n` +
-      `Level: ${stats.currentLevel}\n` +
+      `Coins: ${stats.coins} 🪙\n` +
+      `Level: ${stats.level}\n` +
       `Wave: ${stats.waveProgress}\n` +
-      `Time: ${Math.round(stats.levelProgress)}s\n` +
-      `Health: ${stats.playerHealth}/${stats.playerMaxHealth}\n` +
-      `Active Enemies: ${stats.activeEnemyCount}\n` +
-      `Active Bullets: ${stats.activeBulletCount}\n` +
-      `Collision Checks: ${stats.collisionChecks}\n` +
-      `Position: (${Math.round(stats.playerPosition.x)}, ${Math.round(stats.playerPosition.y)})\n` +
-      `Status: ${stats.isPlayerMoving ? 'Moving & Shooting' : 'Idle'}`,
+      `Time: ${stats.levelProgress}s\n` +
+      `\n=== PLAYER ===\n` +
+      `Health: ${stats.health}/${stats.maxHealth}\n` +
+      `Player Level: ${stats.playerLevel}\n` +
+      `Position: (${stats.playerPosition.x}, ${stats.playerPosition.y})\n` +
+      `Status: ${stats.isPlayerMoving ? 'Moving & Shooting' : 'Idle'}\n` +
+      `\n=== ENTITIES ===\n` +
+      `Active Enemies: ${stats.enemyCount}\n` +
+      `Active Bullets: ${stats.bulletCount}\n` +
+      `Active Items: ${stats.activeItemCount}\n` +
+      `\n=== SYSTEM ===\n` +
+      `Collision Checks: ${stats.collisionChecks}`,
       style
     );
 
     statsText.x = 10;
-    statsText.y = GameConfig.screen.height - 150;
+    statsText.y = 60;
     statsText.name = 'gameStats';
     this.uiContainer.addChild(statsText);
   }
@@ -136,44 +148,6 @@ export class UIRenderer {
     if (this.gameTitle) {
       this.gameTitle.x = GameConfig.screen.width / 2;
     }
-  }
-
-  /**
-   * Collect game stats from managers
-   */
-  public static collectGameStats(
-    score: number,
-    player: Player | null,
-    bulletManager: BulletManager | null,
-    enemyManager: EnemyManager | null,
-    levelManager: LevelManager | null,
-    collisionManager: CollisionManager | null,
-    inputManager: InputManager | null
-  ): GameStats | null {
-    if (!player || !bulletManager) return null;
-
-    const playerPos = player.getPosition();
-    const playerState = player.getState();
-    const bulletStats = bulletManager.getPoolStats();
-    const activeEnemyCount = enemyManager?.getActiveEnemyCount() || 0;
-    const currentLevel = levelManager?.getCurrentLevel() || 0;
-    const levelProgress = levelManager?.getLevelElapsedTime() || 0;
-    const waveProgress = levelManager?.getWaveProgress() || 'Wave 0/0';
-    const collisionStats = collisionManager?.getCollisionStats() || { totalChecks: 0 };
-
-    return {
-      score,
-      currentLevel,
-      waveProgress,
-      levelProgress,
-      activeEnemyCount,
-      activeBulletCount: bulletStats.active,
-      playerHealth: playerState.health,
-      playerMaxHealth: player.getMaxHealth(),
-      playerPosition: playerPos,
-      isPlayerMoving: playerState.isMoving,
-      collisionChecks: collisionStats.totalChecks
-    };
   }
 
   /**

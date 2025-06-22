@@ -3,6 +3,7 @@ import { Vector2, EnemyState, Entity, EnemyType, MovementPattern, EntityCategory
 import { GameConfig } from '../../core/Config';
 import { AnimationManager } from '../../managers/animations/AnimationManager';
 import { EnemyBulletManager } from '../../managers/EnemyBulletManager';
+import { ItemManager } from '../../managers/ItemManager';
 
 export abstract class Enemy extends PIXI.Container implements Entity, CollidableEntity {
     public velocity: Vector2;
@@ -79,8 +80,6 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
         this.velocity.x = 0;
     }
 
-
-
     protected updatePosition(deltaTime: number): void {
         this.x += this.velocity.x * deltaTime;
         this.y += this.velocity.y * deltaTime;
@@ -138,6 +137,9 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
             const explosionX = this.x;
             const explosionY = this.y;
             const explosionParent = this.parent;
+            
+            // Spawn items at enemy position
+            ItemManager.getInstance().spawnItemsOnEnemyDeath({ x: explosionX, y: explosionY });
             
             // Deactivate enemy immediately (hide it)
             this.deactivate();
