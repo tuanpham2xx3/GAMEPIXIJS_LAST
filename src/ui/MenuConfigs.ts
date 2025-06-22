@@ -1,6 +1,6 @@
 import { MenuConfig } from './MenuTypes';
 import { GameStateManager } from '../managers/GameStateManager';
-import { GameState } from '../types/GameStateTypes';
+import { GameState, GameSession } from '../types/GameStateTypes';
 
 export class MenuConfigs {
   private static gameStateManager: GameStateManager;
@@ -104,6 +104,37 @@ export class MenuConfigs {
           text: "Back", 
           key: 'b', 
           action: () => this.goBack(), 
+          visible: true 
+        }
+      ]
+    };
+  }
+
+  public static getVictoryMenuConfig(sessionData: GameSession): MenuConfig {
+    const playTimeMinutes = Math.floor(sessionData.playTime / 60000);
+    const playTimeSeconds = Math.floor((sessionData.playTime % 60000) / 1000);
+    const timeString = `${playTimeMinutes}:${playTimeSeconds.toString().padStart(2, '0')}`;
+
+    return {
+      title: "VICTORY!",
+      context: 'victory',
+      showBackground: true,
+      stats: {
+        score: sessionData.score,
+        coins: sessionData.coins,
+        time: timeString
+      },
+      buttons: [
+        { 
+          text: "New Game", 
+          key: 'n', 
+          action: () => this.startNewGame(), 
+          visible: true 
+        },
+        { 
+          text: "Main Menu", 
+          key: 'm', 
+          action: () => this.quitToMenu(), 
           visible: true 
         }
       ]

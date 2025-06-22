@@ -7,14 +7,21 @@ export interface MenuButton {
   visible: boolean;
 }
 
+export interface VictoryStats {
+  score: number;
+  coins: number;
+  time: string;
+}
+
 export interface MenuConfig {
   title: string;
   buttons: MenuButton[];
   showBackground: boolean;
   context: MenuContext;
+  stats?: VictoryStats;
 }
 
-export type MenuContext = 'menu' | 'pause' | 'settings';
+export type MenuContext = 'menu' | 'pause' | 'settings' | 'victory';
 
 export interface MenuButtonSprite {
   sprite: PIXI.Text;

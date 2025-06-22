@@ -109,7 +109,7 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 40,
             shootInterval: 1000,
-            animationSpeed: 0.015,
+            animationSpeed: 0.5,
             scoreValue: 1000
         },
         enemy1: {

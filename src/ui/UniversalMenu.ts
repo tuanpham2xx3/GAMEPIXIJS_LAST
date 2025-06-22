@@ -17,6 +17,7 @@ export class UniversalMenu extends PIXI.Container {
   private titleText: PIXI.Text | null = null;
   private background: PIXI.Graphics | null = null;
   private menuPanel: PIXI.Graphics | null = null;
+  private statsContainer: PIXI.Container | null = null;
   private isVisible: boolean = false;
 
   constructor() {
@@ -34,12 +35,16 @@ export class UniversalMenu extends PIXI.Container {
   private rebuild(): void {
     this.removeChildren();
     this.buttons = [];
+    this.statsContainer = null;
     
     if (!this.config) return;
 
     this.createBackground();
     this.createMenuPanel();
     this.createTitle();
+    if (this.config.stats) {
+      this.createStatsDisplay();
+    }
     this.createButtons();
     this.updateSelection();
   }
@@ -57,34 +62,118 @@ export class UniversalMenu extends PIXI.Container {
   private createMenuPanel(): void {
     if (!this.config) return;
 
+    const isVictory = this.config.context === 'victory';
     const panelWidth = 400;
-    const panelHeight = this.config.buttons.length * 80 + 200;
+    const extraHeight = isVictory && this.config.stats ? 180 : 0; // Extra space for stats
+    const panelHeight = this.config.buttons.length * 80 + 200 + extraHeight;
     const panelX = (GameConfig.screen.width - panelWidth) / 2;
     const panelY = (GameConfig.screen.height - panelHeight) / 2;
 
     this.menuPanel = new PIXI.Graphics();
     
-    this.menuPanel.lineStyle(3, 0x00BFFF, 1);
-    this.menuPanel.beginFill(0x1a1a2e, 0.95);
+    // Victory screen gets gold/yellow theme
+    if (isVictory) {
+      this.menuPanel.lineStyle(3, 0xFFD700, 1); // Gold border
+      this.menuPanel.beginFill(0x2a2a1a, 0.95); // Dark gold background
+    } else {
+      this.menuPanel.lineStyle(3, 0x00BFFF, 1);
+      this.menuPanel.beginFill(0x1a1a2e, 0.95);
+    }
+    
     this.menuPanel.drawRoundedRect(panelX, panelY, panelWidth, panelHeight, 15);
     this.menuPanel.endFill();
 
-    this.menuPanel.lineStyle(1, 0x16213e, 0.8);
-    this.menuPanel.beginFill(0x0f3460, 0.3);
+    if (isVictory) {
+      this.menuPanel.lineStyle(1, 0xB8860B, 0.8); // Dark gold inner
+      this.menuPanel.beginFill(0x8B7355, 0.3); // Brown gold fill
+    } else {
+      this.menuPanel.lineStyle(1, 0x16213e, 0.8);
+      this.menuPanel.beginFill(0x0f3460, 0.3);
+    }
+    
     this.menuPanel.drawRoundedRect(panelX + 10, panelY + 10, panelWidth - 20, panelHeight - 20, 10);
     this.menuPanel.endFill();
 
     this.addChild(this.menuPanel);
   }
 
+  private createStatsDisplay(): void {
+    if (!this.config?.stats) return;
+
+    this.statsContainer = new PIXI.Container();
+    
+    // Trophy icon text
+    const trophyText = new PIXI.Text('🏆 GAME COMPLETED! 🏆', {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 24,
+      fontWeight: 'bold',
+      fill: ['#FFD700', '#FFA500'],
+      stroke: '#8B4513',
+      strokeThickness: 2,
+      align: 'center'
+    });
+    trophyText.anchor.set(0.5);
+    trophyText.x = GameConfig.screen.width / 2;
+    trophyText.y = GameConfig.screen.height / 2 - 80;
+    this.statsContainer.addChild(trophyText);
+
+    // Stats display
+    const stats = this.config.stats;
+    const statsY = GameConfig.screen.height / 2 - 30;
+    const spacing = 30;
+
+    // Score
+    const scoreText = new PIXI.Text(`Score: ${stats.score.toLocaleString()}`, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 20,
+      fontWeight: 'bold',
+      fill: '#FFFFFF',
+      align: 'center'
+    });
+    scoreText.anchor.set(0.5);
+    scoreText.x = GameConfig.screen.width / 2;
+    scoreText.y = statsY;
+    this.statsContainer.addChild(scoreText);
+
+    // Coins
+    const coinsText = new PIXI.Text(`Coins: ${stats.coins}`, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 20,
+      fontWeight: 'bold',
+      fill: '#FFD700',
+      align: 'center'
+    });
+    coinsText.anchor.set(0.5);
+    coinsText.x = GameConfig.screen.width / 2;
+    coinsText.y = statsY + spacing;
+    this.statsContainer.addChild(coinsText);
+
+    // Time
+    const timeText = new PIXI.Text(`Time: ${stats.time}`, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 20,
+      fontWeight: 'bold',
+      fill: '#87CEEB',
+      align: 'center'
+    });
+    timeText.anchor.set(0.5);
+    timeText.x = GameConfig.screen.width / 2;
+    timeText.y = statsY + spacing * 2;
+    this.statsContainer.addChild(timeText);
+
+    this.addChild(this.statsContainer);
+  }
+
   private createTitle(): void {
     if (!this.config) return;
 
+    const isVictory = this.config.context === 'victory';
+    
     this.titleText = new PIXI.Text(this.config.title, {
       fontFamily: 'Arial, sans-serif',
       fontSize: 42,
       fontWeight: 'bold',
-      fill: ['#00BFFF', '#87CEEB'],
+      fill: isVictory ? ['#FFD700', '#FFA500'] : ['#00BFFF', '#87CEEB'],
       stroke: '#1a1a2e',
       strokeThickness: 3,
       dropShadow: true,
@@ -106,7 +195,9 @@ export class UniversalMenu extends PIXI.Container {
     if (!this.config) return;
 
     const visibleButtons = this.config.buttons.filter(btn => btn.visible);
-    const startY = GameConfig.screen.height / 2 - 50;
+    const isVictory = this.config.context === 'victory';
+    const extraOffset = isVictory && this.config.stats ? 80 : 0; // Push buttons down for stats
+    const startY = GameConfig.screen.height / 2 - 50 + extraOffset;
     const spacing = 70;
     const buttonWidth = 300;
     const buttonHeight = 50;

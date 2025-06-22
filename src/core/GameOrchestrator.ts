@@ -82,6 +82,10 @@ export class GameOrchestrator {
     this.gameStateManager.onStateChange(GameState.GAME_OVER, () => {
       this.handleGameOver();
     });
+
+    this.gameStateManager.onStateChange(GameState.VICTORY, () => {
+      this.handleVictory();
+    });
   }
 
   private setupKeyboardListeners(): void {
@@ -169,6 +173,31 @@ export class GameOrchestrator {
     setTimeout(() => {
       this.gameStateManager.changeState(GameState.MENU);
     }, 2000);
+  }
+
+  private handleVictory(): void {
+    console.log('Victory! Game Completed! Final Score:', this.score);
+    this.showVictoryScreen();
+  }
+
+  private showVictoryScreen(): void {
+    // Calculate play time
+    const sessionData = this.gameStateManager.getSession();
+    const currentTime = Date.now();
+    const playTime = currentTime - sessionData.startTime;
+    
+    // Update session with final stats
+    this.gameStateManager.updateSession({
+      score: this.score,
+      coins: this.coins,
+      playTime: playTime
+    });
+
+    // Show victory menu with stats
+    const updatedSessionData = this.gameStateManager.getSession();
+    const config = MenuConfigs.getVictoryMenuConfig(updatedSessionData);
+    this.universalMenu.configure(config);
+    this.universalMenu.show();
   }
 
   public async initialize(assets: GameAssets): Promise<void> {
@@ -468,11 +497,12 @@ export class GameOrchestrator {
   }
 
   private gameComplete(): void {
-    this.gameStateManager.changeState(GameState.GAME_OVER);
     if (this.levelManager) {
       this.levelManager.stopLevel();
     }
     console.log('Congratulations! Game completed! Final Score:', this.score);
+    // Trigger victory state instead of game over
+    this.gameStateManager.changeState(GameState.VICTORY);
   }
 
   /**
