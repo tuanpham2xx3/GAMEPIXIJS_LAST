@@ -6,7 +6,7 @@ export class Bullet extends PIXI.Sprite implements Entity, CollidableEntity {
   public velocity: Vector2;
   public isActive: boolean;
   private state: BulletState;
-  private bulletDamage: number = 10; // Add dynamic damage property
+  private bulletDamage: number = GameConfig.bullet.damage; // Use config value instead of hard-coded
 
   constructor(texture: PIXI.Texture) {
     super(texture);
@@ -25,7 +25,7 @@ export class Bullet extends PIXI.Sprite implements Entity, CollidableEntity {
     this.anchor.set(0.5);
   }
 
-  public initialize(startPosition: Vector2, direction: Vector2, damage: number = 10): void {
+  public initialize(startPosition: Vector2, direction: Vector2, damage: number = GameConfig.bullet.damage): void {
     this.position.set(startPosition.x, startPosition.y);
     this.state.direction = this.normalizeVector(direction);
     this.velocity.x = this.state.direction.x * GameConfig.bullet.speed;

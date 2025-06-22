@@ -14,8 +14,9 @@ export class CoinItem extends Item {
     public async setupVisuals(): Promise<void> {
         try {
             // Create coin animation using existing CoinAnimator
+            const config = GameConfig.items.coin;
             this.animation = await this.coinAnimator.createCoinAnimation({
-                speed: 0.2,
+                speed: config.animationSpeed,
                 loop: true,
                 autoPlay: true,
                 scale: 0.8,

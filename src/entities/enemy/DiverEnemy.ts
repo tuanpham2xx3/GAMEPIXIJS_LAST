@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Enemy } from './Enemy';
 import { AnimationManager } from '../../managers/animations/AnimationManager';
+import { GameConfig } from '../../core/Config';
 
 export class DiverEnemy extends Enemy {
     constructor() {
@@ -11,10 +12,11 @@ export class DiverEnemy extends Enemy {
         console.log('Setting up DiverEnemy visuals...');
         
         const animationManager = AnimationManager.getInstance();
+        const config = GameConfig.enemies.diver;
         this.sprite = await animationManager.createDiverAnimation({
             scale: 0.5,
             enableAnimation: true,
-            animationSpeed: 0.028
+            animationSpeed: config.animationSpeed
         });
         
         if (!this.sprite) {

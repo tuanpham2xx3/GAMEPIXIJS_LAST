@@ -12,7 +12,7 @@ export class BulletManager {
   
   // Add unlimited leveling properties
   private bulletLevel: number = 1;
-  private damagePerLevel: number = 5; // +5 damage per level after level 5
+  private damagePerLevel: number = GameConfig.bullet.damagePerLevel; // Use config value instead of hard-coded
 
   constructor(container: PIXI.Container, bulletTexture: PIXI.Texture) {
     this.container = container;
@@ -202,6 +202,11 @@ export class BulletManager {
 
   public isInSpecialRange(): boolean {
     return this.bulletLevel <= 5;
+  }
+
+  public resetBulletLevel(): void {
+    this.bulletLevel = 1;
+    console.log('BulletManager: Bullet level reset to 1');
   }
 
   // Debug methods

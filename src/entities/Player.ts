@@ -11,7 +11,6 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   private inputManager: InputManager;
   private bulletManager: BulletManager;
   private lastShootTime: number;
-  private bulletLevel: number = 1;
   
   // Engine trail - chỉ 1 sprite
   public engineTrail: PIXI.Sprite | null = null;
@@ -28,8 +27,8 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     this.state = {
       isMoving: false,
       isShooting: false,
-      health: 100,
-      maxHealth: 100
+      health: GameConfig.player.health,
+      maxHealth: GameConfig.player.maxHealth
     };
 
     this.setupPlayer();
@@ -257,12 +256,11 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   }
 
   public getBulletLevel(): number {
-    return this.bulletLevel;
+    return this.bulletManager.getBulletLevel();
   }
 
   public upgradeBulletLevel(): void {
     const result = this.bulletManager.upgradeBulletLevel();
-    this.bulletLevel = result.newLevel;
     
     const damageIncrease = result.newDamage - result.oldDamage;
     
@@ -271,6 +269,11 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     } else {
       console.log(`POWER UP! Level ${result.newLevel} - Damage increased to ${result.newDamage} (+${damageIncrease})`);
     }
+  }
+
+  public resetBulletLevel(): void {
+    this.bulletManager.resetBulletLevel();
+    console.log('Player: Bullet level reset to 1');
   }
 
   public getCurrentDamage(): number {

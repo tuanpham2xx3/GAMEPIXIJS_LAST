@@ -1,6 +1,7 @@
 import { AnimatedSprite, Texture, Sprite, Container, Application } from 'pixi.js';
 import { AnimationConfig, AnimationCache } from './AnimationConfig';
 import { AssetManager } from '../../AssetManager';
+import { GameConfig } from '../../../core/Config';
 
 export class AnimationUtils {
     private static animationCache: AnimationCache = {};
@@ -72,7 +73,7 @@ export class AnimationUtils {
         app: Application,
         sprite: Sprite, 
         type: 'horn' | 'leg' | 'wing', 
-        speed: number = 0.02, 
+        speed: number = GameConfig.animation.defaultSpeeds.enemy, 
         isLeft: boolean = false
     ): void {
         // Set anchor points

@@ -14,9 +14,10 @@ export class BossEnemy extends Enemy {
         console.log('Setting up BossEnemy visuals...');
         
         const animationManager = AnimationManager.getInstance();
+        const config = GameConfig.enemies.boss;
         this.sprite = await animationManager.createBossAnimation({
             scale: 1.2,
-            speed: 0.05
+            speed: config.animationSpeed
         });
         
         if (!this.sprite) {

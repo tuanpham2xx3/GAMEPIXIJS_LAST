@@ -2,6 +2,7 @@ import { Container, Sprite, Graphics, Text, TextStyle, Application } from 'pixi.
 import { CircleAnimationConfig, BlinkAnimationConfig } from '../core/AnimationConfig';
 import { AnimationUtils } from '../core/AnimationUtils';
 import { AssetManager } from '../../AssetManager';
+import { GameConfig } from '../../../core/Config';
 
 export class UIAnimator {
     private assetManager: AssetManager;
@@ -29,7 +30,7 @@ export class UIAnimator {
             playerY: config.playerY || 0,
             color: config.color || 0xFFFFFF,
             alpha: config.alpha || 0.5,
-            speed: config.speed || 0.05,
+            speed: config.speed || GameConfig.animation.effects.uiFadeSpeed,
             minScale: config.minScale || 0.8,
             maxScale: config.maxScale || 1.2,
         };
@@ -123,7 +124,7 @@ export class UIAnimator {
         const container = new Container();
         
         const finalConfig = {
-            speed: config.speed || 0.1,
+            speed: config.speed || GameConfig.animation.effects.uiFadeSpeed,
             minAlpha: config.minAlpha || 0.3,
             maxAlpha: config.maxAlpha || 1.0,
         };
@@ -206,7 +207,7 @@ export class UIAnimator {
         }
         
         const finalConfig = {
-            speed: config.speed || 0.08,
+            speed: config.speed || GameConfig.animation.effects.uiFadeSpeed,
             minAlpha: config.minAlpha || 0.4,
             maxAlpha: config.maxAlpha || 1.0,
         };

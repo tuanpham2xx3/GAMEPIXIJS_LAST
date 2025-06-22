@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Enemy } from './Enemy';
 import { AnimationManager } from '../../managers/animations/AnimationManager';
+import { GameConfig } from '../../core/Config';
 
 export class Enemy2Enemy extends Enemy {
     constructor() {
@@ -11,9 +12,10 @@ export class Enemy2Enemy extends Enemy {
         console.log('Setting up Enemy2Enemy visuals...');
         
         const animationManager = AnimationManager.getInstance();
+        const config = GameConfig.enemies.enemy2;
         this.sprite = await animationManager.createEnemy2Animation({
-            scale: 0.8,
-            speed: 0.18,
+            scale: 0.7,
+            speed: config.animationSpeed,
             loop: true,
             autoPlay: true
         });

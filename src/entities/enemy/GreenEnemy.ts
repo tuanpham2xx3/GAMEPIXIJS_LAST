@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Enemy } from './Enemy';
 import { AnimationManager } from '../../managers/animations/AnimationManager';
+import { GameConfig } from '../../core/Config';
 
 export class GreenEnemy extends Enemy {
     constructor() {
@@ -11,10 +12,11 @@ export class GreenEnemy extends Enemy {
         console.log('Setting up GreenEnemy visuals...');
         
         const animationManager = AnimationManager.getInstance();
+        const config = GameConfig.enemies.green;
         this.sprite = await animationManager.createGreenAnimation({
             scale: 0.5,
             enableAnimation: true,
-            animationSpeed: 0.025
+            animationSpeed: config.animationSpeed
         });
         
         if (!this.sprite) {

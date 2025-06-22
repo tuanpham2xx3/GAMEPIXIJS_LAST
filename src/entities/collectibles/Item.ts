@@ -88,7 +88,7 @@ export abstract class Item extends PIXI.Container implements Entity, CollidableE
             this.velocity.y += directionToPlayer.y * attractionForce * deltaTime;
         } else {
             // Default falling behavior - always move downward
-            const fallSpeed = 120; // Pixels per second - increased for faster falling
+            const fallSpeed = config.speed; // Use config speed instead of hard-coded value
             this.velocity.y = fallSpeed;
             
             // Slight horizontal drift to make it more natural

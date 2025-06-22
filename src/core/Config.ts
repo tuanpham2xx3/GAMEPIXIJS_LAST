@@ -34,8 +34,9 @@ export const GameConfig = {
     bullet: {
         speed: 500,
         damage: 10,
-        size: { width: 8, height: 16}
-    } as BulletConfig,
+        size: { width: 8, height: 16},
+        damagePerLevel: 5 // Additional damage per level after level 5
+    } as BulletConfig & { damagePerLevel: number },
 
     //Enemy Bullet configuration
     enemyBullet: {
@@ -54,76 +55,76 @@ export const GameConfig = {
         diver: {
             health: 30,
             speed: 50,
-            scoreValue: 100,
             size: { width: 48, height: 48 },
             movementPattern: 'straight',
             bulletDamage: 15,
-            shootInterval: 3000
+            shootInterval: 3000,
+            animationSpeed: 0.028
         },
         green: {
             health: 40,
             speed: 50,
-            scoreValue: 150,
             size: { width: 52, height: 52 },
             movementPattern: 'straight',
             bulletDamage: 18,
-            shootInterval: 2500
+            shootInterval: 2500,
+            animationSpeed: 0.025
         },
         inferior: {
             health: 20,
             speed: 50,
-            scoreValue: 80,
             size: { width: 40, height: 40 },
             movementPattern: 'straight',
             bulletDamage: 12,
-            shootInterval: 4000
+            shootInterval: 4000,
+            animationSpeed: 0.018
         },
         na: {
             health: 25,
             speed: 50,
-            scoreValue: 120,
             size: { width: 44, height: 44 },
             movementPattern: 'straight',
             bulletDamage: 16,
-            shootInterval: 3500
+            shootInterval: 3500,
+            animationSpeed: 0.022
         },
         soldier: {
             health: 60,
             speed: 50,
-            scoreValue: 200,
             size: { width: 56, height: 56 },
             movementPattern: 'straight',
             bulletDamage: 25,
-            shootInterval: 2000
+            shootInterval: 2000,
+            animationSpeed: 0.02
         },
         boss: {
             health: 500,
             speed: 50,
-            scoreValue: 1000,
             size: { width: 240, height: 240 },
             movementPattern: 'straight',
             bulletDamage: 40,
-            shootInterval: 1000
+            shootInterval: 1000,
+            animationSpeed: 0.015
         },
         enemy1: {
             health: 35,
             speed: 50,
-            scoreValue: 110,
             size: { width: 46, height: 46 },
             movementPattern: 'straight',
             bulletDamage: 17,
-            shootInterval: 2800
+            shootInterval: 2800,
+            animationSpeed: 0.012
         },
         enemy2: {
             health: 45,
             speed: 50,
-            scoreValue: 160,
             size: { width: 50, height: 50 },
             movementPattern: 'straight',
             bulletDamage: 20,
-            shootInterval: 2200
+            shootInterval: 2200,
+            animationSpeed: 0.018
         }
-    } as Record<EnemyType, EnemyConfig>,
+    } as Record<EnemyType, EnemyConfig & { animationSpeed: number }>,
 
     //Performance
     maxBullets: 50,
@@ -180,22 +181,40 @@ export const GameConfig = {
             speed: 120,
             followDistance: 80,
             value: 10,
-            attractionForce: 200
+            attractionForce: 200,
+            animationSpeed: 0.2
         },
         booster: {
             size: { width: 40, height: 40 },
             speed: 150,
             followDistance: 100,
             value: 1,
-            attractionForce: 250
+            attractionForce: 250,
+            animationSpeed: 0.15
         }
-    } as Record<ItemType, ItemConfig>,
+    } as Record<ItemType, ItemConfig & { animationSpeed: number }>,
 
     // Item Drop Configuration
     itemDropRates: {
         coin: 1.0,  // 100% drop rate
         booster: 0.1 // 10% drop rate
-    } as ItemDropRate
+    } as ItemDropRate,
+
+    // Animation Configuration
+    animation: {
+        defaultSpeeds: {
+            enemy: 0.02,
+            coin: 0.2,
+            explosion: 0.6,
+            ui: 0.1,
+            basic: 0.15
+        },
+        effects: {
+            explosionSpeed: 0.6,
+            uiFadeSpeed: 0.1,
+            coinRotationSpeed: 0.2
+        }
+    }
 };
 
 //Function to update screen size and scaling

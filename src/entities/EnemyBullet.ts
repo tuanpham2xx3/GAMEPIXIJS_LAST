@@ -6,10 +6,10 @@ import * as PIXI from 'pixi.js';
 export class EnemyBullet extends Bullet {
     private customDamage: number;
 
-    constructor(texture: PIXI.Texture, damage: number = 20) {
+    constructor(texture: PIXI.Texture, damage: number = GameConfig.enemyBullet.damage) {
         super(texture);
-        
         this.customDamage = damage;
+        this.setDamage(damage);
         
         // Customize appearance for enemy bullets
         this.tint = 0xFF4444; // Red tint để phân biệt với player bullets
@@ -22,7 +22,7 @@ export class EnemyBullet extends Bullet {
     }
 
     // Override initialize to support both damage and target position
-    public initialize(startPosition: Vector2, direction: Vector2, damage: number = 20): void {
+    public initialize(startPosition: Vector2, direction: Vector2, damage: number = GameConfig.enemyBullet.damage): void {
         // Call parent initialize with damage
         super.initialize(startPosition, direction, damage);
         
@@ -36,7 +36,7 @@ export class EnemyBullet extends Bullet {
     }
 
     // New method for target-based initialization
-    public initializeWithTarget(startPosition: Vector2, direction: Vector2, targetPosition: Vector2, damage: number = 20): void {
+    public initializeWithTarget(startPosition: Vector2, direction: Vector2, targetPosition: Vector2, damage: number = GameConfig.enemyBullet.damage): void {
         // Calculate direction to target
         const dx = targetPosition.x - startPosition.x;
         const dy = targetPosition.y - startPosition.y;

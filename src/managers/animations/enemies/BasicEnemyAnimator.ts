@@ -2,6 +2,7 @@ import { AnimatedSprite, Texture, Rectangle, Application } from 'pixi.js';
 import { AnimationConfig } from '../core/AnimationConfig';
 import { AnimationUtils } from '../core/AnimationUtils';
 import { AssetManager } from '../../AssetManager';
+import { GameConfig } from '../../../core/Config';
 
 export class BasicEnemyAnimator {
     private assetManager: AssetManager;
@@ -21,7 +22,7 @@ export class BasicEnemyAnimator {
         });
 
         return AnimationUtils.createAnimatedSprite(frames, {
-            speed: 0.1,
+            speed: GameConfig.animation.defaultSpeeds.enemy,
             loop: true,
             autoPlay: true,
             scale: 0.5,
@@ -39,7 +40,7 @@ export class BasicEnemyAnimator {
         });
 
         return AnimationUtils.createAnimatedSprite(frames, {
-            speed: 0.15,
+            speed: GameConfig.animation.defaultSpeeds.basic,
             loop: true,
             autoPlay: true,
             scale: 0.5,
@@ -62,7 +63,7 @@ export class BasicEnemyAnimator {
         });
 
         return AnimationUtils.createAnimatedSprite(frames, {
-            speed: 0.1,
+            speed: GameConfig.animation.defaultSpeeds.enemy,
             loop: true,
             autoPlay: true,
             scale: 0.5,
@@ -109,7 +110,7 @@ export class BasicEnemyAnimator {
             console.log('🎞️ Total frames in sequence:', frames.length);
 
             const sprite = AnimationUtils.createAnimatedSprite(frames, {
-                speed: 0.15,
+                speed: GameConfig.animation.defaultSpeeds.basic,
                 loop: true,
                 autoPlay: true,
                 scale: 0.5,

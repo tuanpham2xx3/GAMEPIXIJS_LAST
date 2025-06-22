@@ -16,6 +16,7 @@ import { GameStateManager } from '../managers/GameStateManager';
 import { GameState } from '../types/GameStateTypes';
 import { UniversalMenu } from '../ui/UniversalMenu';
 import { MenuConfigs } from '../ui/MenuConfigs';
+import { GameConfig } from './Config';
 
 export class GameOrchestrator {
   private app: PIXI.Application;
@@ -143,6 +144,7 @@ export class GameOrchestrator {
       this.player.x = this.app.screen.width / 2;
       this.player.y = this.app.screen.height - 100;
       this.player.isActive = true;
+      this.player.resetBulletLevel();
     }
   }
 
@@ -358,7 +360,7 @@ export class GameOrchestrator {
 
     // Use damageToB or fallback to damage
     if (entityB.getCategory() === EntityCategory.ENEMY || entityB.getCategory() === EntityCategory.BOSS) {
-      const enemyDamage = damageToB || damage || 25; // Default damage if undefined
+      const enemyDamage = damageToB || damage || GameConfig.collision.defaultDamage.playerBullet; // Use config default damage
       console.log(`Enemy taking ${enemyDamage} damage`);
       const isDestroyed = await (entityB as any).takeDamage(enemyDamage);
       if (isDestroyed) {
@@ -397,7 +399,7 @@ export class GameOrchestrator {
       coins: this.coins,
       activeItemCount: this.itemManager?.getActiveItemCount() || 0,
       health: this.player ? this.player.getHealth() : 0,
-      maxHealth: this.player ? this.player.getMaxHealth() : 100,
+      maxHealth: this.player ? this.player.getMaxHealth() : GameConfig.player.maxHealth,
       playerLevel: this.player ? this.player.getBulletLevel() : 1,
       enemyCount: this.enemyManager ? this.enemyManager.getActiveEnemyCount() : 0,
       bulletCount: this.bulletManager ? this.bulletManager.getActiveBulletsCount() : 0,
@@ -410,7 +412,7 @@ export class GameOrchestrator {
       isPlayerMoving: playerState.isMoving || false,
       collisionChecks: collisionStats.totalChecks,
       // Bullet system stats
-      bulletDamage: this.player ? this.player.getCurrentDamage() : 10,
+      bulletDamage: this.player ? this.player.getCurrentDamage() : GameConfig.bullet.damage,
       bulletCountPerShot: this.player ? this.player.getBulletCount() : 1
     };
     
