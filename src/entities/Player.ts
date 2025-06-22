@@ -3,6 +3,7 @@ import { Vector2, PlayerState, Entity, CollidableEntity, EntityCategory } from '
 import { GameConfig, getBoundaries } from '../core/Config';
 import { InputManager } from '../managers/InputManager';
 import { BulletManager } from '../managers/BulletManager';
+import { WarningGlowManager } from '../managers/animations/effects/WarningGlowManager';
 
 export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   public velocity: Vector2;
@@ -14,6 +15,15 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   
   // Engine trail - chỉ 1 sprite
   public engineTrail: PIXI.Sprite | null = null;
+
+  // Hit effect properties
+  private warningGlowManager: WarningGlowManager | null = null;
+  private hitEffectEndTime: number = 0;
+  private hitEffectStartTime: number = 0;
+  private readonly HIT_EFFECT_DURATION = GameConfig.warningGlow.duration;
+  private readonly PLAYER_BLINK_CYCLE = 800; // Sync với warning glow (ms) - CHẬM HỚN
+  private readonly PLAYER_VISIBLE_DURATION = 300; // Thời gian player hiện (ms) - DÀI HỚN
+  private readonly PLAYER_MIN_ALPHA = GameConfig.warningGlow.playerMinAlpha;
 
   constructor(texture: PIXI.Texture, inputManager: InputManager, bulletManager: BulletManager, smokeTexture?: PIXI.Texture) {
     super(texture);
@@ -68,6 +78,7 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     this.handleInput(deltaTime);
     this.handleShooting();
     this.updateEngineTrail();
+    this.updateHitEffect(deltaTime); // Thêm update hit effect
   }
 
   private updateEngineTrail(): void {
@@ -189,9 +200,93 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     }
   }
 
+  // Hit Effect Methods
+  private updateHitEffect(deltaTime: number): void {
+    const currentTime = Date.now();
+    
+    if (this.hitEffectEndTime > 0) {
+      if (currentTime >= this.hitEffectEndTime) {
+        // Kết thúc hit effect
+        this.endHitEffect();
+      } else {
+        // Update player blinking
+        this.updatePlayerBlinking(currentTime);
+      }
+    }
+  }
+
+  private updatePlayerBlinking(currentTime: number): void {
+    // Tính time elapsed từ khi bắt đầu effect
+    const elapsed = currentTime - this.hitEffectStartTime;
+    
+    // Discrete blinking pattern - sync với warning glow
+    const cycleProgress = elapsed % this.PLAYER_BLINK_CYCLE;
+    
+    let alpha = this.PLAYER_MIN_ALPHA;
+    if (cycleProgress < this.PLAYER_VISIBLE_DURATION) {
+      // Visible phase - full alpha
+      alpha = 1.0;
+    } else {
+      // Invisible phase - minimum alpha
+      alpha = this.PLAYER_MIN_ALPHA;
+    }
+    
+    this.alpha = alpha;
+    
+    // Cũng áp dụng cho engine trail nếu có
+    if (this.engineTrail) {
+      const trailBaseAlpha = 0.5; // Alpha cơ bản của trail
+      this.engineTrail.alpha = trailBaseAlpha * this.alpha;
+    }
+  }
+
+  private triggerHitEffect(): void {
+    const currentTime = Date.now();
+    this.hitEffectStartTime = currentTime;
+    this.hitEffectEndTime = currentTime + this.HIT_EFFECT_DURATION;
+    
+    // Start warning glow effect
+    if (this.warningGlowManager) {
+      this.warningGlowManager.startWarningGlow();
+    }
+    
+    console.log('Hit effect started - Player and warning glow blinking');
+  }
+
+  private endHitEffect(): void {
+    // Reset hit effect variables
+    this.hitEffectEndTime = 0;
+    this.hitEffectStartTime = 0;
+    
+    // Restore player normal alpha
+    this.alpha = 1.0;
+    
+    // Restore engine trail normal alpha
+    if (this.engineTrail) {
+      this.engineTrail.alpha = 0.5; // Alpha bình thường
+    }
+    
+    // Stop warning glow
+    if (this.warningGlowManager) {
+      this.warningGlowManager.stopWarningGlow();
+    }
+    
+    console.log('Hit effect ended - Player and warning glow restored');
+  }
+
   // Public methods
   public takeDamage(damage: number): boolean {
+    // Ignore damage nếu đang trong invincibility frames
+    if (this.isInvincible()) {
+      console.log('Player is invincible, damage ignored');
+      return false;
+    }
+
     this.state.health = Math.max(0, this.state.health - damage);
+    
+    // Trigger hit effect
+    this.triggerHitEffect();
+    
     if (this.state.health <= 0) {
       this.isActive = false;
       return true; // Player destroyed
@@ -282,5 +377,19 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
 
   public getBulletCount(): number {
     return this.bulletManager.getBulletCount();
+  }
+
+  // Hit Effect getter methods
+  public isInvincible(): boolean {
+    return this.hitEffectEndTime > 0;
+  }
+
+  public isInHitEffect(): boolean {
+    return this.hitEffectEndTime > 0;
+  }
+
+  // Method để set WarningGlowManager từ GameOrchestrator
+  public setWarningGlowManager(manager: WarningGlowManager): void {
+    this.warningGlowManager = manager;
   }
 } 

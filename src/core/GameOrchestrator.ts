@@ -17,6 +17,7 @@ import { GameState } from '../types/GameStateTypes';
 import { UniversalMenu } from '../ui/UniversalMenu';
 import { MenuConfigs } from '../ui/MenuConfigs';
 import { GameConfig } from './Config';
+import { WarningGlowManager } from '../managers/animations/effects/WarningGlowManager';
 
 export class GameOrchestrator {
   private app: PIXI.Application;
@@ -31,6 +32,7 @@ export class GameOrchestrator {
   private levelManager: LevelManager | null = null;
   private collisionManager: CollisionManager | null = null;
   private itemManager: ItemManager | null = null;
+  private warningGlowManager: WarningGlowManager | null = null;
   
   private backgroundRenderer: BackgroundRenderer;
   private uiRenderer: UIRenderer;
@@ -146,6 +148,11 @@ export class GameOrchestrator {
       this.player.isActive = true;
       this.player.resetBulletLevel();
     }
+
+    // Stop warning glow effect nếu đang active
+    if (this.warningGlowManager) {
+      this.warningGlowManager.stopWarningGlow();
+    }
   }
 
   private resetGameState(): void {
@@ -192,6 +199,17 @@ export class GameOrchestrator {
 
       this.player = new Player(assets.playerTexture, this.inputManager, this.bulletManager, assets.smokeTexture);
       this.player.addToParent(this.gameContainer);
+
+      // Initialize WarningGlowManager
+      this.warningGlowManager = WarningGlowManager.getInstance(this.app);
+      await this.warningGlowManager.initializeGlowSprites();
+      
+      // Add warning glow container to game container (layer dưới UI)
+      this.gameContainer.addChild(this.warningGlowManager.getContainer());
+      
+      // Set warning glow manager cho player
+      this.player.setWarningGlowManager(this.warningGlowManager);
+      console.log('WarningGlowManager initialized and connected to player');
 
       // Setup enemies với enemy bullet manager
       if (this.enemyManager && this.enemyBulletManager) {
@@ -250,6 +268,11 @@ export class GameOrchestrator {
     if (this.itemManager && this.player) {
       this.itemManager.setPlayerPosition(this.player.getPosition());
       this.itemManager.update(deltaTime);
+    }
+
+    // Update WarningGlowManager
+    if (this.warningGlowManager) {
+      this.warningGlowManager.update(deltaTime);
     }
 
     if (this.levelManager) {
@@ -458,6 +481,11 @@ export class GameOrchestrator {
   public onResize(): void {
     this.backgroundRenderer.onResize();
     this.uiRenderer.onResize();
+    
+    // Resize warning glow manager
+    if (this.warningGlowManager) {
+      this.warningGlowManager.onResize(this.app.screen.width, this.app.screen.height);
+    }
   }
 
   public destroy(): void {
@@ -487,6 +515,9 @@ export class GameOrchestrator {
     }
     if (this.itemManager) {
       this.itemManager.destroy();
+    }
+    if (this.warningGlowManager) {
+      this.warningGlowManager.destroy();
     }
 
     console.log('Game orchestrator cleaned up');

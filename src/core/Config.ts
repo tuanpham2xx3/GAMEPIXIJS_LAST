@@ -26,8 +26,8 @@ export const GameConfig = {
         shootingRate: 5,
         size: { width: 64, height: 64},
         startPosition: {x: 400, y: 500}, // Sẽ được scale theo màn hình
-        health: 100,
-        maxHealth: 100
+        health: 1000,
+        maxHealth: 1000
     } as PlayerConfig & {startPosition: {x: number, y: number}; health: number; maxHealth: number},
 
     //Bullet configuration
@@ -59,7 +59,8 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 15,
             shootInterval: 3000,
-            animationSpeed: 0.028
+            animationSpeed: 0.028,
+            scoreValue: 100
         },
         green: {
             health: 40,
@@ -68,7 +69,8 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 18,
             shootInterval: 2500,
-            animationSpeed: 0.025
+            animationSpeed: 0.025,
+            scoreValue: 150
         },
         inferior: {
             health: 20,
@@ -77,7 +79,8 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 12,
             shootInterval: 4000,
-            animationSpeed: 0.018
+            animationSpeed: 0.018,
+            scoreValue: 80
         },
         na: {
             health: 25,
@@ -86,7 +89,8 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 16,
             shootInterval: 3500,
-            animationSpeed: 0.022
+            animationSpeed: 0.022,
+            scoreValue: 120
         },
         soldier: {
             health: 60,
@@ -95,7 +99,8 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 25,
             shootInterval: 2000,
-            animationSpeed: 0.02
+            animationSpeed: 0.02,
+            scoreValue: 200
         },
         boss: {
             health: 500,
@@ -104,7 +109,8 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 40,
             shootInterval: 1000,
-            animationSpeed: 0.015
+            animationSpeed: 0.015,
+            scoreValue: 1000
         },
         enemy1: {
             health: 35,
@@ -113,7 +119,8 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 17,
             shootInterval: 2800,
-            animationSpeed: 0.012
+            animationSpeed: 0.012,
+            scoreValue: 110
         },
         enemy2: {
             health: 45,
@@ -122,7 +129,8 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 20,
             shootInterval: 2200,
-            animationSpeed: 0.018
+            animationSpeed: 0.018,
+            scoreValue: 160
         }
     } as Record<EnemyType, EnemyConfig & { animationSpeed: number }>,
 
@@ -214,6 +222,19 @@ export const GameConfig = {
             uiFadeSpeed: 0.1,
             coinRotationSpeed: 0.2
         }
+    },
+
+    // Warning Glow Configuration (khi player bị hit)
+    warningGlow: {
+        duration: 1500, // milliseconds
+        blinkSpeed: 0.2, // Tốc độ nhấp nháy - sync với player blinking
+        minAlpha: 0.3,
+        maxAlpha: 0.8,
+        enabled: true,
+        // Player invincibility frames
+        invincibilityDuration: 1500, // Player không nhận damage trong thời gian này
+        playerBlinkSpeed: 0.2, // Tốc độ nhấp nháy player
+        playerMinAlpha: 0.3, // Alpha tối thiểu khi player nhấp nháy
     }
 };
 
