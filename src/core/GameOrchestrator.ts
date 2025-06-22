@@ -313,7 +313,10 @@ export class GameOrchestrator {
       levelProgress: Math.round(levelProgress),
       playerPosition: { x: Math.round(playerPos.x), y: Math.round(playerPos.y) },
       isPlayerMoving: playerState.isMoving || false,
-      collisionChecks: collisionStats.totalChecks
+      collisionChecks: collisionStats.totalChecks,
+      // Bullet system stats
+      bulletDamage: this.player ? this.player.getCurrentDamage() : 10,
+      bulletCountPerShot: this.player ? this.player.getBulletCount() : 1
     };
     
     this.uiRenderer.render(gameStats);
@@ -409,8 +412,15 @@ export class GameOrchestrator {
 
   public collectBooster(): void {
     if (this.player) {
+      const oldLevel = this.player.getBulletLevel();
+      const oldDamage = this.player.getCurrentDamage();
+      
       this.player.upgradeBulletLevel();
-      console.log(`Booster collected! Player level: ${this.player.getBulletLevel()}`);
+      
+      const newLevel = this.player.getBulletLevel();
+      const newDamage = this.player.getCurrentDamage();
+      
+      console.log(`Booster collected! Level: ${oldLevel} -> ${newLevel}, Damage: ${oldDamage} -> ${newDamage}`);
     }
   }
 } 

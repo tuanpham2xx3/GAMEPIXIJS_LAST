@@ -24,6 +24,9 @@ export interface GameStats {
   playerPosition: { x: number; y: number };
   isPlayerMoving: boolean;
   collisionChecks: number;
+  // Bullet system stats
+  bulletDamage?: number;
+  bulletCountPerShot?: number;
 }
 
 /**

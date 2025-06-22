@@ -45,7 +45,14 @@ export class EnemyBulletManager {
         }
 
         bullet.setDamage(damage);
-        bullet.initialize(startPosition, direction, targetPosition);
+        
+        // Use appropriate initialization method
+        if (targetPosition) {
+            bullet.initializeWithTarget(startPosition, direction, targetPosition, damage);
+        } else {
+            bullet.initialize(startPosition, direction, damage);
+        }
+        
         this.activeBullets.push(bullet);
 
         return bullet;

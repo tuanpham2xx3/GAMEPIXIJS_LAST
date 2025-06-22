@@ -21,26 +21,29 @@ export class EnemyBullet extends Bullet {
         }
     }
 
-    // Override initialize để support target position
-    public initialize(startPosition: Vector2, direction: Vector2, targetPosition?: Vector2): void {
-        // If target position provided, calculate direction to target
-        if (targetPosition) {
-            const dx = targetPosition.x - startPosition.x;
-            const dy = targetPosition.y - startPosition.y;
-            direction = this.normalizeVector({ x: dx, y: dy });
-        }
+    // Override initialize to support both damage and target position
+    public initialize(startPosition: Vector2, direction: Vector2, damage: number = 20): void {
+        // Call parent initialize with damage
+        super.initialize(startPosition, direction, damage);
         
-        this.position.set(startPosition.x, startPosition.y);
-        (this as any).state.direction = this.normalizeVector(direction);
-        
-        // Use enemy bullet speed
+        // Override velocity with enemy bullet speed
         const speed = GameConfig.enemyBullet?.speed || 200;
         this.velocity.x = (this as any).state.direction.x * speed;
         this.velocity.y = (this as any).state.direction.y * speed;
         
-        this.isActive = true;
-        (this as any).state.isActive = true;
-        this.visible = true;
+        // Set custom damage
+        this.customDamage = damage;
+    }
+
+    // New method for target-based initialization
+    public initializeWithTarget(startPosition: Vector2, direction: Vector2, targetPosition: Vector2, damage: number = 20): void {
+        // Calculate direction to target
+        const dx = targetPosition.x - startPosition.x;
+        const dy = targetPosition.y - startPosition.y;
+        const calculatedDirection = this.normalizeVector({ x: dx, y: dy });
+        
+        // Initialize with calculated direction
+        this.initialize(startPosition, calculatedDirection, damage);
     }
 
     // Override methods

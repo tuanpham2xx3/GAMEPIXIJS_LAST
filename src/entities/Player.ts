@@ -261,7 +261,23 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   }
 
   public upgradeBulletLevel(): void {
-    this.bulletLevel = Math.min(this.bulletLevel + 1, 5); // Max level 5
-    console.log(`Player bullet level upgraded to ${this.bulletLevel}`);
+    const result = this.bulletManager.upgradeBulletLevel();
+    this.bulletLevel = result.newLevel;
+    
+    const damageIncrease = result.newDamage - result.oldDamage;
+    
+    if (result.isSpecialLevel) {
+      console.log(`LEVEL UP! Level ${result.newLevel} - New pattern unlocked! Damage: ${result.newDamage} (+${damageIncrease})`);
+    } else {
+      console.log(`POWER UP! Level ${result.newLevel} - Damage increased to ${result.newDamage} (+${damageIncrease})`);
+    }
+  }
+
+  public getCurrentDamage(): number {
+    return this.bulletManager.getCurrentDamage();
+  }
+
+  public getBulletCount(): number {
+    return this.bulletManager.getBulletCount();
   }
 } 
