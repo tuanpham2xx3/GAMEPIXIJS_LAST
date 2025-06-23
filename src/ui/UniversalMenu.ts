@@ -36,6 +36,7 @@ export class UniversalMenu extends PIXI.Container {
     this.removeChildren();
     this.buttons = [];
     this.statsContainer = null;
+    this.selectedIndex = -1; // Reset to no selection initially
     
     if (!this.config) return;
 
@@ -271,7 +272,9 @@ export class UniversalMenu extends PIXI.Container {
       });
 
       container.on('pointerout', () => {
-        
+        // Reset selection when mouse leaves all buttons
+        this.selectedIndex = -1;
+        this.updateSelection();
       });
 
       const buttonGraphics: MenuButtonGraphics = {
@@ -289,11 +292,12 @@ export class UniversalMenu extends PIXI.Container {
 
   private updateSelection(): void {
     this.buttons.forEach((buttonGraphics, index) => {
-      const isSelected = index === this.selectedIndex;
+      const isSelected = index === this.selectedIndex && this.selectedIndex >= 0;
       
       buttonGraphics.background.clear();
       
       if (isSelected) {
+        // Hover effect - highlighted
         buttonGraphics.background.lineStyle(2, 0x00BFFF, 1);
         buttonGraphics.background.beginFill(0x00BFFF, 0.2);
         buttonGraphics.background.drawRoundedRect(0, 0, 320, 50, 8);
@@ -308,6 +312,7 @@ export class UniversalMenu extends PIXI.Container {
         buttonGraphics.text.style.fontSize = 22;
         buttonGraphics.text.style.fontWeight = 'bold';
       } else {
+        // Normal state - unselected
         buttonGraphics.background.lineStyle(1, 0x555555, 0.8);
         buttonGraphics.background.beginFill(0x2a2a2a, 0.6);
         buttonGraphics.background.drawRoundedRect(0, 0, 320, 50, 8);
@@ -321,35 +326,7 @@ export class UniversalMenu extends PIXI.Container {
   }
 
   public handleInput(key: string): boolean {
-    if (!this.config || this.buttons.length === 0) return false;
-
-    switch (key) {
-      case 'ArrowUp':
-        this.selectedIndex = Math.max(0, this.selectedIndex - 1);
-        this.updateSelection();
-        return true;
-
-      case 'ArrowDown':
-        this.selectedIndex = Math.min(this.buttons.length - 1, this.selectedIndex + 1);
-        this.updateSelection();
-        return true;
-
-      case 'Enter':
-        if (this.buttons[this.selectedIndex]) {
-          this.buttons[this.selectedIndex].button.action();
-          return true;
-        }
-        break;
-
-      default:
-        const button = this.buttons.find(btn => btn.button.key.toLowerCase() === key.toLowerCase());
-        if (button) {
-          button.button.action();
-          return true;
-        }
-        break;
-    }
-
+    // Disabled keyboard navigation - only mouse/touch input allowed
     return false;
   }
 

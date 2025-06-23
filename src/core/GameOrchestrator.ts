@@ -90,16 +90,20 @@ export class GameOrchestrator {
 
   private setupKeyboardListeners(): void {
     window.addEventListener('keydown', (event) => {
-      if (this.universalMenu.isShowing()) {
-        if (this.universalMenu.handleInput(event.key)) {
-          event.preventDefault();
-        }
-      } else if (this.gameStateManager.getCurrentState() === GameState.PLAYING) {
-        if (event.key === 'Escape') {
+      if (event.key === 'Escape') {
+        const currentState = this.gameStateManager.getCurrentState();
+        
+        if (currentState === GameState.PLAYING && !this.universalMenu.isShowing()) {
+          // In-game → Pause
           this.gameStateManager.pause();
+          event.preventDefault();
+        } else if (currentState === GameState.PAUSED && this.universalMenu.isShowing()) {
+          // In pause menu → Resume
+          this.gameStateManager.resume();
           event.preventDefault();
         }
       }
+      // Don't handle any other menu input - force mouse/touch only for menu navigation
     });
   }
 

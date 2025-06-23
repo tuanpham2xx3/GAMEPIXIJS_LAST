@@ -25,19 +25,19 @@ export class MenuConfigs {
       buttons: [
         { 
           text: "New Game", 
-          key: 'n', 
+          key: '', 
           action: () => this.startNewGame(), 
           visible: true 
         },
         { 
           text: "Settings", 
-          key: 's', 
+          key: '', 
           action: () => this.openSettings(), 
           visible: true 
         },
         { 
           text: "Quit", 
-          key: 'q', 
+          key: '', 
           action: () => this.quitGame(), 
           visible: true 
         }
@@ -53,25 +53,25 @@ export class MenuConfigs {
       buttons: [
         { 
           text: "Resume", 
-          key: 'Escape', 
+          key: '', 
           action: () => this.resumeGame(), 
           visible: true 
         },
         { 
           text: "Restart", 
-          key: 'r', 
+          key: '', 
           action: () => this.restartGame(), 
           visible: true 
         },
         { 
           text: "Settings", 
-          key: 's', 
+          key: '', 
           action: () => this.openSettings(), 
           visible: true 
         },
         { 
           text: "Quit to Menu", 
-          key: 'q', 
+          key: '', 
           action: () => this.quitToMenu(), 
           visible: true 
         }
@@ -90,19 +90,19 @@ export class MenuConfigs {
       buttons: [
         { 
           text: audioText, 
-          key: 'a', 
+          key: '', 
           action: () => this.toggleAudio(), 
           visible: true 
         },
         { 
           text: fpsText, 
-          key: 'f', 
+          key: '', 
           action: () => this.cycleFPS(), 
           visible: true 
         },
         { 
           text: "Back", 
-          key: 'b', 
+          key: '', 
           action: () => this.goBack(), 
           visible: true 
         }
@@ -127,13 +127,13 @@ export class MenuConfigs {
       buttons: [
         { 
           text: "New Game", 
-          key: 'n', 
+          key: '', 
           action: () => this.startNewGame(), 
           visible: true 
         },
         { 
           text: "Main Menu", 
-          key: 'm', 
+          key: '', 
           action: () => this.quitToMenu(), 
           visible: true 
         }
@@ -158,13 +158,13 @@ export class MenuConfigs {
       buttons: [
         { 
           text: "Try Again", 
-          key: 't', 
+          key: '', 
           action: () => this.startNewGame(), 
           visible: true 
         },
         { 
           text: "Main Menu", 
-          key: 'm', 
+          key: '', 
           action: () => this.quitToMenu(), 
           visible: true 
         }
