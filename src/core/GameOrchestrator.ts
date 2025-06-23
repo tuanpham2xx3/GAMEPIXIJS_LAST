@@ -240,7 +240,7 @@ export class GameOrchestrator {
       this.collisionManager = new CollisionManager();
       console.log('CollisionManager initialized');
 
-      this.levelManager = new LevelManager(this.enemyManager);
+      this.levelManager = new LevelManager(this.enemyManager, this.app, this.uiContainer);
       await this.levelManager.initialize();
       console.log('LevelManager initialized');
 

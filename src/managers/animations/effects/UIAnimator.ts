@@ -37,7 +37,7 @@ export class UIAnimator {
 
         try {
             // Load circle texture from assets
-            const circleTexture = await this.assetManager.loadTexture('/assets/textures/backgrounds/circle.png');
+            const circleTexture = await this.assetManager.loadTexture('assets/textures/backgrounds/circle.png');
 
             // Create 2 circles from texture
             const circle1 = new Sprite(circleTexture);
@@ -131,8 +131,8 @@ export class UIAnimator {
 
         try {
             // Load warning background and text
-            const warningBgTexture = await this.assetManager.loadTexture('/assets/textures/ui/icons/warning_bg.png');
-            const txtWarningTexture = await this.assetManager.loadTexture('/assets/textures/ui/icons/txt_warning.png');
+            const warningBgTexture = await this.assetManager.loadTexture('assets/textures/ui/icons/warning_bg.png');
+            const txtWarningTexture = await this.assetManager.loadTexture('assets/textures/ui/icons/txt_warning.png');
 
             // Create sprites
             const warningBg = new Sprite(warningBgTexture);
@@ -214,7 +214,7 @@ export class UIAnimator {
 
         try {
             // Load tutorial text
-            const txtTutorialTexture = await this.assetManager.loadTexture('/assets/textures/ui/icons/txt_tutorial.png');
+            const txtTutorialTexture = await this.assetManager.loadTexture('assets/textures/ui/icons/txt_tutorial.png');
             
             const txtTutorial = new Sprite(txtTutorialTexture);
             txtTutorial.anchor.set(0.5);
@@ -314,10 +314,10 @@ export class UIAnimator {
         
         try {
             await Promise.all([
-                this.assetManager.loadTexture('/assets/textures/backgrounds/circle.png'),
-                this.assetManager.loadTexture('/assets/textures/ui/icons/warning_bg.png'),
-                this.assetManager.loadTexture('/assets/textures/ui/icons/txt_warning.png'),
-                this.assetManager.loadTexture('/assets/textures/ui/icons/txt_tutorial.png')
+                this.assetManager.loadTexture('assets/textures/backgrounds/circle.png'),
+                this.assetManager.loadTexture('assets/textures/ui/icons/warning_bg.png'),
+                this.assetManager.loadTexture('assets/textures/ui/icons/txt_warning.png'),
+                this.assetManager.loadTexture('assets/textures/ui/icons/txt_tutorial.png')
             ]);
             
             console.log('✅ UI animations preloaded successfully!');

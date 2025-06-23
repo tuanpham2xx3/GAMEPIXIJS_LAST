@@ -1,5 +1,6 @@
 import { EnemyManager } from './EnemyManager';
 import { FormationManager } from './FormationManager';
+import { Application, Container } from 'pixi.js';
 
 export class LevelManager {
     private enemyManager: EnemyManager;
@@ -8,9 +9,9 @@ export class LevelManager {
     private isLevelActive: boolean = false;
     private isInitialized: boolean = false;
 
-    constructor(enemyManager: EnemyManager) {
+    constructor(enemyManager: EnemyManager, app?: Application, uiContainer?: Container) {
         this.enemyManager = enemyManager;
-        this.formationManager = new FormationManager(enemyManager);
+        this.formationManager = new FormationManager(enemyManager, app, uiContainer);
     }
 
     /**
@@ -163,8 +164,16 @@ export class LevelManager {
             totalWaves: this.getTotalWaves(),
             waveProgress: this.getWaveProgress(),
             isFormationActive: this.formationManager.isLevelActive(),
+            isShowingBossWarning: this.formationManager.isShowingBossWarning(),
             availableFormations: this.getAvailableFormations(),
             availableLevels: this.getAvailableLevels()
         };
+    }
+
+    /**
+     * Check if currently showing boss warning
+     */
+    public isShowingBossWarning(): boolean {
+        return this.formationManager.isShowingBossWarning();
     }
 } 

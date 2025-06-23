@@ -172,6 +172,11 @@ export class AudioManager {
                 name: 'buttonClick', 
                 src: [AudioManager.paths.BUTTON_CLICK], 
                 config: { volume: this.sfxVolume } 
+            },
+            { 
+                name: 'warning', 
+                src: [AudioManager.paths.BOSS_APPEAR], 
+                config: { volume: this.sfxVolume } 
             }
         ];
 

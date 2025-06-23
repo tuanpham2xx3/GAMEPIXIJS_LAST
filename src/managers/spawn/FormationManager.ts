@@ -1,6 +1,9 @@
 import { EnemyManager } from './EnemyManager';
 import { EnemyType, Vector2 } from '../../types/EntityTypes';
 import { GameConfig, scalePosition } from '../../core/Config';
+import { UIAnimator } from '../animations/effects/UIAnimator';
+import { AudioManager } from '../AudioManager';
+import { Container, Application } from 'pixi.js';
 
 export interface EnemySpawn {
     type: EnemyType;
@@ -34,7 +37,6 @@ export class FormationManager {
     private enemyManager: EnemyManager;
     private formationData: FormationData | null = null;
     
-
     private currentLevel: string = '';
     private currentWaveIndex: number = 0;
     private currentWaveSpawns: SpawnTimer[] = [];
@@ -42,8 +44,26 @@ export class FormationManager {
     private isActive: boolean = false;
     private isInitialized: boolean = false;
 
-    constructor(enemyManager: EnemyManager) {
+    // Boss warning properties
+    private uiAnimator: UIAnimator | null = null;
+    private audioManager: AudioManager;
+    private app: Application | null = null;
+    private uiContainer: Container | null = null;
+    private warningContainer: Container | null = null;
+    private isShowingWarning: boolean = false;
+    private warningTimer: number = 0;
+    private readonly WARNING_DURATION = 3.0; // 3 seconds warning
+    private bossWarningShown: boolean = false; // Track if warning was already shown for current wave
+
+    constructor(enemyManager: EnemyManager, app?: Application, uiContainer?: Container) {
         this.enemyManager = enemyManager;
+        this.app = app || null;
+        this.uiContainer = uiContainer || null;
+        this.audioManager = AudioManager.getInstance();
+        
+        if (this.app) {
+            this.uiAnimator = new UIAnimator(this.app);
+        }
     }
 
     /**
@@ -72,8 +92,6 @@ export class FormationManager {
         }
     }
 
-
-
     /**
      * Start a level - simple and direct
      */
@@ -88,6 +106,7 @@ export class FormationManager {
         this.currentWaveSpawns = [];
         this.timeBetweenWaves = 0;
         this.isActive = true;
+        this.bossWarningShown = false; // Reset warning flag for new level
 
         console.log(`Starting level: ${levelId}`);
         this.startCurrentWave();
@@ -117,11 +136,19 @@ export class FormationManager {
 
         console.log(`Starting wave ${this.currentWaveIndex + 1}/${level.waves.length}: ${formation.name}`);
 
+        // Check if this is a boss wave and show warning (only if not shown yet)
+        if (waveId === 'boss_wave' && !this.bossWarningShown && !this.isShowingWarning) {
+            console.log('👾 Detected boss wave, showing warning...');
+            this.bossWarningShown = true; // Mark that warning is shown for this wave
+            this.showBossWarning();
+            return; // Don't start wave yet, wait for warning to finish
+        }
+
+        console.log(`🎯 Actually starting wave: ${waveId}, bossWarningShown: ${this.bossWarningShown}`);
 
         this.currentWaveSpawns = formation.enemies.map(enemy => ({
             enemy: {
                 ...enemy,
-
                 ...scalePosition(enemy.x, enemy.y)
             },
             timeLeft: enemy.delay,
@@ -137,6 +164,16 @@ export class FormationManager {
     public update(deltaTime: number): void {
         if (!this.isActive) return;
 
+        // Handle warning timer
+        if (this.isShowingWarning) {
+            this.warningTimer -= deltaTime;
+            if (this.warningTimer <= 0) {
+                console.log('🚨 Warning timer finished, hiding warning and starting boss wave...');
+                this.hideBossWarning();
+                this.startCurrentWave(); // Now actually start the boss wave
+            }
+            return; // Don't process spawning while warning is showing
+        }
 
         let allSpawned = true;
         for (const spawn of this.currentWaveSpawns) {
@@ -150,11 +187,11 @@ export class FormationManager {
             }
         }
 
-
         if (allSpawned && this.timeBetweenWaves > 0) {
             this.timeBetweenWaves -= deltaTime;
             if (this.timeBetweenWaves <= 0) {
                 this.currentWaveIndex++;
+                this.bossWarningShown = false; // Reset warning flag for next wave
                 this.startCurrentWave();
             }
         }
@@ -192,7 +229,6 @@ export class FormationManager {
         });
     }
 
-
     public getFormationNames(): string[] {
         return Object.keys(this.formationData?.formations || {});
     }
@@ -221,6 +257,84 @@ export class FormationManager {
     public stop(): void {
         this.isActive = false;
         this.currentWaveSpawns = [];
+        this.bossWarningShown = false; // Reset warning flag
+        this.hideBossWarning(); // Clean up warning if active
         console.log('Formation manager stopped');
+    }
+
+    /**
+     * Show boss warning animation in center of screen
+     */
+    private async showBossWarning(): Promise<void> {
+        if (!this.uiAnimator || !this.uiContainer) {
+            console.warn('UIAnimator or UIContainer not available for boss warning');
+            return;
+        }
+
+        try {
+            console.log('🚨 Showing boss warning animation...');
+            
+            // Play warning sound
+            this.audioManager.play('warning', { volume: 0.8 });
+            
+            // Create warning animation
+            this.warningContainer = await this.uiAnimator.createWarningAnimation({
+                speed: GameConfig.animation.effects.uiFadeSpeed * 2, // Faster blinking for urgency
+                minAlpha: 0.4,
+                maxAlpha: 1.0
+            });
+
+            // Position in center of screen and scale appropriately
+            const centerX = GameConfig.screen.width / 2;
+            const centerY = GameConfig.screen.height / 2;
+            
+            // Scale based on screen size
+            const scaleFactor = Math.min(GameConfig.scale.x, GameConfig.scale.y) * 1.5;
+            this.warningContainer.scale.set(scaleFactor);
+            this.warningContainer.position.set(centerX, centerY);
+
+            // Add to UI container
+            this.uiContainer.addChild(this.warningContainer);
+
+            // Set warning state
+            this.isShowingWarning = true;
+            this.warningTimer = this.WARNING_DURATION;
+
+            console.log('✅ Boss warning animation displayed');
+        } catch (error) {
+            console.error('❌ Failed to show boss warning:', error);
+            // If warning fails, just proceed with the wave
+            this.isShowingWarning = false;
+            this.warningTimer = 0;
+        }
+    }
+
+    /**
+     * Hide boss warning animation
+     */
+    private hideBossWarning(): void {
+        if (this.warningContainer && this.uiContainer && this.uiAnimator) {
+            // Remove animation from ticker
+            this.uiAnimator.removeWarningAnimation(this.warningContainer);
+            
+            // Remove from UI container
+            this.uiContainer.removeChild(this.warningContainer);
+            
+            // Clean up
+            this.warningContainer.destroy();
+            this.warningContainer = null;
+        }
+
+        this.isShowingWarning = false;
+        this.warningTimer = 0;
+        
+        console.log('🚨 Boss warning animation hidden');
+    }
+
+    /**
+     * Check if currently showing warning
+     */
+    public isShowingBossWarning(): boolean {
+        return this.isShowingWarning;
     }
 } 
