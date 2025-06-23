@@ -55,6 +55,8 @@ export interface EnemyConfig {
     scoreValue: number;
     size: { width: number; height: number };
     movementPattern: MovementPattern;
+    bulletDamage?: number;
+    shootInterval?: number;
 }
 
 export interface EnemyState {

@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import { Vector2, EnemyState, Entity, EnemyType, MovementPattern, EntityCategory, CollidableEntity } from '../../types/EntityTypes';
 import { GameConfig } from '../../core/Config';
 import { AnimationManager } from '../../managers/AnimationManager';
+import { EnemyBulletManager } from '../../managers/EnemyBulletManager';
 
 export abstract class Enemy extends PIXI.Container implements Entity, CollidableEntity {
     public velocity: Vector2;
@@ -12,6 +13,12 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
     // Visual components
     protected sprite: PIXI.Sprite | PIXI.Container | null = null;
     protected animationManager: AnimationManager;
+
+    // Shooting system
+    protected enemyBulletManager?: EnemyBulletManager;
+    protected lastShootTime: number = 0;
+    protected shootInterval: number = 2000; // Default 2 seconds
+    protected playerPosition?: Vector2;
 
     constructor(enemyType: EnemyType) {
         super();
@@ -29,6 +36,9 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
         };
 
         this.setupEnemy();
+        
+        // Set shoot interval from config
+        this.shootInterval = config.shootInterval || 2000;
     }
 
     protected setupEnemy(): void {
@@ -59,6 +69,7 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
 
         this.updateMovement(deltaTime);
         this.updatePosition(deltaTime);
+        this.updateShooting();
         this.checkBounds();
     }
 
@@ -73,6 +84,38 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
     protected updatePosition(deltaTime: number): void {
         this.x += this.velocity.x * deltaTime;
         this.y += this.velocity.y * deltaTime;
+    }
+
+    protected updateShooting(): void {
+        if (!this.enemyBulletManager || !this.playerPosition) return;
+
+        const currentTime = Date.now();
+        if (currentTime - this.lastShootTime >= this.shootInterval) {
+            this.shoot();
+            this.lastShootTime = currentTime;
+        }
+    }
+
+    protected shoot(): void {
+        if (!this.enemyBulletManager || !this.playerPosition) return;
+
+        const bulletStartPosition: Vector2 = {
+            x: this.x,
+            y: this.y + this.height / 2
+        };
+
+        // Bắn về phía player
+        this.enemyBulletManager.shootBullet(
+            bulletStartPosition,
+            { x: 0, y: 1 }, // Sẽ được tính lại trong initialize
+            this.playerPosition,
+            this.getShootDamage()
+        );
+    }
+
+    protected getShootDamage(): number {
+        const config = GameConfig.enemies[this.enemyType];
+        return config?.bulletDamage || 20;
     }
 
     protected checkBounds(): void {
@@ -226,6 +269,16 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
 
     // Abstract method for setting up visuals - implement in subclasses
     abstract setupVisuals(): Promise<void>;
+
+    // Shooting system setup methods
+    public setEnemyBulletManager(bulletManager: EnemyBulletManager): void {
+        this.enemyBulletManager = bulletManager;
+        console.log(`🔫 Enemy ${this.enemyType} bullet manager set`);
+    }
+
+    public setPlayerPosition(playerPosition: Vector2): void {
+        this.playerPosition = playerPosition;
+    }
 
     // CollidableEntity interface implementation
     public getCategory(): EntityCategory {

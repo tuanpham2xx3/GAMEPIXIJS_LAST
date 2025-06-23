@@ -37,6 +37,13 @@ export const GameConfig = {
         size: { width: 8, height: 16}
     } as BulletConfig,
 
+    //Enemy Bullet configuration
+    enemyBullet: {
+        speed: 200,
+        damage: 20,
+        size: { width: 12, height: 12}
+    } as BulletConfig,
+
     //Boundaries
     boundaries: {
         padding: 32 // pixels from screen
@@ -49,61 +56,78 @@ export const GameConfig = {
             speed: 50,
             scoreValue: 100,
             size: { width: 48, height: 48 },
-            movementPattern: 'straight'
+            movementPattern: 'straight',
+            bulletDamage: 15,
+            shootInterval: 3000
         },
         green: {
             health: 40,
             speed: 50,
             scoreValue: 150,
             size: { width: 52, height: 52 },
-            movementPattern: 'straight'
+            movementPattern: 'straight',
+            bulletDamage: 18,
+            shootInterval: 2500
         },
         inferior: {
             health: 20,
             speed: 50,
             scoreValue: 80,
             size: { width: 40, height: 40 },
-            movementPattern: 'straight'
+            movementPattern: 'straight',
+            bulletDamage: 12,
+            shootInterval: 4000
         },
         na: {
             health: 25,
             speed: 50,
             scoreValue: 120,
             size: { width: 44, height: 44 },
-            movementPattern: 'straight'
+            movementPattern: 'straight',
+            bulletDamage: 16,
+            shootInterval: 3500
         },
         soldier: {
             health: 60,
             speed: 50,
             scoreValue: 200,
             size: { width: 56, height: 56 },
-            movementPattern: 'straight'
+            movementPattern: 'straight',
+            bulletDamage: 25,
+            shootInterval: 2000
         },
         boss: {
             health: 500,
             speed: 50,
             scoreValue: 1000,
             size: { width: 240, height: 240 },
-            movementPattern: 'straight'
+            movementPattern: 'straight',
+            bulletDamage: 40,
+            shootInterval: 1000
         },
         enemy1: {
             health: 35,
             speed: 50,
             scoreValue: 110,
             size: { width: 46, height: 46 },
-            movementPattern: 'straight'
+            movementPattern: 'straight',
+            bulletDamage: 17,
+            shootInterval: 2800
         },
         enemy2: {
             health: 45,
             speed: 50,
             scoreValue: 160,
             size: { width: 50, height: 50 },
-            movementPattern: 'straight'
+            movementPattern: 'straight',
+            bulletDamage: 20,
+            shootInterval: 2200
         }
     } as Record<EnemyType, EnemyConfig>,
 
     //Performance
     maxBullets: 50,
+    maxEnemyBullets: 100,
     maxEnemies: 30,
 
     //Background scrolling
