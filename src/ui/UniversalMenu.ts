@@ -64,9 +64,10 @@ export class UniversalMenu extends PIXI.Container {
 
     const isVictory = this.config.context === 'victory';
     const isGameOver = this.config.context === 'game_over';
-    const panelWidth = 400;
-    const extraHeight = (isVictory || isGameOver) && this.config.stats ? 180 : 0; // Extra space for stats
-    const panelHeight = this.config.buttons.length * 80 + 200 + extraHeight;
+    const panelWidth = 450; // Slightly wider
+    const hasStats = (isVictory || isGameOver) && this.config.stats;
+    const extraHeight = hasStats ? 200 : 0; // More space for stats and better spacing
+    const panelHeight = this.config.buttons.length * 80 + 250 + extraHeight;
     const panelX = (GameConfig.screen.width - panelWidth) / 2;
     const panelY = (GameConfig.screen.height - panelHeight) / 2;
 
@@ -118,7 +119,7 @@ export class UniversalMenu extends PIXI.Container {
     
     const statusText = new PIXI.Text(iconText, {
       fontFamily: 'Arial, sans-serif',
-      fontSize: 24,
+      fontSize: 20,
       fontWeight: 'bold',
       fill: iconColor,
       stroke: iconStroke,
@@ -127,51 +128,52 @@ export class UniversalMenu extends PIXI.Container {
     });
     statusText.anchor.set(0.5);
     statusText.x = GameConfig.screen.width / 2;
-    statusText.y = GameConfig.screen.height / 2 - 80;
+    statusText.y = GameConfig.screen.height / 2 - 60; // Move up closer to title
     this.statsContainer.addChild(statusText);
 
-    // Stats display
+    // Stats display - position relative to panel center
     const stats = this.config.stats;
-    const statsY = GameConfig.screen.height / 2 - 30;
-    const spacing = 30;
+    const centerY = GameConfig.screen.height / 2;
+    const statsStartY = centerY - 20; // Start stats just above center
+    const spacing = 25; // Reduce spacing
 
     // Score
     const scoreText = new PIXI.Text(`Score: ${stats.score.toLocaleString()}`, {
       fontFamily: 'Arial, sans-serif',
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: 'bold',
       fill: '#FFFFFF',
       align: 'center'
     });
     scoreText.anchor.set(0.5);
     scoreText.x = GameConfig.screen.width / 2;
-    scoreText.y = statsY;
+    scoreText.y = statsStartY;
     this.statsContainer.addChild(scoreText);
 
     // Coins
     const coinsText = new PIXI.Text(`Coins: ${stats.coins}`, {
       fontFamily: 'Arial, sans-serif',
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: 'bold',
       fill: isGameOver ? '#FF6666' : '#FFD700',
       align: 'center'
     });
     coinsText.anchor.set(0.5);
     coinsText.x = GameConfig.screen.width / 2;
-    coinsText.y = statsY + spacing;
+    coinsText.y = statsStartY + spacing;
     this.statsContainer.addChild(coinsText);
 
     // Time
     const timeText = new PIXI.Text(`Time: ${stats.time}`, {
       fontFamily: 'Arial, sans-serif',
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: 'bold',
       fill: '#87CEEB',
       align: 'center'
     });
     timeText.anchor.set(0.5);
     timeText.x = GameConfig.screen.width / 2;
-    timeText.y = statsY + spacing * 2;
+    timeText.y = statsStartY + spacing * 2;
     this.statsContainer.addChild(timeText);
 
     this.addChild(this.statsContainer);
@@ -209,7 +211,9 @@ export class UniversalMenu extends PIXI.Container {
 
     this.titleText.anchor.set(0.5);
     this.titleText.x = GameConfig.screen.width / 2;
-    this.titleText.y = GameConfig.screen.height / 2 - 150;
+    // Position title higher up for victory/game over screens
+    const hasStats = this.config.stats;
+    this.titleText.y = hasStats ? GameConfig.screen.height / 2 - 120 : GameConfig.screen.height / 2 - 100;
     
     this.addChild(this.titleText);
   }
@@ -220,10 +224,12 @@ export class UniversalMenu extends PIXI.Container {
     const visibleButtons = this.config.buttons.filter(btn => btn.visible);
     const isVictory = this.config.context === 'victory';
     const isGameOver = this.config.context === 'game_over';
-    const extraOffset = (isVictory || isGameOver) && this.config.stats ? 80 : 0; // Push buttons down for stats
-    const startY = GameConfig.screen.height / 2 - 50 + extraOffset;
-    const spacing = 70;
-    const buttonWidth = 300;
+    const hasStats = (isVictory || isGameOver) && this.config.stats;
+    // Push buttons down much more for stats screens to avoid overlap
+    const extraOffset = hasStats ? 120 : 0; 
+    const startY = GameConfig.screen.height / 2 + extraOffset;
+    const spacing = 60; // Reduce spacing slightly
+    const buttonWidth = 320; // Wider buttons to match panel
     const buttonHeight = 50;
 
     visibleButtons.forEach((button, index) => {
@@ -290,12 +296,12 @@ export class UniversalMenu extends PIXI.Container {
       if (isSelected) {
         buttonGraphics.background.lineStyle(2, 0x00BFFF, 1);
         buttonGraphics.background.beginFill(0x00BFFF, 0.2);
-        buttonGraphics.background.drawRoundedRect(0, 0, 300, 50, 8);
+        buttonGraphics.background.drawRoundedRect(0, 0, 320, 50, 8);
         buttonGraphics.background.endFill();
         
         buttonGraphics.background.lineStyle(1, 0x87CEEB, 0.6);
         buttonGraphics.background.beginFill(0xFFFFFF, 0.1);
-        buttonGraphics.background.drawRoundedRect(2, 2, 296, 46, 6);
+        buttonGraphics.background.drawRoundedRect(2, 2, 316, 46, 6);
         buttonGraphics.background.endFill();
         
         buttonGraphics.text.style.fill = '#FFFFFF';
@@ -304,7 +310,7 @@ export class UniversalMenu extends PIXI.Container {
       } else {
         buttonGraphics.background.lineStyle(1, 0x555555, 0.8);
         buttonGraphics.background.beginFill(0x2a2a2a, 0.6);
-        buttonGraphics.background.drawRoundedRect(0, 0, 300, 50, 8);
+        buttonGraphics.background.drawRoundedRect(0, 0, 320, 50, 8);
         buttonGraphics.background.endFill();
         
         buttonGraphics.text.style.fill = '#E0E0E0';
