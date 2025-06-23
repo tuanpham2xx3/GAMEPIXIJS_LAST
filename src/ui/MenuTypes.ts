@@ -21,7 +21,7 @@ export interface MenuConfig {
   stats?: VictoryStats;
 }
 
-export type MenuContext = 'menu' | 'pause' | 'settings' | 'victory';
+export type MenuContext = 'menu' | 'pause' | 'settings' | 'victory' | 'game_over';
 
 export interface MenuButtonSprite {
   sprite: PIXI.Text;

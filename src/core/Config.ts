@@ -119,7 +119,7 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 17,
             shootInterval: 2800,
-            animationSpeed: 0.012,
+            animationSpeed: 0.5,
             scoreValue: 110
         },
         enemy2: {
@@ -129,7 +129,7 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 20,
             shootInterval: 2200,
-            animationSpeed: 0.018,
+            animationSpeed: 0.5,
             scoreValue: 160
         }
     } as Record<EnemyType, EnemyConfig & { animationSpeed: number }>,

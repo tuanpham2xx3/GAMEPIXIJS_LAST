@@ -170,9 +170,27 @@ export class GameOrchestrator {
 
   private handleGameOver(): void {
     console.log('Game Over! Final Score:', this.score);
-    setTimeout(() => {
-      this.gameStateManager.changeState(GameState.MENU);
-    }, 2000);
+    this.showGameOverScreen();
+  }
+
+  private showGameOverScreen(): void {
+    // Calculate play time
+    const sessionData = this.gameStateManager.getSession();
+    const currentTime = Date.now();
+    const playTime = currentTime - sessionData.startTime;
+    
+    // Update session with final stats
+    this.gameStateManager.updateSession({
+      score: this.score,
+      coins: this.coins,
+      playTime: playTime
+    });
+
+    // Show game over menu with stats
+    const updatedSessionData = this.gameStateManager.getSession();
+    const config = MenuConfigs.getGameOverMenuConfig(updatedSessionData);
+    this.universalMenu.configure(config);
+    this.universalMenu.show();
   }
 
   private handleVictory(): void {

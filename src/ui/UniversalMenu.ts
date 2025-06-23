@@ -63,18 +63,22 @@ export class UniversalMenu extends PIXI.Container {
     if (!this.config) return;
 
     const isVictory = this.config.context === 'victory';
+    const isGameOver = this.config.context === 'game_over';
     const panelWidth = 400;
-    const extraHeight = isVictory && this.config.stats ? 180 : 0; // Extra space for stats
+    const extraHeight = (isVictory || isGameOver) && this.config.stats ? 180 : 0; // Extra space for stats
     const panelHeight = this.config.buttons.length * 80 + 200 + extraHeight;
     const panelX = (GameConfig.screen.width - panelWidth) / 2;
     const panelY = (GameConfig.screen.height - panelHeight) / 2;
 
     this.menuPanel = new PIXI.Graphics();
     
-    // Victory screen gets gold/yellow theme
+    // Victory screen gets gold/yellow theme, Game Over gets red theme
     if (isVictory) {
       this.menuPanel.lineStyle(3, 0xFFD700, 1); // Gold border
       this.menuPanel.beginFill(0x2a2a1a, 0.95); // Dark gold background
+    } else if (isGameOver) {
+      this.menuPanel.lineStyle(3, 0xFF4444, 1); // Red border
+      this.menuPanel.beginFill(0x2a1a1a, 0.95); // Dark red background
     } else {
       this.menuPanel.lineStyle(3, 0x00BFFF, 1);
       this.menuPanel.beginFill(0x1a1a2e, 0.95);
@@ -86,6 +90,9 @@ export class UniversalMenu extends PIXI.Container {
     if (isVictory) {
       this.menuPanel.lineStyle(1, 0xB8860B, 0.8); // Dark gold inner
       this.menuPanel.beginFill(0x8B7355, 0.3); // Brown gold fill
+    } else if (isGameOver) {
+      this.menuPanel.lineStyle(1, 0x8B0000, 0.8); // Dark red inner
+      this.menuPanel.beginFill(0x654321, 0.3); // Dark brown fill
     } else {
       this.menuPanel.lineStyle(1, 0x16213e, 0.8);
       this.menuPanel.beginFill(0x0f3460, 0.3);
@@ -102,20 +109,26 @@ export class UniversalMenu extends PIXI.Container {
 
     this.statsContainer = new PIXI.Container();
     
-    // Trophy icon text
-    const trophyText = new PIXI.Text('🏆 GAME COMPLETED! 🏆', {
+    const isGameOver = this.config.context === 'game_over';
+    
+    // Different icon and message for game over vs victory
+    const iconText = isGameOver ? '💀 GAME OVER 💀' : '🏆 GAME COMPLETED! 🏆';
+    const iconColor = isGameOver ? ['#FF4444', '#CC0000'] : ['#FFD700', '#FFA500'];
+    const iconStroke = isGameOver ? '#4B0000' : '#8B4513';
+    
+    const statusText = new PIXI.Text(iconText, {
       fontFamily: 'Arial, sans-serif',
       fontSize: 24,
       fontWeight: 'bold',
-      fill: ['#FFD700', '#FFA500'],
-      stroke: '#8B4513',
+      fill: iconColor,
+      stroke: iconStroke,
       strokeThickness: 2,
       align: 'center'
     });
-    trophyText.anchor.set(0.5);
-    trophyText.x = GameConfig.screen.width / 2;
-    trophyText.y = GameConfig.screen.height / 2 - 80;
-    this.statsContainer.addChild(trophyText);
+    statusText.anchor.set(0.5);
+    statusText.x = GameConfig.screen.width / 2;
+    statusText.y = GameConfig.screen.height / 2 - 80;
+    this.statsContainer.addChild(statusText);
 
     // Stats display
     const stats = this.config.stats;
@@ -140,7 +153,7 @@ export class UniversalMenu extends PIXI.Container {
       fontFamily: 'Arial, sans-serif',
       fontSize: 20,
       fontWeight: 'bold',
-      fill: '#FFD700',
+      fill: isGameOver ? '#FF6666' : '#FFD700',
       align: 'center'
     });
     coinsText.anchor.set(0.5);
@@ -168,12 +181,22 @@ export class UniversalMenu extends PIXI.Container {
     if (!this.config) return;
 
     const isVictory = this.config.context === 'victory';
+    const isGameOver = this.config.context === 'game_over';
+    
+    let titleColor;
+    if (isVictory) {
+      titleColor = ['#FFD700', '#FFA500']; // Gold for victory
+    } else if (isGameOver) {
+      titleColor = ['#FF4444', '#CC0000']; // Red for game over
+    } else {
+      titleColor = ['#00BFFF', '#87CEEB']; // Blue for normal menus
+    }
     
     this.titleText = new PIXI.Text(this.config.title, {
       fontFamily: 'Arial, sans-serif',
       fontSize: 42,
       fontWeight: 'bold',
-      fill: isVictory ? ['#FFD700', '#FFA500'] : ['#00BFFF', '#87CEEB'],
+      fill: titleColor,
       stroke: '#1a1a2e',
       strokeThickness: 3,
       dropShadow: true,
@@ -196,7 +219,8 @@ export class UniversalMenu extends PIXI.Container {
 
     const visibleButtons = this.config.buttons.filter(btn => btn.visible);
     const isVictory = this.config.context === 'victory';
-    const extraOffset = isVictory && this.config.stats ? 80 : 0; // Push buttons down for stats
+    const isGameOver = this.config.context === 'game_over';
+    const extraOffset = (isVictory || isGameOver) && this.config.stats ? 80 : 0; // Push buttons down for stats
     const startY = GameConfig.screen.height / 2 - 50 + extraOffset;
     const spacing = 70;
     const buttonWidth = 300;

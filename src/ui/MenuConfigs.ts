@@ -141,6 +141,37 @@ export class MenuConfigs {
     };
   }
 
+  public static getGameOverMenuConfig(sessionData: GameSession): MenuConfig {
+    const playTimeMinutes = Math.floor(sessionData.playTime / 60000);
+    const playTimeSeconds = Math.floor((sessionData.playTime % 60000) / 1000);
+    const timeString = `${playTimeMinutes}:${playTimeSeconds.toString().padStart(2, '0')}`;
+
+    return {
+      title: "GAME OVER",
+      context: 'game_over',
+      showBackground: true,
+      stats: {
+        score: sessionData.score,
+        coins: sessionData.coins,
+        time: timeString
+      },
+      buttons: [
+        { 
+          text: "Try Again", 
+          key: 't', 
+          action: () => this.startNewGame(), 
+          visible: true 
+        },
+        { 
+          text: "Main Menu", 
+          key: 'm', 
+          action: () => this.quitToMenu(), 
+          visible: true 
+        }
+      ]
+    };
+  }
+
   private static startNewGame(): void {
     this.gameStateManager.resetSession();
     this.gameStateManager.changeState(GameState.PLAYING);
