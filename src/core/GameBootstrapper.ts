@@ -41,6 +41,10 @@ export class GameBootstrapper {
       resizeTo: window,
     });
 
+    // CRITICAL FIX: Limit FPS to 60 instead of unlimited
+    app.ticker.maxFPS = 60;
+    app.ticker.minFPS = 30; // Minimum FPS to maintain smooth gameplay
+
     // Add to DOM
     document.body.appendChild(app.view as HTMLCanvasElement);
     

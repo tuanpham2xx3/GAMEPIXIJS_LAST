@@ -135,10 +135,10 @@ export const GameConfig = {
     } as Record<EnemyType, EnemyConfig & { animationSpeed: number }>,
 
     //Performance
-    maxBullets: 50,
-    maxEnemyBullets: 100,
-    maxEnemies: 30,
-    maxItems: 20,
+    maxBullets: 20,
+    maxEnemyBullets: 30,
+    maxEnemies: 15,
+    maxItems: 10,
 
     //Background scrolling
     background: {

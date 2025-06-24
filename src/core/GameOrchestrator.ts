@@ -364,17 +364,20 @@ export class GameOrchestrator {
       }
     }
 
-    this.handleCollisions().catch(error => {
+    // FIXED: Sync collision handling for performance
+    try {
+      this.handleCollisionsSync();
+    } catch (error) {
       console.error('Error in collision handling:', error);
-    });
+    }
 
     this.updateUI();
   }
 
   /**
-   * Handle collision detection
+   * Handle collision detection - SYNC VERSION for performance
    */
-  private async handleCollisions(): Promise<void> {
+  private handleCollisionsSync(): void {
     if (!this.collisionManager || !this.enemyManager || !this.bulletManager || !this.player) return;
 
     const entityGroups = new Map<EntityCategory, CollidableEntity[]>();
@@ -409,17 +412,15 @@ export class GameOrchestrator {
     const collisionResults = this.collisionManager.checkAllCollisions(entityGroups);
 
     for (const result of collisionResults) {
-      await this.processCollision(result);
+      this.processCollisionSync(result);
     }
   }
 
   /**
    * Process individual collision result
    */
-  private async processCollision(result: any): Promise<void> {
+  private processCollisionSync(result: any): void {
     const { entityA, entityB, damageToA, damageToB, damage } = result;
-
-
 
     // Handle item collection
     if ((entityA.getCategory() === EntityCategory.PLAYER && entityB.getCategory() === EntityCategory.ITEM) ||
@@ -427,8 +428,6 @@ export class GameOrchestrator {
       
       const item = entityA.getCategory() === EntityCategory.ITEM ? entityA : entityB;
       const itemType = (item as any).getItemType?.();
-      
-
       
       if (itemType === 'coin') {
         this.collectCoin();
@@ -448,7 +447,7 @@ export class GameOrchestrator {
     // Use damageToA or fallback to damage
     if (entityA.getCategory() === EntityCategory.PLAYER && (damageToA || damage)) {
       const playerDamage = damageToA || damage;
-      const isDestroyed = await (entityA as any).takeDamage(playerDamage);
+      const isDestroyed = (entityA as any).takeDamage(playerDamage);
       if (isDestroyed) {
         this.gameOver();
       }
@@ -457,7 +456,7 @@ export class GameOrchestrator {
     // Use damageToB or fallback to damage
     if (entityB.getCategory() === EntityCategory.ENEMY || entityB.getCategory() === EntityCategory.BOSS) {
       const enemyDamage = damageToB || damage || GameConfig.collision.defaultDamage.playerBullet; // Use config default damage
-      const isDestroyed = await (entityB as any).takeDamage(enemyDamage);
+      const isDestroyed = (entityB as any).takeDamage(enemyDamage);
       if (isDestroyed) {
         this.score += (entityB as any).getScoreValue ? (entityB as any).getScoreValue() : 100;
       }
