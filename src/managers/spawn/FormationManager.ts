@@ -146,6 +146,12 @@ export class FormationManager {
 
         console.log(`🎯 Actually starting wave: ${waveId}, bossWarningShown: ${this.bossWarningShown}`);
 
+        // Start boss music if this is a boss wave
+        if (waveId === 'boss_wave') {
+            console.log('🎵 Starting boss music...');
+            this.audioManager.playBossMusic();
+        }
+
         this.currentWaveSpawns = formation.enemies.map(enemy => ({
             enemy: {
                 ...enemy,
@@ -190,6 +196,22 @@ export class FormationManager {
         if (allSpawned && this.timeBetweenWaves > 0) {
             this.timeBetweenWaves -= deltaTime;
             if (this.timeBetweenWaves <= 0) {
+                // Check if we're moving from a boss wave to regular wave
+                const level = this.formationData?.levels[this.currentLevel];
+                if (level && this.currentWaveIndex < level.waves.length) {
+                    const currentWaveId = level.waves[this.currentWaveIndex];
+                    const nextWaveIndex = this.currentWaveIndex + 1;
+                    
+                    // If current wave was boss and next wave exists and is not boss
+                    if (currentWaveId === 'boss_wave' && nextWaveIndex < level.waves.length) {
+                        const nextWaveId = level.waves[nextWaveIndex];
+                        if (nextWaveId !== 'boss_wave') {
+                            console.log('🎵 Boss wave finished, returning to background music...');
+                            this.audioManager.playBackgroundMusic();
+                        }
+                    }
+                }
+                
                 this.currentWaveIndex++;
                 this.bossWarningShown = false; // Reset warning flag for next wave
                 this.startCurrentWave();
@@ -275,7 +297,7 @@ export class FormationManager {
             console.log('🚨 Showing boss warning animation...');
             
             // Play warning sound
-            this.audioManager.play('warning', { volume: 0.8 });
+            this.audioManager.playWarning();
             
             // Create warning animation
             this.warningContainer = await this.uiAnimator.createWarningAnimation({

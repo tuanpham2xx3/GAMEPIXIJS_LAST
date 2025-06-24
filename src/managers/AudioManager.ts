@@ -3,14 +3,6 @@ import { Howl, Howler } from 'howler';
 export interface AudioConfig {
     volume?: number;
     loop?: boolean;
-    rate?: number;
-    autoplay?: boolean;
-}
-
-export interface AudioAsset {
-    name: string;
-    src: string[];
-    config?: AudioConfig;
 }
 
 export class AudioManager {
@@ -19,35 +11,26 @@ export class AudioManager {
     private masterVolume: number = 1.0;
     private musicVolume: number = 0.7;
     private sfxVolume: number = 0.8;
+    
+    // Track current music state
+    private currentMusic: string | null = null;
+    private isAudioLoaded: boolean = false;
 
-    // Audio paths configuration
+    // Audio paths - simplified according to requirements
     private static readonly AUDIO_PATHS = {
         // Background Music
-        MENU_MUSIC: 'audios/music_bg.mp3',
-        GAME_MUSIC: 'audios/music_bg_2.mp3',
-        BOSS_MUSIC: 'audios/music_bg.mp3', // Using same as menu for now
+        BACKGROUND_MUSIC: 'audios/music_bg.mp3',      // Chạy mọi lúc trong game
+        BOSS_MUSIC: 'audios/music_bg_2.mp3',          // Khi có boss
 
         // Sound Effects
-        SHOOT: 'audios/sfx_shoot.mp3',
-        EXPLOSION: 'audios/sfx_explosion.mp3',
-        ENEMY_HIT: 'audios/sfx_enemy_explode.mp3',
-        PLAYER_HIT: 'audios/sfx_warning.mp3',
-        COIN_COLLECT: 'audios/sfx_coin.mp3',
-        POWER_UP: 'audios/sfx_booster_collected.mp3',
-        BUTTON_CLICK: 'audios/sfx_shoot.mp3', // Using shoot sound as button click
-        GAME_OVER: 'audios/sfx_warning.mp3',
-        LEVEL_COMPLETE: 'audios/sfx_booster_collected.mp3',
-
-        // Boss Sounds
-        BOSS_APPEAR: 'audios/sfx_warning.mp3',
-        BOSS_ATTACK: 'audios/sfx_explosion.mp3',
-        BOSS_DEATH: 'audios/sfx_enemy_explode.mp3',
-
-        // UI Sounds
-        MENU_SELECT: 'audios/sfx_shoot.mp3',
-        MENU_BACK: 'audios/sfx_shoot.mp3',
-        PAUSE: 'audios/sfx_warning.mp3',
-        UNPAUSE: 'audios/sfx_coin.mp3'
+        BOOSTER_COLLECTED: 'audios/sfx_booster_collected.mp3',  // Player chạm booster
+        COIN_COLLECT: 'audios/sfx_coin.mp3',                    // Player chạm coin
+        ENEMY_EXPLOSION: 'audios/sfx_enemy_explode.mp3',        // Quái die
+        PLAYER_EXPLOSION: 'audios/sfx_explosion.mp3',           // Player die
+        SHOOT: 'audios/sfx_shoot.mp3',                          // Player shooting
+        WARNING: 'audios/sfx_warning.mp3',                      // Warning bosswave
+        WIN: 'audios/sfx_win.mp3',                               // Chiến thắng game
+        LOSE: 'audios/sfx_lose.mp3'                             // Thua game
     };
 
     private constructor() {
@@ -57,52 +40,86 @@ export class AudioManager {
 
     public static getInstance(): AudioManager {
         if (!AudioManager.instance) {
-            console.log('Creating new AudioManager instance...');
             AudioManager.instance = new AudioManager();
         }
         return AudioManager.instance;
     }
 
-    /**
-     * Setup Howler global settings
-     */
     private setupHowler(): void {
-        // Set global volume
         Howler.volume(this.masterVolume);
-        
-        // Setup audio context unlock for mobile
         Howler.autoUnlock = true;
-        
-        console.log('Howler setup complete');
+        console.log('AudioManager initialized');
     }
 
     /**
-     * Get audio paths
+     * Load essential game audio
      */
-    public static get paths() {
-        return this.AUDIO_PATHS;
+    public async loadGameAudio(): Promise<void> {
+        if (this.isAudioLoaded) {
+            console.log('Audio already loaded, skipping...');
+            return;
+        }
+
+        console.log('🎵 Loading game audio...');
+
+        const audioPromises = [
+            // Background Music
+            this.loadAudio('backgroundMusic', AudioManager.AUDIO_PATHS.BACKGROUND_MUSIC, { 
+                loop: true, 
+                volume: this.musicVolume 
+            }),
+            this.loadAudio('bossMusic', AudioManager.AUDIO_PATHS.BOSS_MUSIC, { 
+                loop: true, 
+                volume: this.musicVolume 
+            }),
+
+            // Sound Effects
+            this.loadAudio('boosterCollected', AudioManager.AUDIO_PATHS.BOOSTER_COLLECTED, { 
+                volume: this.sfxVolume 
+            }),
+            this.loadAudio('coinCollect', AudioManager.AUDIO_PATHS.COIN_COLLECT, { 
+                volume: this.sfxVolume 
+            }),
+            this.loadAudio('enemyExplosion', AudioManager.AUDIO_PATHS.ENEMY_EXPLOSION, { 
+                volume: this.sfxVolume 
+            }),
+            this.loadAudio('playerExplosion', AudioManager.AUDIO_PATHS.PLAYER_EXPLOSION, { 
+                volume: this.sfxVolume 
+            }),
+            this.loadAudio('shoot', AudioManager.AUDIO_PATHS.SHOOT, { 
+                volume: this.sfxVolume 
+            }),
+            this.loadAudio('warning', AudioManager.AUDIO_PATHS.WARNING, { 
+                volume: this.sfxVolume 
+            }),
+            this.loadAudio('win', AudioManager.AUDIO_PATHS.WIN, { 
+                volume: this.sfxVolume 
+            }),
+            this.loadAudio('lose', AudioManager.AUDIO_PATHS.LOSE, { 
+                volume: this.sfxVolume 
+            })
+        ];
+
+        try {
+            await Promise.all(audioPromises);
+            this.isAudioLoaded = true;
+            console.log('All game audio loaded successfully!');
+        } catch (error) {
+            console.error('Failed to load some audio files:', error);
+        }
     }
 
-    /**
-     * Load a single audio file
-     */
-    public async loadAudio(name: string, src: string | string[], config: AudioConfig = {}): Promise<Howl> {
-        console.log(`Loading audio: ${name}`);
-        
+    private async loadAudio(name: string, src: string, config: AudioConfig = {}): Promise<Howl> {
         if (this.audioCache.has(name)) {
-            console.log(`Audio already loaded: ${name}`);
             return this.audioCache.get(name)!;
         }
 
         return new Promise((resolve, reject) => {
             const howl = new Howl({
-                src: Array.isArray(src) ? src : [src],
+                src: [src],
                 volume: config.volume || 1.0,
                 loop: config.loop || false,
-                rate: config.rate || 1.0,
-                autoplay: config.autoplay || false,
                 onload: () => {
-                    console.log(`Audio loaded successfully: ${name}`);
                     this.audioCache.set(name, howl);
                     resolve(howl);
                 },
@@ -114,288 +131,123 @@ export class AudioManager {
         });
     }
 
-    /**
-     * Load multiple audio files
-     */
-    public async loadMultipleAudios(assets: AudioAsset[]): Promise<void> {
-        console.log(`Loading ${assets.length} audio files...`);
+    // Music methods
+    public playBackgroundMusic(): void {
+        if (this.currentMusic === 'backgroundMusic') {
+            console.log('Background music already playing');
+            return;
+        }
         
-        const promises = assets.map(asset => 
-            this.loadAudio(asset.name, asset.src, asset.config)
-        );
-
-        try {
-            await Promise.all(promises);
-            console.log('All audio files loaded successfully!');
-        } catch (error) {
-            console.error('Failed to load some audio files:', error);
-            throw error;
-        }
+        this.stopAllMusic();
+        this.currentMusic = 'backgroundMusic';
+        this.play('backgroundMusic');
+        console.log('Started background music');
     }
 
-    /**
-     * Preload essential game audio
-     */
-    public async preloadEssentialAudio(): Promise<void> {
-        console.log('🎵 Preloading essential audio...');
-
-        const essentialAudio: AudioAsset[] = [
-            // Music
-            { 
-                name: 'menuMusic', 
-                src: [AudioManager.paths.MENU_MUSIC], 
-                config: { loop: true, volume: this.musicVolume } 
-            },
-            { 
-                name: 'gameMusic', 
-                src: [AudioManager.paths.GAME_MUSIC], 
-                config: { loop: true, volume: this.musicVolume } 
-            },
-
-            // Essential SFX
-            { 
-                name: 'shoot', 
-                src: [AudioManager.paths.SHOOT], 
-                config: { volume: this.sfxVolume } 
-            },
-            { 
-                name: 'explosion', 
-                src: [AudioManager.paths.EXPLOSION], 
-                config: { volume: this.sfxVolume } 
-            },
-            { 
-                name: 'coinCollect', 
-                src: [AudioManager.paths.COIN_COLLECT], 
-                config: { volume: this.sfxVolume } 
-            },
-            { 
-                name: 'buttonClick', 
-                src: [AudioManager.paths.BUTTON_CLICK], 
-                config: { volume: this.sfxVolume } 
-            },
-            { 
-                name: 'warning', 
-                src: [AudioManager.paths.BOSS_APPEAR], 
-                config: { volume: this.sfxVolume } 
-            }
-        ];
-
-        try {
-            await this.loadMultipleAudios(essentialAudio);
-            console.log('Essential audio preloaded successfully!');
-        } catch (error) {
-            console.error('Failed to preload essential audio:', error);
-            // Don't throw error, game should continue without audio
+    public playBossMusic(): void {
+        if (this.currentMusic === 'bossMusic') {
+            console.log('Boss music already playing');
+            return;
         }
+        
+        this.stopAllMusic();
+        this.currentMusic = 'bossMusic';
+        this.play('bossMusic');
+        console.log('Started boss music');
     }
 
-    /**
-     * Play audio by name
-     */
-    public play(name: string, config?: { volume?: number; rate?: number; loop?: boolean }): number | null {
+    public stopAllMusic(): void {
+        this.stop('backgroundMusic');
+        this.stop('bossMusic');
+        this.currentMusic = null;
+    }
+
+    // SFX methods
+    public playBoosterCollected(): void {
+        this.play('boosterCollected');
+    }
+
+    public playCoinCollect(): void {
+        this.play('coinCollect');
+    }
+
+    public playEnemyExplosion(): void {
+        this.play('enemyExplosion');
+    }
+
+    public playPlayerExplosion(): void {
+        this.play('playerExplosion');
+    }
+
+    public playShoot(): void {
+        this.play('shoot');
+    }
+
+    public playWarning(): void {
+        this.play('warning');
+    }
+
+    public playWin(): void {
+        this.play('win');
+    }
+
+    public playLose(): void {
+        this.play('lose');
+    }
+
+    // Basic audio control
+    private play(name: string): number | null {
         const audio = this.audioCache.get(name);
         if (!audio) {
             console.warn(`Audio not found: ${name}`);
             return null;
         }
-
-        // Apply temporary config if provided
-        if (config) {
-            if (config.volume !== undefined) audio.volume(config.volume);
-            if (config.rate !== undefined) audio.rate(config.rate);
-            if (config.loop !== undefined) audio.loop(config.loop);
-        }
-
-        const soundId = audio.play();
-        console.log(`Playing audio: ${name} (ID: ${soundId})`);
-        return soundId;
+        return audio.play();
     }
 
-    /**
-     * Stop audio by name
-     */
-    public stop(name: string, soundId?: number): void {
+    private stop(name: string): void {
         const audio = this.audioCache.get(name);
-        if (!audio) {
-            console.warn(`Audio not found: ${name}`);
-            return;
-        }
-
-        if (soundId !== undefined) {
-            audio.stop(soundId);
-        } else {
+        if (audio) {
             audio.stop();
         }
-        console.log(`Stopped audio: ${name}`);
     }
 
-    /**
-     * Pause audio by name
-     */
-    public pause(name: string, soundId?: number): void {
-        const audio = this.audioCache.get(name);
-        if (!audio) {
-            console.warn(`Audio not found: ${name}`);
-            return;
-        }
-
-        if (soundId !== undefined) {
-            audio.pause(soundId);
-        } else {
-            audio.pause();
-        }
-        console.log(`Paused audio: ${name}`);
-    }
-
-    /**
-     * Resume audio by name
-     */
-    public resume(name: string, soundId?: number): void {
-        const audio = this.audioCache.get(name);
-        if (!audio) {
-            console.warn(`Audio not found: ${name}`);
-            return;
-        }
-
-        if (soundId !== undefined) {
-            audio.play(soundId);
-        } else {
-            audio.play();
-        }
-        console.log(`Resumed audio: ${name}`);
-    }
-
-    /**
-     * Set volume for specific audio
-     */
-    public setVolume(name: string, volume: number, soundId?: number): void {
-        const audio = this.audioCache.get(name);
-        if (!audio) {
-            console.warn(`Audio not found: ${name}`);
-            return;
-        }
-
-        if (soundId !== undefined) {
-            audio.volume(volume, soundId);
-        } else {
-            audio.volume(volume);
-        }
-        console.log(`Set volume for ${name}: ${volume}`);
-    }
-
-    /**
-     * Set master volume
-     */
+    // Volume controls
     public setMasterVolume(volume: number): void {
         this.masterVolume = Math.max(0, Math.min(1, volume));
         Howler.volume(this.masterVolume);
-        console.log(`Master volume set to: ${this.masterVolume}`);
     }
 
-    /**
-     * Set music volume
-     */
     public setMusicVolume(volume: number): void {
         this.musicVolume = Math.max(0, Math.min(1, volume));
-        
-        // Update all music tracks
-        const musicTracks = ['menuMusic', 'gameMusic', 'bossMusic'];
-        musicTracks.forEach(track => {
-            if (this.audioCache.has(track)) {
-                this.setVolume(track, this.musicVolume);
-            }
-        });
-        
-        console.log(`Music volume set to: ${this.musicVolume}`);
+        this.setVolume('backgroundMusic', this.musicVolume);
+        this.setVolume('bossMusic', this.musicVolume);
     }
 
-    /**
-     * Set SFX volume
-     */
     public setSfxVolume(volume: number): void {
         this.sfxVolume = Math.max(0, Math.min(1, volume));
-        console.log(`SFX volume set to: ${this.sfxVolume}`);
+        // Update all SFX volumes
+        const sfxList = ['boosterCollected', 'coinCollect', 'enemyExplosion', 'playerExplosion', 'shoot', 'warning', 'win', 'lose'];
+        sfxList.forEach(sfx => this.setVolume(sfx, this.sfxVolume));
     }
 
-    /**
-     * Mute all audio
-     */
+    private setVolume(name: string, volume: number): void {
+        const audio = this.audioCache.get(name);
+        if (audio) {
+            audio.volume(volume);
+        }
+    }
+
+    // Global controls
     public mute(): void {
         Howler.mute(true);
-        console.log('All audio muted');
     }
 
-    /**
-     * Unmute all audio
-     */
     public unmute(): void {
         Howler.mute(false);
-        console.log('All audio unmuted');
     }
 
-    /**
-     * Stop all audio
-     */
     public stopAll(): void {
-        this.audioCache.forEach((audio, name) => {
-            audio.stop();
-        });
-        console.log('All audio stopped');
-    }
-
-    /**
-     * Get audio info
-     */
-    public getAudioInfo(name: string): any {
-        const audio = this.audioCache.get(name);
-        if (!audio) {
-            return null;
-        }
-
-        return {
-            name,
-            duration: audio.duration(),
-            volume: audio.volume(),
-            rate: audio.rate(),
-            loop: audio.loop(),
-            playing: audio.playing(),
-            state: audio.state()
-        };
-    }
-
-    /**
-     * Get all loaded audio names
-     */
-    public getLoadedAudioNames(): string[] {
-        return Array.from(this.audioCache.keys());
-    }
-
-    /**
-     * Clear audio cache
-     */
-    public clearCache(): void {
-        this.audioCache.forEach((audio, name) => {
-            audio.unload();
-        });
-        this.audioCache.clear();
-        console.log('Audio cache cleared');
-    }
-
-    /**
-     * Check if audio is loaded
-     */
-    public isLoaded(name: string): boolean {
-        return this.audioCache.has(name);
-    }
-
-    /**
-     * Get cache info
-     */
-    public getCacheInfo(): { [key: string]: any } {
-        const info: { [key: string]: any } = {};
-        this.audioCache.forEach((audio, name) => {
-            info[name] = this.getAudioInfo(name);
-        });
-        return info;
+        this.audioCache.forEach(audio => audio.stop());
     }
 } 

@@ -4,6 +4,7 @@ import { GameConfig } from '../../core/Config';
 import { AnimationManager } from '../../managers/animations/AnimationManager';
 import { EnemyBulletManager } from '../../managers/EnemyBulletManager';
 import { ItemManager } from '../../managers/ItemManager';
+import { AudioManager } from '../../managers/AudioManager';
 
 export abstract class Enemy extends PIXI.Container implements Entity, CollidableEntity {
     public velocity: Vector2;
@@ -132,6 +133,10 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
         
         if (this.state.health <= 0) {
             console.log(`Enemy ${this.enemyType} destroyed!`);
+            
+            // Play enemy explosion sound effect
+            const audioManager = AudioManager.getInstance();
+            audioManager.playEnemyExplosion();
             
             // Store position and parent before deactivating
             const explosionX = this.x;

@@ -9,6 +9,7 @@ import { UIRenderer } from './rendering/UIRenderer';
 import { GameOrchestrator } from './core/GameOrchestrator';
 import { GameStateManager } from './managers/GameStateManager';
 import { GameState } from './types/GameStateTypes';
+import { AudioManager } from './managers/AudioManager';
 
 /**
  * Main Game class - now follows Single Responsibility Principle

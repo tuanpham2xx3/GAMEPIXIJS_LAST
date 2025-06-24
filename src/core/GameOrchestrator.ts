@@ -18,6 +18,7 @@ import { UniversalMenu } from '../ui/UniversalMenu';
 import { MenuConfigs } from '../ui/MenuConfigs';
 import { GameConfig } from './Config';
 import { WarningGlowManager } from '../managers/animations/effects/WarningGlowManager';
+import { AudioManager } from '../managers/AudioManager';
 
 export class GameOrchestrator {
   private app: PIXI.Application;
@@ -114,6 +115,12 @@ export class GameOrchestrator {
     const config = MenuConfigs.getMainMenuConfig();
     this.universalMenu.configure(config);
     this.universalMenu.show();
+    
+    // Start menu background music with a small delay to ensure audio is loaded
+    setTimeout(() => {
+      const audioManager = AudioManager.getInstance();
+      audioManager.playBackgroundMusic();
+    }, 100);
   }
 
   private showPauseMenu(): void {
@@ -133,6 +140,12 @@ export class GameOrchestrator {
     if (this.levelManager) {
       this.levelManager.startLevel(1);
     }
+    
+    // Start background music with small delay to ensure smooth transition
+    setTimeout(() => {
+      const audioManager = AudioManager.getInstance();
+      audioManager.playBackgroundMusic();
+    }, 200);
   }
 
   private cleanupGameEntities(): void {
@@ -177,6 +190,12 @@ export class GameOrchestrator {
 
   private handleGameOver(): void {
     console.log('Game Over! Final Score:', this.score);
+    
+    // Play lose sound effect
+    const audioManager = AudioManager.getInstance();
+    audioManager.playLose();
+    audioManager.stopAllMusic();
+    
     this.showGameOverScreen();
   }
 
@@ -198,10 +217,22 @@ export class GameOrchestrator {
     const config = MenuConfigs.getGameOverMenuConfig(updatedSessionData);
     this.universalMenu.configure(config);
     this.universalMenu.show();
+    
+    // Resume background music after lose sound finishes
+    setTimeout(() => {
+      const audioManager = AudioManager.getInstance();
+      audioManager.playBackgroundMusic();
+    }, 2500);
   }
 
   private handleVictory(): void {
     console.log('Victory! Game Completed! Final Score:', this.score);
+    
+    // Play win sound effect
+    const audioManager = AudioManager.getInstance();
+    audioManager.playWin();
+    audioManager.stopAllMusic();
+    
     this.showVictoryScreen();
   }
 
@@ -223,11 +254,22 @@ export class GameOrchestrator {
     const config = MenuConfigs.getVictoryMenuConfig(updatedSessionData);
     this.universalMenu.configure(config);
     this.universalMenu.show();
+    
+    // Resume background music after win sound finishes
+    setTimeout(() => {
+      const audioManager = AudioManager.getInstance();
+      audioManager.playBackgroundMusic();
+    }, 3500);
   }
 
   public async initialize(assets: GameAssets): Promise<void> {
     try {
       console.log('Initializing game systems...');
+
+      // Initialize AudioManager and load audio
+      const audioManager = AudioManager.getInstance();
+      await audioManager.loadGameAudio();
+      console.log('AudioManager initialized and audio loaded');
 
       this.inputManager = new InputManager(this.app.view as HTMLCanvasElement);
       this.bulletManager = new BulletManager(this.gameContainer, assets.bulletTexture);
@@ -579,7 +621,12 @@ export class GameOrchestrator {
   }
 
   public collectCoin(): void {
-    this.coins++;
+    this.coins += GameConfig.items.coin.value;
+    
+    // Play coin collect sound effect
+    const audioManager = AudioManager.getInstance();
+    audioManager.playCoinCollect();
+    
     console.log(`Coin collected! Total coins: ${this.coins}`);
   }
 
@@ -592,6 +639,10 @@ export class GameOrchestrator {
       
       const newLevel = this.player.getBulletLevel();
       const newDamage = this.player.getCurrentDamage();
+      
+      // Play booster collected sound effect
+      const audioManager = AudioManager.getInstance();
+      audioManager.playBoosterCollected();
       
       console.log(`Booster collected! Level: ${oldLevel} -> ${newLevel}, Damage: ${oldDamage} -> ${newDamage}`);
     }
