@@ -72,7 +72,10 @@ export class GameOrchestrator {
 
     this.gameStateManager.onStateChange(GameState.PLAYING, () => {
       this.hideMenu();
-      this.startGameplay();
+      // Only start gameplay if we're not resuming from pause
+      if (this.gameStateManager.getStateData().previousState !== GameState.PAUSED) {
+        this.startGameplay();
+      }
     });
 
     this.gameStateManager.onStateChange(GameState.PAUSED, () => {
