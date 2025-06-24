@@ -1,4 +1,4 @@
-import { PlayerConfig, BulletConfig, EnemyConfig, EnemyType } from "../types/EntityTypes";
+import { PlayerConfig, BulletConfig, EnemyConfig, EnemyType, ItemConfig, ItemType, ItemDropRate } from "../types/EntityTypes";
 
 export const GameConfig = {
     // Reference resolution - kích thước màn hình chuẩn để tính toán vị trí
@@ -129,6 +129,7 @@ export const GameConfig = {
     maxBullets: 50,
     maxEnemyBullets: 100,
     maxEnemies: 30,
+    maxItems: 20,
 
     //Background scrolling
     background: {
@@ -170,7 +171,31 @@ export const GameConfig = {
 
     // Input Configuration
     input: {
-    }
+    },
+
+    // Item Configuration
+    items: {
+        coin: {
+            size: { width: 32, height: 32 },
+            speed: 120,
+            followDistance: 80,
+            value: 10,
+            attractionForce: 200
+        },
+        booster: {
+            size: { width: 40, height: 40 },
+            speed: 150,
+            followDistance: 100,
+            value: 1,
+            attractionForce: 250
+        }
+    } as Record<ItemType, ItemConfig>,
+
+    // Item Drop Configuration
+    itemDropRates: {
+        coin: 1.0,  // 100% drop rate
+        booster: 0.1 // 10% drop rate
+    } as ItemDropRate
 };
 
 //Function to update screen size and scaling

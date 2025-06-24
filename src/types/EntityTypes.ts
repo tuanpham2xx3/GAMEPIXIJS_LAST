@@ -94,7 +94,8 @@ export enum EntityCategory {
   ENEMY_BULLET = 'enemy_bullet',
   BOSS = 'boss',
   BOSS_BULLET = 'boss_bullet',
-  POWERUP = 'powerup'
+  POWERUP = 'powerup',
+  ITEM = 'item'
 }
 
 export interface CollisionResult {
@@ -135,4 +136,26 @@ export interface CollisionRule {
   deactivateA?: boolean;
   deactivateB?: boolean;
   callback?: (entityA: any, entityB: any) => CollisionResult | null;
+}
+
+// Item System Types
+export type ItemType = 'coin' | 'booster';
+
+export interface ItemConfig {
+    size: { width: number; height: number };
+    speed: number; // Speed moving towards player
+    followDistance: number; // Distance at which item starts following player
+    value: number; // Coin value or level increase amount
+    attractionForce: number; // How strongly item is attracted to player
+}
+
+export interface ItemState {
+    isActive: boolean;
+    isFollowingPlayer: boolean;
+    targetPosition?: Vector2;
+}
+
+export interface ItemDropRate {
+    coin: number; // 1.0 = 100%
+    booster: number; // 0.1 = 10%
 }

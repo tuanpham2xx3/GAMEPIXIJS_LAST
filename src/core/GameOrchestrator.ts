@@ -6,7 +6,8 @@ import { EnemyBulletManager } from '../managers/EnemyBulletManager';
 import { EnemyManager } from '../managers/spawn/EnemyManager';
 import { LevelManager } from '../managers/spawn/LevelManager';
 import { CollisionManager } from '../managers/CollisionManager';
-import { AnimationManager } from '../managers/AnimationManager';
+import { AnimationManager } from '../managers/animations/AnimationManager';
+import { ItemManager } from '../managers/ItemManager';
 import { EntityCategory, CollidableEntity } from '../types/EntityTypes';
 import { BackgroundRenderer } from '../rendering/BackgroundRenderer';
 import { UIRenderer, GameStats } from '../rendering/UIRenderer';
@@ -28,6 +29,7 @@ export class GameOrchestrator {
   private enemyManager: EnemyManager | null = null;
   private levelManager: LevelManager | null = null;
   private collisionManager: CollisionManager | null = null;
+  private itemManager: ItemManager | null = null;
   
   // Renderers
   private backgroundRenderer: BackgroundRenderer;
@@ -35,6 +37,7 @@ export class GameOrchestrator {
   
   // Game state
   private score: number = 0;
+  private coins: number = 0;
   private isGameRunning: boolean = false;
 
   constructor(
@@ -56,27 +59,27 @@ export class GameOrchestrator {
     try {
       console.log('Initializing game systems...');
 
-
       this.inputManager = new InputManager(this.app.view as HTMLCanvasElement);
       this.bulletManager = new BulletManager(this.gameContainer, assets.bulletTexture);
       this.enemyBulletManager = new EnemyBulletManager(this.gameContainer, assets.enemyBulletTexture);
       
-
       const animationManager = AnimationManager.getInstance();
       animationManager.initWithApp(this.app);
       
       this.enemyManager = new EnemyManager(this.gameContainer);
       await this.enemyManager.initialize();
 
+      // Initialize ItemManager
+      this.itemManager = ItemManager.getInstance();
+      await this.itemManager.initialize(this.gameContainer);
+      console.log('ItemManager initialized');
 
       this.collisionManager = new CollisionManager();
       console.log('CollisionManager initialized');
 
-
       this.levelManager = new LevelManager(this.enemyManager);
       await this.levelManager.initialize();
       console.log('LevelManager initialized');
-
 
       this.player = new Player(assets.playerTexture, this.inputManager, this.bulletManager, assets.smokeTexture);
       this.player.addToParent(this.gameContainer);
@@ -122,14 +125,11 @@ export class GameOrchestrator {
 
     const deltaTime = delta / 60;
 
-
     this.backgroundRenderer.update(deltaTime);
-
 
     if (this.player) {
       this.player.update(deltaTime);
     }
-
 
     if (this.bulletManager) {
       this.bulletManager.update(deltaTime);
@@ -149,6 +149,11 @@ export class GameOrchestrator {
       }
     }
 
+    // Update ItemManager
+    if (this.itemManager && this.player) {
+      this.itemManager.setPlayerPosition(this.player.getPosition());
+      this.itemManager.update(deltaTime);
+    }
 
     if (this.levelManager) {
       this.levelManager.update(deltaTime);
@@ -158,11 +163,9 @@ export class GameOrchestrator {
       }
     }
 
-
     this.handleCollisions().catch(error => {
       console.error('Error in collision handling:', error);
     });
-
 
     this.updateUI();
   }
@@ -196,6 +199,12 @@ export class GameOrchestrator {
     entityGroups.set(EntityCategory.ENEMY, regularEnemies as CollidableEntity[]);
     entityGroups.set(EntityCategory.BOSS, bosses as CollidableEntity[]);
 
+    // Add items
+    if (this.itemManager) {
+      const activeItems = this.itemManager.getActiveItems();
+      entityGroups.set(EntityCategory.ITEM, activeItems as CollidableEntity[]);
+    }
+
     const collisionResults = this.collisionManager.checkAllCollisions(entityGroups);
 
     for (const result of collisionResults) {
@@ -216,6 +225,30 @@ export class GameOrchestrator {
       damageToB,
       damage: damage || 'undefined'
     });
+
+    // Handle item collection
+    if ((entityA.getCategory() === EntityCategory.PLAYER && entityB.getCategory() === EntityCategory.ITEM) ||
+        (entityA.getCategory() === EntityCategory.ITEM && entityB.getCategory() === EntityCategory.PLAYER)) {
+      
+      const item = entityA.getCategory() === EntityCategory.ITEM ? entityA : entityB;
+      const itemType = (item as any).getItemType?.();
+      
+      console.log(`Item collected: ${itemType}`);
+      
+      if (itemType === 'coin') {
+        this.collectCoin();
+      } else if (itemType === 'booster') {
+        this.collectBooster();
+      }
+      
+      // Apply item effect
+      (item as any).applyEffect?.(this.player);
+      
+      // Deactivate item
+      (item as any).deactivate?.();
+      
+      return; // Don't process damage for item collection
+    }
 
     // Use damageToA or fallback to damage
     if (entityA.getCategory() === EntityCategory.PLAYER && (damageToA || damage)) {
@@ -257,19 +290,33 @@ export class GameOrchestrator {
    * Update UI with current game state
    */
   private updateUI(): void {
-    const stats = UIRenderer.collectGameStats(
-      this.score,
-      this.player,
-      this.bulletManager,
-      this.enemyManager,
-      this.levelManager,
-      this.collisionManager,
-      this.inputManager
-    );
+    const playerPos = this.player ? this.player.getPosition() : { x: 0, y: 0 };
+    const playerState = this.player ? this.player.getState() : { isMoving: false };
+    const collisionStats = this.collisionManager ? this.collisionManager.getCollisionStats() : { totalChecks: 0 };
+    const waveProgress = this.levelManager ? this.levelManager.getWaveProgress() : 'Wave 0/0';
+    const levelProgress = this.levelManager ? this.levelManager.getLevelElapsedTime() : 0;
+    const currentLevel = this.levelManager ? this.levelManager.getCurrentLevel() : 1;
 
-    if (stats) {
-      this.uiRenderer.updateGameStats(stats);
-    }
+    const gameStats: GameStats = {
+      score: this.score,
+      coins: this.coins,
+      activeItemCount: this.itemManager?.getActiveItemCount() || 0,
+      health: this.player ? this.player.getHealth() : 0,
+      maxHealth: this.player ? this.player.getMaxHealth() : 100,
+      playerLevel: this.player ? this.player.getBulletLevel() : 1,
+      enemyCount: this.enemyManager ? this.enemyManager.getActiveEnemyCount() : 0,
+      bulletCount: this.bulletManager ? this.bulletManager.getActiveBulletsCount() : 0,
+      level: currentLevel,
+      // Additional detailed stats
+      currentLevel: currentLevel,
+      waveProgress: waveProgress,
+      levelProgress: Math.round(levelProgress),
+      playerPosition: { x: Math.round(playerPos.x), y: Math.round(playerPos.y) },
+      isPlayerMoving: playerState.isMoving || false,
+      collisionChecks: collisionStats.totalChecks
+    };
+    
+    this.uiRenderer.render(gameStats);
   }
 
   /**
@@ -316,7 +363,6 @@ export class GameOrchestrator {
    * Handle screen resize
    */
   public onResize(): void {
-
     this.backgroundRenderer.onResize();
     this.uiRenderer.onResize();
   }
@@ -326,6 +372,10 @@ export class GameOrchestrator {
    */
   public destroy(): void {
     this.isGameRunning = false;
+
+    if (this.app && this.app.ticker) {
+      this.app.ticker.remove(this.gameLoop);
+    }
 
     if (this.inputManager) {
       this.inputManager.destroy();
@@ -345,7 +395,22 @@ export class GameOrchestrator {
     if (this.player) {
       this.player.destroy();
     }
+    if (this.itemManager) {
+      this.itemManager.destroy();
+    }
 
     console.log('Game orchestrator cleaned up');
+  }
+
+  public collectCoin(): void {
+    this.coins++;
+    console.log(`Coin collected! Total coins: ${this.coins}`);
+  }
+
+  public collectBooster(): void {
+    if (this.player) {
+      this.player.upgradeBulletLevel();
+      console.log(`Booster collected! Player level: ${this.player.getBulletLevel()}`);
+    }
   }
 } 

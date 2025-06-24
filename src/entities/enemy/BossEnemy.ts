@@ -1,5 +1,5 @@
 import { Enemy } from './Enemy';
-import { AnimationManager } from '../../managers/AnimationManager';
+import { AnimationManager } from '../../managers/animations/AnimationManager';
 import { GameConfig } from '../../core/Config';
 import * as PIXI from 'pixi.js';
 

@@ -11,6 +11,7 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   private inputManager: InputManager;
   private bulletManager: BulletManager;
   private lastShootTime: number;
+  private bulletLevel: number = 1;
   
   // Engine trail - chỉ 1 sprite
   public engineTrail: PIXI.Sprite | null = null;
@@ -253,5 +254,14 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     
     // Add player vào parent sau (để nằm trên)
     parent.addChild(this);
+  }
+
+  public getBulletLevel(): number {
+    return this.bulletLevel;
+  }
+
+  public upgradeBulletLevel(): void {
+    this.bulletLevel = Math.min(this.bulletLevel + 1, 5); // Max level 5
+    console.log(`Player bullet level upgraded to ${this.bulletLevel}`);
   }
 } 
