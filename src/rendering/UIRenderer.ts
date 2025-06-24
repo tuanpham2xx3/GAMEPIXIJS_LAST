@@ -46,7 +46,6 @@ export class UIRenderer {
    */
   public initialize(): void {
     this.createTitle();
-    console.log('🎨 UI initialized');
   }
 
   /**

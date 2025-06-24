@@ -189,8 +189,6 @@ export class GameOrchestrator {
   }
 
   private handleGameOver(): void {
-    console.log('Game Over! Final Score:', this.score);
-    
     // Play lose sound effect
     const audioManager = AudioManager.getInstance();
     audioManager.playLose();
@@ -226,8 +224,6 @@ export class GameOrchestrator {
   }
 
   private handleVictory(): void {
-    console.log('Victory! Game Completed! Final Score:', this.score);
-    
     // Play win sound effect
     const audioManager = AudioManager.getInstance();
     audioManager.playWin();
@@ -264,12 +260,9 @@ export class GameOrchestrator {
 
   public async initialize(assets: GameAssets): Promise<void> {
     try {
-      console.log('Initializing game systems...');
-
       // Initialize AudioManager and load audio
       const audioManager = AudioManager.getInstance();
       await audioManager.loadGameAudio();
-      console.log('AudioManager initialized and audio loaded');
 
       this.inputManager = new InputManager(this.app.view as HTMLCanvasElement);
       this.bulletManager = new BulletManager(this.gameContainer, assets.bulletTexture);
@@ -284,14 +277,11 @@ export class GameOrchestrator {
       // Initialize ItemManager
       this.itemManager = ItemManager.getInstance();
       await this.itemManager.initialize(this.gameContainer);
-      console.log('ItemManager initialized');
 
       this.collisionManager = new CollisionManager();
-      console.log('CollisionManager initialized');
 
       this.levelManager = new LevelManager(this.enemyManager, this.app, this.uiContainer);
       await this.levelManager.initialize();
-      console.log('LevelManager initialized');
 
       this.player = new Player(assets.playerTexture, this.inputManager, this.bulletManager, assets.smokeTexture);
       this.player.addToParent(this.gameContainer);
@@ -305,15 +295,11 @@ export class GameOrchestrator {
       
       // Set warning glow manager cho player
       this.player.setWarningGlowManager(this.warningGlowManager);
-      console.log('WarningGlowManager initialized and connected to player');
 
       // Setup enemies với enemy bullet manager
       if (this.enemyManager && this.enemyBulletManager) {
         this.enemyManager.setEnemyBulletManager(this.enemyBulletManager);
-        console.log('🔫 Enemy bullet manager setup complete');
       }
-
-      console.log('Game systems initialized successfully');
 
     } catch (error) {
       console.error('Failed to initialize game systems:', error);
@@ -323,7 +309,6 @@ export class GameOrchestrator {
 
   public startGame(): void {
     this.app.ticker.add(this.gameLoop.bind(this));
-    console.log('Game started!');
   }
 
   public restartGame(): void {
@@ -434,13 +419,7 @@ export class GameOrchestrator {
   private async processCollision(result: any): Promise<void> {
     const { entityA, entityB, damageToA, damageToB, damage } = result;
 
-    console.log('Processing collision:', {
-      categoryA: entityA.getCategory(),
-      categoryB: entityB.getCategory(),
-      damageToA,
-      damageToB,
-      damage: damage || 'undefined'
-    });
+
 
     // Handle item collection
     if ((entityA.getCategory() === EntityCategory.PLAYER && entityB.getCategory() === EntityCategory.ITEM) ||
@@ -449,7 +428,7 @@ export class GameOrchestrator {
       const item = entityA.getCategory() === EntityCategory.ITEM ? entityA : entityB;
       const itemType = (item as any).getItemType?.();
       
-      console.log(`Item collected: ${itemType}`);
+
       
       if (itemType === 'coin') {
         this.collectCoin();
@@ -469,10 +448,8 @@ export class GameOrchestrator {
     // Use damageToA or fallback to damage
     if (entityA.getCategory() === EntityCategory.PLAYER && (damageToA || damage)) {
       const playerDamage = damageToA || damage;
-      console.log(`Player taking ${playerDamage} damage`);
       const isDestroyed = await (entityA as any).takeDamage(playerDamage);
       if (isDestroyed) {
-        console.log('Player destroyed!');
         this.gameOver();
       }
     }
@@ -480,11 +457,9 @@ export class GameOrchestrator {
     // Use damageToB or fallback to damage
     if (entityB.getCategory() === EntityCategory.ENEMY || entityB.getCategory() === EntityCategory.BOSS) {
       const enemyDamage = damageToB || damage || GameConfig.collision.defaultDamage.playerBullet; // Use config default damage
-      console.log(`Enemy taking ${enemyDamage} damage`);
       const isDestroyed = await (entityB as any).takeDamage(enemyDamage);
       if (isDestroyed) {
         this.score += (entityB as any).getScoreValue ? (entityB as any).getScoreValue() : 100;
-        console.log(`Enemy destroyed! Score: ${this.score}`);
       }
     }
 
@@ -542,8 +517,6 @@ export class GameOrchestrator {
    * Handle level completion
    */
   private onLevelComplete(): void {
-    console.log('Level completed!');
-
     if (this.levelManager) {
       const currentLevel = this.levelManager.getCurrentLevel();
       const nextLevel = currentLevel + 1;
@@ -567,7 +540,6 @@ export class GameOrchestrator {
     if (this.levelManager) {
       this.levelManager.stopLevel();
     }
-    console.log('Congratulations! Game completed! Final Score:', this.score);
     // Trigger victory state instead of game over
     this.gameStateManager.changeState(GameState.VICTORY);
   }
@@ -617,7 +589,7 @@ export class GameOrchestrator {
       this.warningGlowManager.destroy();
     }
 
-    console.log('Game orchestrator cleaned up');
+
   }
 
   public collectCoin(): void {
@@ -627,7 +599,7 @@ export class GameOrchestrator {
     const audioManager = AudioManager.getInstance();
     audioManager.playCoinCollect();
     
-    console.log(`Coin collected! Total coins: ${this.coins}`);
+
   }
 
   public collectBooster(): void {
@@ -644,7 +616,7 @@ export class GameOrchestrator {
       const audioManager = AudioManager.getInstance();
       audioManager.playBoosterCollected();
       
-      console.log(`Booster collected! Level: ${oldLevel} -> ${newLevel}, Damage: ${oldDamage} -> ${newDamage}`);
+
     }
   }
 } 

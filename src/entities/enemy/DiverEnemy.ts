@@ -9,7 +9,7 @@ export class DiverEnemy extends Enemy {
     }
 
     public async setupVisuals(): Promise<void> {
-        console.log('Setting up DiverEnemy visuals...');
+    
         
         const animationManager = AnimationManager.getInstance();
         const config = GameConfig.enemies.diver;
@@ -24,6 +24,6 @@ export class DiverEnemy extends Enemy {
         }
         
         this.addChild(this.sprite);
-        console.log('DiverEnemy animation created successfully');
+    
     }
 } 

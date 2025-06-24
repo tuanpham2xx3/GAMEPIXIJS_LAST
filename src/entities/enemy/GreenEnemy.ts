@@ -9,7 +9,7 @@ export class GreenEnemy extends Enemy {
     }
 
     public async setupVisuals(): Promise<void> {
-        console.log('Setting up GreenEnemy visuals...');
+    
         
         const animationManager = AnimationManager.getInstance();
         const config = GameConfig.enemies.green;
@@ -24,6 +24,6 @@ export class GreenEnemy extends Enemy {
         }
         
         this.addChild(this.sprite);
-        console.log('GreenEnemy animation created successfully');
+    
     }
 } 

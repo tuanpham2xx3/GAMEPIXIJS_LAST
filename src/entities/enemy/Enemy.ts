@@ -62,8 +62,7 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
         this.velocity.x = 0;
         this.velocity.y = config.speed;
         
-        console.log(`Initializing ${this.enemyType} enemy at position (${startPosition.x}, ${startPosition.y})`);
-        console.log(`Enemy visible: ${this.visible}, active: ${this.isActive}`);
+        
     }
 
     public update(deltaTime: number): void {
@@ -128,11 +127,11 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
     }
 
     public async takeDamage(damage: number): Promise<boolean> {
-        console.log(`Enemy ${this.enemyType} taking ${damage} damage. Health: ${this.state.health} -> ${this.state.health - damage}`);
+    
         this.state.health = Math.max(0, this.state.health - damage);
         
         if (this.state.health <= 0) {
-            console.log(`Enemy ${this.enemyType} destroyed!`);
+      
             
             // Play enemy explosion sound effect
             const audioManager = AudioManager.getInstance();
@@ -154,7 +153,7 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
             
             return true; // Enemy destroyed
         }
-        console.log(`Enemy ${this.enemyType} still alive with ${this.state.health} health`);
+  
         return false; // Enemy still alive
     }
 
@@ -172,71 +171,65 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
             return;
         }
 
-        console.log(`Creating texture explosion at (${x}, ${y})`);
-        
         try {
             // Create explosion animation using AnimationManager
             const explosionAnimation = await this.animationManager.createExplosionAnimation({
                 entityWidth: this.width,
                 entityHeight: this.height,
-                scale: 1.5,
-                anchor: { x: 0.5, y: 0.5 }
+                scale: 1.0,
+                loop: false,
+                autoPlay: true
             });
-            
-            // Position and add to parent
+
             explosionAnimation.position.set(x, y);
             parent.addChild(explosionAnimation);
-            console.log('Texture explosion added to scene');
-            
-            // Set up completion handler for cleanup
+
+            // Clean up after animation completes
             explosionAnimation.onComplete = () => {
-                console.log('Texture explosion animation completed');
                 if (explosionAnimation.parent) {
                     explosionAnimation.parent.removeChild(explosionAnimation);
                 }
                 explosionAnimation.destroy();
-                console.log('Texture explosion cleaned up');
             };
-            
-            // Ensure animation starts playing
+
+            // Start animation if not already playing
             if (!explosionAnimation.playing) {
                 explosionAnimation.play();
-                console.log('Started texture explosion animation manually');
             }
-            
+
         } catch (error) {
             console.error('Failed to create texture explosion, using fallback:', error);
-            
+
             // Fallback to graphics explosion
             const explosion = new PIXI.Graphics();
-            explosion.beginFill(0xFFAA00, 0.8); 
+            explosion.beginFill(0xFFAA00, 0.8);
             explosion.drawCircle(0, 0, Math.max(this.width, this.height) / 2);
             explosion.endFill();
             explosion.position.set(x, y);
-            
+
             parent.addChild(explosion);
-            console.log('Fallback explosion added to scene');
+
+            // Animate the fallback explosion
+            let scale = 0.1;
+            let alpha = 1.0;
             
-            // Simple animation
-            let scale = 0.5;
-            let alpha = 0.8;
             const animateExplosion = () => {
-                scale += 1.5;
-                alpha -= 0.04;
+                scale += 0.05;
+                alpha -= 0.03;
                 explosion.scale.set(scale);
                 explosion.alpha = alpha;
-                
-                if (alpha <= 0 || scale >= 3.0) {
+
+                if (alpha <= 0) {
                     if (explosion.parent) {
                         explosion.parent.removeChild(explosion);
                     }
                     explosion.destroy();
-                    console.log('Fallback explosion completed');
                 } else {
                     requestAnimationFrame(animateExplosion);
                 }
             };
-            requestAnimationFrame(animateExplosion);
+            
+            animateExplosion();
         }
     }
 
@@ -280,7 +273,7 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
     // Shooting system setup methods
     public setEnemyBulletManager(bulletManager: EnemyBulletManager): void {
         this.enemyBulletManager = bulletManager;
-        console.log(`🔫 Enemy ${this.enemyType} bullet manager set`);
+  
     }
 
     public setPlayerPosition(playerPosition: Vector2): void {

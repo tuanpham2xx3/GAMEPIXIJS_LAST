@@ -71,7 +71,6 @@ export class FormationManager {
      */
     public async loadFormations(): Promise<boolean> {
         try {
-            console.log('Loading formations from JSON...');
             const response = await fetch('./enemy-formations.json');
             if (!response.ok) {
                 throw new Error(`Failed to fetch formations: ${response.status}`);
@@ -79,10 +78,6 @@ export class FormationManager {
             
             this.formationData = await response.json();
             this.isInitialized = true;
-            
-            console.log('Simple Formation Manager initialized');
-            console.log('Available formations:', this.getFormationNames());
-            console.log('Available levels:', this.getLevelNames());
             
             return true;
         } catch (error) {
@@ -108,7 +103,6 @@ export class FormationManager {
         this.isActive = true;
         this.bossWarningShown = false; // Reset warning flag for new level
 
-        console.log(`Starting level: ${levelId}`);
         this.startCurrentWave();
         return true;
     }
@@ -121,7 +115,6 @@ export class FormationManager {
         
         const level = this.formationData.levels[this.currentLevel];
         if (!level || this.currentWaveIndex >= level.waves.length) {
-            console.log('All waves completed!');
             this.isActive = false;
             return;
         }
@@ -134,21 +127,15 @@ export class FormationManager {
             return;
         }
 
-        console.log(`Starting wave ${this.currentWaveIndex + 1}/${level.waves.length}: ${formation.name}`);
-
         // Check if this is a boss wave and show warning (only if not shown yet)
         if (waveId === 'boss_wave' && !this.bossWarningShown && !this.isShowingWarning) {
-            console.log('👾 Detected boss wave, showing warning...');
             this.bossWarningShown = true; // Mark that warning is shown for this wave
             this.showBossWarning();
             return; // Don't start wave yet, wait for warning to finish
         }
 
-        console.log(`🎯 Actually starting wave: ${waveId}, bossWarningShown: ${this.bossWarningShown}`);
-
         // Start boss music if this is a boss wave
         if (waveId === 'boss_wave') {
-            console.log('🎵 Starting boss music...');
             this.audioManager.playBossMusic();
         }
 
@@ -174,7 +161,6 @@ export class FormationManager {
         if (this.isShowingWarning) {
             this.warningTimer -= deltaTime;
             if (this.warningTimer <= 0) {
-                console.log('🚨 Warning timer finished, hiding warning and starting boss wave...');
                 this.hideBossWarning();
                 this.startCurrentWave(); // Now actually start the boss wave
             }
@@ -206,7 +192,6 @@ export class FormationManager {
                     if (currentWaveId === 'boss_wave' && nextWaveIndex < level.waves.length) {
                         const nextWaveId = level.waves[nextWaveIndex];
                         if (nextWaveId !== 'boss_wave') {
-                            console.log('🎵 Boss wave finished, returning to background music...');
                             this.audioManager.playBackgroundMusic();
                         }
                     }
@@ -225,7 +210,6 @@ export class FormationManager {
     private spawnEnemy(spawn: EnemySpawn): void {
         const position: Vector2 = { x: spawn.x, y: spawn.y };
         this.enemyManager.spawnEnemy(spawn.type, position);
-        console.log(`Spawned ${spawn.type} at (${spawn.x.toFixed(1)}, ${spawn.y.toFixed(1)})`);
     }
 
     /**
@@ -238,7 +222,6 @@ export class FormationManager {
             return;
         }
 
-        console.log(`Testing formation: ${formation.name}`);
         formation.enemies.forEach(enemy => {
             const scaledPos = scalePosition(enemy.x, enemy.y);
             setTimeout(() => {
@@ -281,7 +264,6 @@ export class FormationManager {
         this.currentWaveSpawns = [];
         this.bossWarningShown = false; // Reset warning flag
         this.hideBossWarning(); // Clean up warning if active
-        console.log('Formation manager stopped');
     }
 
     /**
@@ -294,8 +276,6 @@ export class FormationManager {
         }
 
         try {
-            console.log('🚨 Showing boss warning animation...');
-            
             // Play warning sound
             this.audioManager.playWarning();
             
@@ -321,8 +301,6 @@ export class FormationManager {
             // Set warning state
             this.isShowingWarning = true;
             this.warningTimer = this.WARNING_DURATION;
-
-            console.log('✅ Boss warning animation displayed');
         } catch (error) {
             console.error('❌ Failed to show boss warning:', error);
             // If warning fails, just proceed with the wave
@@ -349,8 +327,6 @@ export class FormationManager {
 
         this.isShowingWarning = false;
         this.warningTimer = 0;
-        
-        console.log('🚨 Boss warning animation hidden');
     }
 
     /**

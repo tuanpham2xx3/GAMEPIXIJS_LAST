@@ -9,8 +9,6 @@ export class Enemy2Enemy extends Enemy {
     }
 
     public async setupVisuals(): Promise<void> {
-        console.log('Setting up Enemy2Enemy visuals...');
-        
         const animationManager = AnimationManager.getInstance();
         const config = GameConfig.enemies.enemy2;
         this.sprite = await animationManager.createEnemy2Animation({
@@ -25,6 +23,6 @@ export class Enemy2Enemy extends Enemy {
         }
         
         this.addChild(this.sprite);
-        console.log('Enemy2Enemy animation created successfully');
+    
     }
 } 

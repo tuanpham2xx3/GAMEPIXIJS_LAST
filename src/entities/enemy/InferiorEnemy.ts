@@ -9,7 +9,7 @@ export class InferiorEnemy extends Enemy {
     }
 
     public async setupVisuals(): Promise<void> {
-        console.log('Setting up InferiorEnemy visuals...');
+    
         
         const animationManager = AnimationManager.getInstance();
         const config = GameConfig.enemies.inferior;
@@ -24,6 +24,6 @@ export class InferiorEnemy extends Enemy {
         }
         
         this.addChild(this.sprite);
-        console.log('InferiorEnemy animation created successfully');
+    
     }
 } 

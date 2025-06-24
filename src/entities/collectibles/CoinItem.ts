@@ -24,7 +24,7 @@ export class CoinItem extends Item {
             });
 
             this.addChild(this.animation);
-            console.log('Coin animation setup completed using CoinAnimator');
+      
         } catch (error) {
             console.error('Failed to setup coin visuals:', error);
             // Fallback to simple colored circle
@@ -53,7 +53,7 @@ export class CoinItem extends Item {
 
             this.animation = graphics as any;
             this.addChild(graphics);
-            console.log('Coin fallback visual setup completed');
+      
         } catch (error) {
             console.error('Failed to setup coin fallback visual:', error);
         }
@@ -70,7 +70,6 @@ export class CoinItem extends Item {
     protected applyEffect(): void {
         // Apply coin collection effect
         const config = GameConfig.items.coin;
-        console.log(`Coin collected! Value: ${config.value}`);
         
         // The actual coin adding is handled by GameOrchestrator
         // This method is called from the collision system

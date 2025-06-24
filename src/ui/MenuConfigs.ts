@@ -216,7 +216,6 @@ export class MenuConfigs {
 
   private static toggleAudio(): void {
     this.audioEnabled = !this.audioEnabled;
-    console.log(`Audio ${this.audioEnabled ? 'enabled' : 'disabled'}`);
     
     if (this.universalMenu) {
       const updatedConfig = this.getSettingsConfig();
@@ -234,8 +233,6 @@ export class MenuConfigs {
     if (app?.ticker) {
       app.ticker.maxFPS = this.currentFPS;
     }
-    
-    console.log(`FPS set to ${this.currentFPS}`);
     
     if (this.universalMenu) {
       const updatedConfig = this.getSettingsConfig();

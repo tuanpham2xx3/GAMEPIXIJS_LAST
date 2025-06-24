@@ -77,15 +77,11 @@ export class BasicEnemyAnimator {
      */
     public async createBossAnimation(config: AnimationConfig = {}): Promise<AnimatedSprite> {
         try {
-            console.log('Loading boss animation...');
-            
             const bossTexture = await this.assetManager.loadTexture(AssetManager.paths.BOSS_ANIMATION);
-            console.log('Loaded boss texture:', bossTexture.width, 'x', bossTexture.height);
             
             const baseFrames: Texture[] = [];
             const frameWidth = bossTexture.width / 5;
             const frameHeight = bossTexture.height;
-            console.log('Frame dimensions:', frameWidth, 'x', frameHeight);
 
             // Extract frames from sprite sheet
             for (let i = 0; i < 5; i++) {
@@ -99,7 +95,6 @@ export class BasicEnemyAnimator {
                     )
                 );
                 baseFrames.push(frame);
-                console.log(`✂️ Created frame ${i}:`, i * frameWidth, 0, frameWidth, frameHeight);
             }
 
             // Create ping-pong animation: 0->4 then 4->0
@@ -107,7 +102,6 @@ export class BasicEnemyAnimator {
                 ...baseFrames,
                 ...baseFrames.slice(1, -1).reverse()
             ];
-            console.log('🎞️ Total frames in sequence:', frames.length);
 
             const sprite = AnimationUtils.createAnimatedSprite(frames, {
                 speed: GameConfig.animation.defaultSpeeds.basic,
@@ -118,7 +112,6 @@ export class BasicEnemyAnimator {
                 ...config
             });
             
-            console.log('✨ Boss animation created successfully!');
             return sprite;
         } catch (error) {
             console.error('❌ Error creating boss animation:', error);
@@ -130,16 +123,12 @@ export class BasicEnemyAnimator {
      * Preload all basic enemy animations
      */
     public async preloadAnimations(): Promise<void> {
-        console.log('🎬 Preloading basic enemy animations...');
-        
         try {
             await Promise.all([
                 AnimationUtils.getCachedFrames('enemy_1', () => this.assetManager.loadEnemyAnimations(1)),
                 AnimationUtils.getCachedFrames('enemy_2', () => this.assetManager.loadEnemyAnimations(2)),
                 this.assetManager.loadTexture(AssetManager.paths.BOSS_ANIMATION)
             ]);
-            
-            console.log('✅ Basic enemy animations preloaded successfully!');
         } catch (error) {
             console.error('❌ Failed to preload basic enemy animations:', error);
             throw error;

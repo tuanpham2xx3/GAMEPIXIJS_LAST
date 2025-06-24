@@ -307,11 +307,9 @@ export class UIAnimator {
     }
 
     /**
-     * Preload UI animations
+     * Preload all UI animations
      */
     public async preloadAnimations(): Promise<void> {
-        console.log('🎬 Preloading UI animations...');
-        
         try {
             await Promise.all([
                 this.assetManager.loadTexture('assets/textures/backgrounds/circle.png'),
@@ -319,8 +317,6 @@ export class UIAnimator {
                 this.assetManager.loadTexture('assets/textures/ui/icons/txt_warning.png'),
                 this.assetManager.loadTexture('assets/textures/ui/icons/txt_tutorial.png')
             ]);
-            
-            console.log('✅ UI animations preloaded successfully!');
         } catch (error) {
             console.error('❌ Failed to preload UI animations:', error);
             throw error;

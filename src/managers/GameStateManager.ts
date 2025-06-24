@@ -63,7 +63,7 @@ export class GameStateManager {
     this.updatePauseCapability();
     this.triggerStateChangeCallbacks(newState, data);
 
-    console.log(`State changed: ${transition.from} → ${transition.to}`);
+    
   }
 
   public pause(): boolean {

@@ -9,7 +9,7 @@ export class SoldierEnemy extends Enemy {
     }
 
     public async setupVisuals(): Promise<void> {
-        console.log('Setting up SoldierEnemy visuals...');
+    
         
         const animationManager = AnimationManager.getInstance();
         const config = GameConfig.enemies.soldier;
@@ -24,6 +24,6 @@ export class SoldierEnemy extends Enemy {
         }
         
         this.addChild(this.sprite);
-        console.log('SoldierEnemy animation created successfully');
+    
     }
 } 

@@ -259,8 +259,7 @@ export const updateScreenSize = () => {
     GameConfig.player.startPosition.x = refPlayerX * GameConfig.scale.x;
     GameConfig.player.startPosition.y = refPlayerY * GameConfig.scale.y;
     
-    console.log(`Screen updated: ${oldWidth}x${oldHeight} -> ${GameConfig.screen.width}x${GameConfig.screen.height}`);
-    console.log(`Scale factors: x=${GameConfig.scale.x.toFixed(2)}, y=${GameConfig.scale.y.toFixed(2)}, uniform=${GameConfig.scale.uniform.toFixed(2)}`);
+    
 };
 
 /**

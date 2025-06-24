@@ -25,7 +25,6 @@ export class EnemyManager {
     }
 
     public async initialize(): Promise<void> {
-        console.log('EnemyManager initialized');
     }
 
     private createEnemyByType(type: EnemyType): Enemy {
@@ -109,7 +108,6 @@ export class EnemyManager {
 
     public setEnemyBulletManager(bulletManager: EnemyBulletManager): void {
         this.enemyBulletManager = bulletManager;
-        console.log('🔫 EnemyManager: Enemy bullet manager set');
         
         // Setup cho tất cả enemies hiện tại
         for (const enemy of this.activeEnemies) {

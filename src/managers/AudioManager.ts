@@ -34,7 +34,6 @@ export class AudioManager {
     };
 
     private constructor() {
-        console.log('Initializing AudioManager...');
         this.setupHowler();
     }
 
@@ -48,7 +47,6 @@ export class AudioManager {
     private setupHowler(): void {
         Howler.volume(this.masterVolume);
         Howler.autoUnlock = true;
-        console.log('AudioManager initialized');
     }
 
     /**
@@ -56,11 +54,8 @@ export class AudioManager {
      */
     public async loadGameAudio(): Promise<void> {
         if (this.isAudioLoaded) {
-            console.log('Audio already loaded, skipping...');
             return;
         }
-
-        console.log('🎵 Loading game audio...');
 
         const audioPromises = [
             // Background Music
@@ -103,7 +98,6 @@ export class AudioManager {
         try {
             await Promise.all(audioPromises);
             this.isAudioLoaded = true;
-            console.log('All game audio loaded successfully!');
         } catch (error) {
             console.error('Failed to load some audio files:', error);
         }
@@ -134,26 +128,22 @@ export class AudioManager {
     // Music methods
     public playBackgroundMusic(): void {
         if (this.currentMusic === 'backgroundMusic') {
-            console.log('Background music already playing');
             return;
         }
         
         this.stopAllMusic();
         this.currentMusic = 'backgroundMusic';
         this.play('backgroundMusic');
-        console.log('Started background music');
     }
 
     public playBossMusic(): void {
         if (this.currentMusic === 'bossMusic') {
-            console.log('Boss music already playing');
             return;
         }
         
         this.stopAllMusic();
         this.currentMusic = 'bossMusic';
         this.play('bossMusic');
-        console.log('Started boss music');
     }
 
     public stopAllMusic(): void {

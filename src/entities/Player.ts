@@ -116,7 +116,7 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
       
       // Debug log
       if (GameConfig.debug && isMovingThisFrame) {
-        console.log(`Moving: (${frameMovement.x.toFixed(2)}, ${frameMovement.y.toFixed(2)})`);
+
       }
     } else {
       // Immediately stop movement when pointer is released
@@ -255,7 +255,7 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
       this.warningGlowManager.startWarningGlow();
     }
     
-    console.log('Hit effect started - Player and warning glow blinking');
+    
   }
 
   private endHitEffect(): void {
@@ -276,14 +276,14 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
       this.warningGlowManager.stopWarningGlow();
     }
     
-    console.log('Hit effect ended - Player and warning glow restored');
+    
   }
 
   // Public methods
   public takeDamage(damage: number): boolean {
     // Ignore damage nếu đang trong invincibility frames
     if (this.isInvincible()) {
-      console.log('Player is invincible, damage ignored');
+
       return false;
     }
 
@@ -369,16 +369,12 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     
     const damageIncrease = result.newDamage - result.oldDamage;
     
-    if (result.isSpecialLevel) {
-      console.log(`LEVEL UP! Level ${result.newLevel} - New pattern unlocked! Damage: ${result.newDamage} (+${damageIncrease})`);
-    } else {
-      console.log(`POWER UP! Level ${result.newLevel} - Damage increased to ${result.newDamage} (+${damageIncrease})`);
-    }
+    // Level up logic without logging for performance
   }
 
   public resetBulletLevel(): void {
     this.bulletManager.resetBulletLevel();
-    console.log('Player: Bullet level reset to 1');
+    // Bullet level reset without logging for performance
   }
 
   public getCurrentDamage(): number {

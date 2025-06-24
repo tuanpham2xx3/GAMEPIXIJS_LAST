@@ -47,7 +47,7 @@ export abstract class Item extends PIXI.Container implements Entity, CollidableE
         this.velocity.x = (Math.random() - 0.5) * 20; // Small random horizontal drift
         this.velocity.y = 30; // Slow downward movement
         
-        console.log(`Initializing ${this.itemType} item at position (${startPosition.x}, ${startPosition.y})`);
+    
     }
 
     public update(deltaTime: number): void {
@@ -71,7 +71,7 @@ export abstract class Item extends PIXI.Container implements Entity, CollidableE
         
         if (this.isPlayerNearby && !this.state.isFollowingPlayer) {
             this.state.isFollowingPlayer = true;
-            console.log(`${this.itemType} item started following player`);
+      
         }
     }
 
@@ -154,7 +154,7 @@ export abstract class Item extends PIXI.Container implements Entity, CollidableE
 
     // Collision and Collection Methods
     public collectByPlayer(): void {
-        console.log(`${this.itemType} item collected by player`);
+    
         this.applyEffect();
         this.deactivate();
     }
