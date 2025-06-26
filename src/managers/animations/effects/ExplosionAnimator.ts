@@ -2,6 +2,7 @@ import { AnimatedSprite, Texture, Rectangle, Application } from 'pixi.js';
 import { AnimationConfig } from '../core/AnimationConfig';
 import { AnimationUtils } from '../core/AnimationUtils';
 import { AssetManager } from '../../AssetManager';
+import { GameConfig } from '../../../core/Config';
 
 export class ExplosionAnimator {
     private assetManager: AssetManager;
@@ -50,7 +51,7 @@ export class ExplosionAnimator {
             console.log(`Creating explosion with ${frames.length} frames, scale: ${explosionScale}`);
             
             return AnimationUtils.createAnimatedSprite(frames, {
-                speed: 0.6,
+                speed: GameConfig.animation.effects.explosionSpeed,
                 loop: false,
                 autoPlay: true,
                 scale: explosionScale,
@@ -76,7 +77,7 @@ export class ExplosionAnimator {
             const frames = [fallbackTexture];
             
             return AnimationUtils.createAnimatedSprite(frames, {
-                speed: 0.1,
+                speed: GameConfig.animation.effects.uiFadeSpeed,
                 loop: false,
                 autoPlay: true,
                 scale: config.scale || 1.0,

@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Enemy } from './Enemy';
 import { AnimationManager } from '../../managers/animations/AnimationManager';
+import { GameConfig } from '../../core/Config';
 
 export class NaEnemy extends Enemy {
     constructor() {
@@ -11,10 +12,11 @@ export class NaEnemy extends Enemy {
         console.log('Setting up NaEnemy visuals...');
         
         const animationManager = AnimationManager.getInstance();
+        const config = GameConfig.enemies.na;
         this.sprite = await animationManager.createNaAnimation({
-            scale: 0.45,
+            scale: 0.5,
             enableAnimation: true,
-            animationSpeed: 0.022
+            animationSpeed: config.animationSpeed
         });
         
         if (!this.sprite) {

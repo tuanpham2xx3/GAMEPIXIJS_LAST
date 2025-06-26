@@ -290,6 +290,6 @@ export abstract class Enemy extends PIXI.Container implements Entity, Collidable
 
     public getDamage?(): number {
         // Return default damage for enemy collision with player
-        return 20;
+        return GameConfig.collision.defaultDamage.enemy;
     }
 } 

@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Enemy } from './Enemy';
 import { AnimationManager } from '../../managers/animations/AnimationManager';
+import { GameConfig } from '../../core/Config';
 
 export class InferiorEnemy extends Enemy {
     constructor() {
@@ -11,10 +12,11 @@ export class InferiorEnemy extends Enemy {
         console.log('Setting up InferiorEnemy visuals...');
         
         const animationManager = AnimationManager.getInstance();
+        const config = GameConfig.enemies.inferior;
         this.sprite = await animationManager.createInferiorAnimation({
-            scale: 0.4,
+            scale: 0.5,
             enableAnimation: true,
-            animationSpeed: 0.018
+            animationSpeed: config.animationSpeed
         });
         
         if (!this.sprite) {

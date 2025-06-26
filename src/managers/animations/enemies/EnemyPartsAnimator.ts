@@ -2,6 +2,7 @@ import { Container, Sprite, Texture, Application } from 'pixi.js';
 import { EnemyPartConfig } from '../core/AnimationConfig';
 import { AnimationUtils } from '../core/AnimationUtils';
 import { AssetManager } from '../../AssetManager';
+import { GameConfig } from '../../../core/Config';
 
 export class EnemyPartsAnimator {
     private assetManager: AssetManager;
@@ -74,8 +75,8 @@ export class EnemyPartsAnimator {
             scale: 0.5,
             bodyOffset: { x: 0, y: 0 },
             hornOffset: {
-                left: { x: -15, y: 10 },
-                right: { x: 15, y: 10 }
+                left: { x: -12, y: -20 },
+                right: { x: 12, y: -20 }
             },
             legOffset: {
                 left: { x: -15, y: 5 },
@@ -85,7 +86,7 @@ export class EnemyPartsAnimator {
             },
             rotation: 0,
             enableAnimation: true,
-            animationSpeed: 0.02,
+            animationSpeed: GameConfig.enemies.soldier.animationSpeed,
             ...config
         };
 
@@ -105,11 +106,11 @@ export class EnemyPartsAnimator {
         if (parts.horn_l && parts.horn_r && finalConfig.hornOffset) {
             AnimationUtils.setupAnimatedPart(
                 this.app, container, new Sprite(parts.horn_l), scale, finalConfig.hornOffset.left,
-                'horn', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.02, 1, true
+                'horn', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, true
             );
             AnimationUtils.setupAnimatedPart(
                 this.app, container, new Sprite(parts.horn_r), scale, finalConfig.hornOffset.right,
-                'horn', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.02, 1, false
+                'horn', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, false
             );
         }
 
@@ -117,11 +118,11 @@ export class EnemyPartsAnimator {
         if (parts.leg_l && parts.leg_r && finalConfig.legOffset) {
             AnimationUtils.setupAnimatedPart(
                 this.app, container, new Sprite(parts.leg_l), scale, finalConfig.legOffset.left,
-                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.02, 1, true
+                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, true
             );
             AnimationUtils.setupAnimatedPart(
                 this.app, container, new Sprite(parts.leg_r), scale, finalConfig.legOffset.right,
-                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.02, 1, false
+                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, false
             );
         }
 
@@ -129,11 +130,11 @@ export class EnemyPartsAnimator {
         if (parts.leg_1_l && parts.leg_1_r && finalConfig.legOffset?.left1 && finalConfig.legOffset?.right1) {
             AnimationUtils.setupAnimatedPart(
                 this.app, container, new Sprite(parts.leg_1_l), scale, finalConfig.legOffset.left1,
-                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.02, 1, true
+                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, true
             );
             AnimationUtils.setupAnimatedPart(
                 this.app, container, new Sprite(parts.leg_1_r), scale, finalConfig.legOffset.right1,
-                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.02, 1, false
+                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, false
             );
         }
 
@@ -161,7 +162,7 @@ export class EnemyPartsAnimator {
             },
             rotation: 0,
             enableAnimation: true,
-            animationSpeed: 0.028,
+            animationSpeed: GameConfig.enemies.diver.animationSpeed,
             ...config
         };
 
@@ -181,11 +182,11 @@ export class EnemyPartsAnimator {
         if (parts.wing_l && parts.wing_r && finalConfig.wingOffset) {
             AnimationUtils.setupAnimatedPart(
                 this.app, container, new Sprite(parts.wing_l), scale, finalConfig.wingOffset.left,
-                'horn', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.028, 1, true
+                'horn', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, true
             );
             AnimationUtils.setupAnimatedPart(
                 this.app, container, new Sprite(parts.wing_r), scale, finalConfig.wingOffset.right,
-                'horn', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.028, 1, false
+                'horn', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, false
             );
         }
 
@@ -199,11 +200,11 @@ export class EnemyPartsAnimator {
             
             AnimationUtils.setupAnimatedPart(
                 this.app, container, legL, scale, finalConfig.legOffset.left,
-                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.028, 1, true
+                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, true
             );
             AnimationUtils.setupAnimatedPart(
                 this.app, container, legR, scale, finalConfig.legOffset.right,
-                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.028, 1, false
+                'leg', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, false
             );
         }
 
@@ -231,7 +232,7 @@ export class EnemyPartsAnimator {
             },
             rotation: 0,
             enableAnimation: true,
-            animationSpeed: 0.025,
+            animationSpeed: GameConfig.enemies.green.animationSpeed,
             ...config
         };
 
@@ -241,7 +242,7 @@ export class EnemyPartsAnimator {
         if (parts.leg_l && parts.leg_r && finalConfig.legOffset) {
             AnimationUtils.setupAnimatedPart(
                 this.app, container, new Sprite(parts.leg_l), scale, finalConfig.legOffset.left,
-                'horn', finalConfig.enableAnimation || false, finalConfig.animationSpeed || 0.025, 1, true
+                'horn', finalConfig.enableAnimation || false, finalConfig.animationSpeed, 1, true
             );
             AnimationUtils.setupAnimatedPart(
                 this.app, container, new Sprite(parts.leg_r), scale, finalConfig.legOffset.right,
@@ -291,7 +292,7 @@ export class EnemyPartsAnimator {
             },
             rotation: 0,
             enableAnimation: true,
-            animationSpeed: 0.018,
+            animationSpeed: GameConfig.enemies.inferior.animationSpeed,
             ...config
         };
 
@@ -339,7 +340,7 @@ export class EnemyPartsAnimator {
             },
             rotation: 0,
             enableAnimation: true,
-            animationSpeed: 0.022,
+            animationSpeed: GameConfig.enemies.na.animationSpeed,
             ...config
         };
 
@@ -387,7 +388,7 @@ export class EnemyPartsAnimator {
             },
             rotation: 0,
             enableAnimation: true,
-            animationSpeed: 0.015,
+            animationSpeed: GameConfig.enemies.boss.animationSpeed,
             ...config
         };
 

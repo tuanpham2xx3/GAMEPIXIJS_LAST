@@ -24,7 +24,7 @@ export class EnemyBulletManager {
         const maxEnemyBullets = GameConfig.maxEnemyBullets || 100;
         
         for (let i = 0; i < maxEnemyBullets; i++) {
-            const bullet = new EnemyBullet(this.bulletTexture, 20);
+            const bullet = new EnemyBullet(this.bulletTexture, GameConfig.enemyBullet.damage);
             bullet.visible = false;
             this.bullets.push(bullet);
             this.inactiveBullets.push(bullet);
@@ -36,7 +36,7 @@ export class EnemyBulletManager {
         startPosition: Vector2, 
         direction: Vector2 = { x: 0, y: 1 }, 
         targetPosition?: Vector2,
-        damage: number = 20
+        damage: number = GameConfig.enemyBullet.damage
     ): EnemyBullet | null {
         const bullet = this.inactiveBullets.pop();
         if (!bullet) {
@@ -45,7 +45,14 @@ export class EnemyBulletManager {
         }
 
         bullet.setDamage(damage);
-        bullet.initialize(startPosition, direction, targetPosition);
+        
+        // Use appropriate initialization method
+        if (targetPosition) {
+            bullet.initializeWithTarget(startPosition, direction, targetPosition, damage);
+        } else {
+            bullet.initialize(startPosition, direction, damage);
+        }
+        
         this.activeBullets.push(bullet);
 
         return bullet;

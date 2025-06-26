@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Enemy } from './Enemy';
 import { AnimationManager } from '../../managers/animations/AnimationManager';
+import { GameConfig } from '../../core/Config';
 
 export class SoldierEnemy extends Enemy {
     constructor() {
@@ -11,10 +12,11 @@ export class SoldierEnemy extends Enemy {
         console.log('Setting up SoldierEnemy visuals...');
         
         const animationManager = AnimationManager.getInstance();
+        const config = GameConfig.enemies.soldier;
         this.sprite = await animationManager.createSoldierAnimation({
-            scale: 0.6,
+            scale: 0.5,
             enableAnimation: true,
-            animationSpeed: 0.02
+            animationSpeed: config.animationSpeed
         });
         
         if (!this.sprite) {

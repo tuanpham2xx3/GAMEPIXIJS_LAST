@@ -1,13 +1,14 @@
-import { AnimatedSprite, Application } from 'pixi.js';
+import * as PIXI from 'pixi.js';
 import { AnimationConfig } from '../core/AnimationConfig';
 import { AnimationUtils } from '../core/AnimationUtils';
 import { AssetManager } from '../../AssetManager';
+import { GameConfig } from '../../../core/Config';
 
 export class CoinAnimator {
     private assetManager: AssetManager;
-    private app?: Application;
+    private app?: PIXI.Application;
 
-    constructor(app?: Application) {
+    constructor(app?: PIXI.Application) {
         this.assetManager = AssetManager.getInstance();
         this.app = app;
     }
@@ -15,13 +16,13 @@ export class CoinAnimator {
     /**
      * Create Coin Animation (6 frames)
      */
-    public async createCoinAnimation(config: AnimationConfig = {}): Promise<AnimatedSprite> {
+    public async createCoinAnimation(config: Partial<AnimationConfig> = {}): Promise<PIXI.AnimatedSprite> {
         const frames = await AnimationUtils.getCachedFrames('coins', async () => {
             return await this.assetManager.loadCoins();
         });
 
         return AnimationUtils.createAnimatedSprite(frames, {
-            speed: 0.2,
+            speed: GameConfig.animation.defaultSpeeds.coin,
             loop: true,
             autoPlay: true,
             scale: 0.8,
