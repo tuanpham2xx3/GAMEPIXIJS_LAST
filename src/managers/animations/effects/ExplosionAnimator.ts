@@ -17,18 +17,15 @@ export class ExplosionAnimator {
      * Create Explosion Animation (4x4 sprite sheet)
      */
     public async createExplosionAnimation(
-        x: number, 
-        y: number, 
-        scale: number = 1.0, 
-        config: AnimationConfig = {}
+        config: AnimationConfig & { entityWidth?: number; entityHeight?: number } = {}
     ): Promise<AnimatedSprite> {
         const frames = await AnimationUtils.getCachedFrames('explosion', async () => {
-            // Load hit animation texture (4x4 sprite sheet)
-            const hitTexture = await this.assetManager.loadTexture(AssetManager.paths.HIT_ANIMATION);
+            // Load explosion animation texture (4x4 sprite sheet)
+            const explosionTexture = await this.assetManager.loadTexture('assets/textures/animations/anim_hit.jpg');
             
             const explosionFrames: Texture[] = [];
-            const frameWidth = hitTexture.width / 4;
-            const frameHeight = hitTexture.height / 4;
+            const frameWidth = explosionTexture.width / 4;
+            const frameHeight = explosionTexture.height / 4;
 
             // Read frames in order: left to right, top to bottom
             for (let row = 0; row < 4; row++) {
@@ -40,7 +37,7 @@ export class ExplosionAnimator {
                         frameHeight
                     );
                     
-                    const frame = new Texture(hitTexture.baseTexture, frameRect);
+                    const frame = new Texture(explosionTexture.baseTexture, frameRect);
                     explosionFrames.push(frame);
                 }
             }
@@ -48,19 +45,22 @@ export class ExplosionAnimator {
             return explosionFrames;
         });
 
-        const explosionScale = scale * (config.scale || 1.0);
+        // Calculate scale based on entity size if provided
+        let explosionScale = config.scale || 1.0;
+        if (config.entityWidth && config.entityHeight) {
+            // Scale explosion to be proportional to enemy size
+            const avgEntitySize = (config.entityWidth + config.entityHeight) / 2;
+            explosionScale = Math.max(0.5, Math.min(2.0, avgEntitySize / 60)); // Clamp between 0.5x and 2x
+        }
 
         const explosion = AnimationUtils.createAnimatedSprite(frames, {
             speed: GameConfig.animation.defaultSpeeds.explosion,
-            loop: false,
-            autoPlay: true,
+            loop: config.loop !== undefined ? config.loop : false,
+            autoPlay: config.autoPlay !== undefined ? config.autoPlay : true,
             scale: explosionScale,
             anchor: { x: 0.5, y: 0.5 },
             ...config
         });
-
-        explosion.x = x;
-        explosion.y = y;
 
         return explosion;
     }
@@ -71,11 +71,11 @@ export class ExplosionAnimator {
     public async preloadAnimations(): Promise<void> {
         try {
             await AnimationUtils.getCachedFrames('explosion', async () => {
-                const hitTexture = await this.assetManager.loadTexture(AssetManager.paths.HIT_ANIMATION);
+                const explosionTexture = await this.assetManager.loadTexture('assets/textures/animations/anim_hit.jpg');
                 
                 const explosionFrames: Texture[] = [];
-                const frameWidth = hitTexture.width / 4;
-                const frameHeight = hitTexture.height / 4;
+                const frameWidth = explosionTexture.width / 4;
+                const frameHeight = explosionTexture.height / 4;
 
                 for (let row = 0; row < 4; row++) {
                     for (let col = 0; col < 4; col++) {
@@ -86,7 +86,7 @@ export class ExplosionAnimator {
                             frameHeight
                         );
                         
-                        const frame = new Texture(hitTexture.baseTexture, frameRect);
+                        const frame = new Texture(explosionTexture.baseTexture, frameRect);
                         explosionFrames.push(frame);
                     }
                 }

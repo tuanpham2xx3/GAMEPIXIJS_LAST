@@ -11,32 +11,22 @@ export class BossEnemy extends Enemy {
         super('boss');
     }
 
-    protected async setupVisuals(): Promise<void> {
-        try {
-            // Setup boss visuals
-            const texture = await this.assetManager.loadTexture(AssetManager.paths.BOSS_SHIP);
-            
-            if (texture) {
-                const sprite = new PIXI.Sprite(texture);
-                sprite.anchor.set(0.5);
-                sprite.scale.set(0.8);
-                this.addChild(sprite);
-            }
-
-            // Create boss animation
-            const animation = await this.animationManager.createBossAnimation({
-                loop: true,
-                autoPlay: true,
-                scale: 0.8,
-                anchor: { x: 0.5, y: 0.5 }
-            });
-            
-            this.addChild(animation);
-
-        } catch (error) {
-            console.error('Failed to setup boss visuals:', error);
-            this.setupFallbackVisual();
+    public async setupVisuals(): Promise<void> {
+        const animationManager = AnimationManager.getInstance();
+        const config = GameConfig.enemies.boss;
+        
+        this.sprite = await animationManager.createBossAnimation({
+            scale: 0.8,
+            speed: config.animationSpeed,
+            loop: true,
+            autoPlay: true
+        });
+        
+        if (!this.sprite) {
+            throw new Error('Failed to create Boss animation');
         }
+        
+        this.addChild(this.sprite);
     }
 
     public update(deltaTime: number): void {
@@ -59,7 +49,5 @@ export class BossEnemy extends Enemy {
         if (this.y > GameConfig.screen.height + 60) this.y = GameConfig.screen.height + 60;
     }
 
-    private setupFallbackVisual(): void {
-        // Implementation of setupFallbackVisual method
-    }
+
 } 
