@@ -146,8 +146,8 @@ export const GameConfig = {
         src: 'assets/textures/backgrounds/bg.jpg'
     },
 
-    //Debug
-    debug: true,
+    // //Debug
+    // debug: true,
 
     // Collision Configuration
     collision: {

@@ -110,13 +110,13 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
       this.moveByFrameMovement(frameMovement, deltaTime);
       
       // Check if actually moving this frame (more strict threshold)
-      const isMovingThisFrame = Math.abs(frameMovement.x) > 0.01 || Math.abs(frameMovement.y) > 0.01;
+      const isMovingThisFrame = Math.abs(frameMovement.x) > 0.005 || Math.abs(frameMovement.y) > 0.005;
       this.state.isMoving = isMovingThisFrame;
       this.state.isShooting = true; // Shoot whenever mouse/finger is down
       
-      // Debug log
+      // Debug log with more detailed information
       if (GameConfig.debug && isMovingThisFrame) {
-
+        console.log(`Player Movement - Frame: (${frameMovement.x.toFixed(3)}, ${frameMovement.y.toFixed(3)}), Position: (${this.x.toFixed(1)}, ${this.y.toFixed(1)}), DeltaTime: ${deltaTime.toFixed(3)}`);
       }
     } else {
       // Immediately stop movement when pointer is released
@@ -129,24 +129,32 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
 
   private moveByFrameMovement(frameMovement: Vector2, deltaTime: number): void {
     // Only move if there's actual movement
-    const hasMovement = Math.abs(frameMovement.x) > 0.01 || Math.abs(frameMovement.y) > 0.01;
+    const hasMovement = Math.abs(frameMovement.x) > 0.005 || Math.abs(frameMovement.y) > 0.005;
     
     if (hasMovement) {
       // Direct movement mapping - player moves exactly as much as mouse/finger moves
       const movementScale = 1.0; // Scale factor for sensitivity adjustment
       
-      // Move player by the exact amount of frame movement
-      this.x += frameMovement.x * movementScale;
-      this.y += frameMovement.y * movementScale;
+      // Calculate new position
+      const newX = this.x + frameMovement.x * movementScale;
+      const newY = this.y + frameMovement.y * movementScale;
+      
+      // Apply boundaries before setting position
+      const boundaries = getBoundaries();
+      const screenWidth = GameConfig.screen.width;
+      const screenHeight = GameConfig.screen.height;
+      const playerHalfWidth = this.width / 2;
+      const playerHalfHeight = this.height / 2;
+
+      // Clamp position to boundaries
+      this.x = Math.max(playerHalfWidth, Math.min(screenWidth - playerHalfWidth, newX));
+      this.y = Math.max(playerHalfHeight, Math.min(screenHeight - playerHalfHeight, newY));
       
       // Set velocity for smooth animation and other systems that might need it
       if (deltaTime > 0) {
         this.velocity.x = (frameMovement.x * movementScale) / deltaTime;
         this.velocity.y = (frameMovement.y * movementScale) / deltaTime;
       }
-      
-      // Apply boundaries after movement
-      this.applyBoundaries();
     } else {
       // No movement - stop velocity
       this.velocity.x = 0;
