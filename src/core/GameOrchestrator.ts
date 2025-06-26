@@ -311,6 +311,10 @@ export class GameOrchestrator {
     this.app.ticker.add(this.gameLoop.bind(this));
   }
 
+  public getApp(): PIXI.Application {
+    return this.app;
+  }
+
   public restartGame(): void {
     this.gameStateManager.resetSession();
     this.gameStateManager.changeState(GameState.PLAYING);
@@ -484,8 +488,11 @@ export class GameOrchestrator {
     const playerState = this.player ? this.player.getState() : { isMoving: false };
     const collisionStats = this.collisionManager ? this.collisionManager.getCollisionStats() : { totalChecks: 0 };
     const waveProgress = this.levelManager ? this.levelManager.getWaveProgress() : 'Wave 0/0';
-    const levelProgress = this.levelManager ? this.levelManager.getLevelElapsedTime() : 0;
     const currentLevel = this.levelManager ? this.levelManager.getCurrentLevel() : 1;
+
+    // Calculate game session elapsed time
+    const sessionData = this.gameStateManager.getSession();
+    const gameElapsedTime = Math.floor((Date.now() - sessionData.startTime) / 1000);
 
     const gameStats: GameStats = {
       score: this.score,
@@ -500,7 +507,7 @@ export class GameOrchestrator {
       // Additional detailed stats
       currentLevel: currentLevel,
       waveProgress: waveProgress,
-      levelProgress: Math.round(levelProgress),
+      levelProgress: gameElapsedTime, // Use game session time instead of level time
       playerPosition: { x: Math.round(playerPos.x), y: Math.round(playerPos.y) },
       isPlayerMoving: playerState.isMoving || false,
       collisionChecks: collisionStats.totalChecks,

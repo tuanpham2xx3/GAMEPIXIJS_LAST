@@ -8,7 +8,7 @@ export class MenuConfigs {
   private static universalMenu: any = null;
   private static audioEnabled: boolean = true;
   private static currentFPS: number = 60;
-  private static fpsOptions: number[] = [60, 30, 15];
+  private static fpsOptions: number[] = [30, 60, 120];
   private static previousMenuConfig: any = null;
 
   public static initialize(gameStateManager: GameStateManager, universalMenu?: any, gameOrchestrator?: any): void {
@@ -228,12 +228,28 @@ export class MenuConfigs {
     const nextIndex = (currentIndex + 1) % this.fpsOptions.length;
     this.currentFPS = this.fpsOptions[nextIndex];
     
-    // Access the PIXI app through a more reliable method
-    const app = (window as any).app;
-    if (app?.ticker) {
-      app.ticker.maxFPS = this.currentFPS;
+    // Try multiple ways to access the PIXI app
+    let app = null;
+    
+    // Try window.app first
+    if ((window as any).app) {
+      app = (window as any).app;
     }
     
+    // Try through gameOrchestrator if available
+    if (!app && this.gameOrchestrator) {
+      app = this.gameOrchestrator.app || this.gameOrchestrator.getApp?.();
+    }
+    
+    // Apply FPS setting
+    if (app?.ticker) {
+      app.ticker.maxFPS = this.currentFPS;
+      console.log(`FPS set to: ${this.currentFPS}`);
+    } else {
+      console.warn('Could not access PIXI app to set FPS');
+    }
+    
+    // Update the menu display
     if (this.universalMenu) {
       const updatedConfig = this.getSettingsConfig();
       this.universalMenu.configure(updatedConfig);
