@@ -147,7 +147,7 @@ export const GameConfig = {
     },
 
     // //Debug
-    // debug: true,
+    debug: false,
 
     // Collision Configuration
     collision: {
