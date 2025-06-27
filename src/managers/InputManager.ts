@@ -1,8 +1,10 @@
 import { InputState, Vector2 } from "../types/EntityTypes";
+import { GameConfig } from "../core/Config";
 
 export class InputManager {
     private inputState: InputState;
     private canvas: HTMLCanvasElement;
+    private accumulatedMovement: Vector2 = { x: 0, y: 0 }; // Accumulate movement for high FPS
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -48,10 +50,13 @@ export class InputManager {
 
     private getTouchPositon(touch : Touch): Vector2 {
         const rect = this.canvas.getBoundingClientRect();
-        return {
+        const rawPosition = {
             x: touch.clientX - rect.left,
             y: touch.clientY - rect.top
         };
+        
+        // Apply scaling if needed for touch coordinates
+        return this.scaleInputPosition(rawPosition);
     }
 
     private startPointer(position: Vector2): void {
@@ -63,10 +68,37 @@ export class InputManager {
 
     private getMousePosition(event: MouseEvent): Vector2 {
         const rect = this.canvas.getBoundingClientRect();
-        return {
+        const rawPosition = {
             x: event.clientX - rect.left,
             y: event.clientY - rect.top
         };
+        
+        // Apply scaling to convert from screen coordinates to game coordinates
+        return this.scaleInputPosition(rawPosition);
+    }
+
+    private scaleInputPosition(screenPosition: Vector2): Vector2 {
+        // If canvas is scaled differently from window, we need to account for that
+        const canvasDisplayWidth = this.canvas.offsetWidth;
+        const canvasDisplayHeight = this.canvas.offsetHeight;
+        const canvasActualWidth = this.canvas.width;
+        const canvasActualHeight = this.canvas.height;
+        
+        // Calculate canvas scaling factors
+        const canvasScaleX = canvasActualWidth / canvasDisplayWidth;
+        const canvasScaleY = canvasActualHeight / canvasDisplayHeight;
+        
+        const scaledPosition = {
+            x: screenPosition.x * canvasScaleX,
+            y: screenPosition.y * canvasScaleY
+        };
+        
+        // Debug scaling if needed
+        if (GameConfig.debug && (canvasScaleX !== 1 || canvasScaleY !== 1)) {
+            console.log(`Input Scaling - Display: ${canvasDisplayWidth}x${canvasDisplayHeight}, Actual: ${canvasActualWidth}x${canvasActualHeight}, Scale: ${canvasScaleX.toFixed(3)}x${canvasScaleY.toFixed(3)}`);
+        }
+        
+        return scaledPosition;
     }
 
     private onPointerMove(event: MouseEvent): void {
@@ -83,12 +115,15 @@ export class InputManager {
             y: position.y - this.inputState.currentPosition.y
         };
 
-        //Only update frameMovement if actual movement
-        const threshold = 0.1; //Minium movement threshold
-        if (Math.abs(movement.x) > threshold || Math.abs(movement.y) > threshold) {
-            this.inputState.frameMovement = movement;
-        } else {
-            this.inputState.frameMovement = {x: 0, y: 0};
+        // Add to accumulated movement instead of using threshold
+        this.accumulatedMovement.x += movement.x;
+        this.accumulatedMovement.y += movement.y;
+
+        // Use much smaller threshold or no threshold for better precision
+        const threshold = 0.01;
+        if (Math.abs(this.accumulatedMovement.x) > threshold || Math.abs(this.accumulatedMovement.y) > threshold) {
+            this.inputState.frameMovement = { ...this.accumulatedMovement };
+            // Don't reset accumulated movement here - let getFrameMovement() handle it
         }
 
         //Update position
@@ -108,6 +143,7 @@ export class InputManager {
         this.inputState.isPointerDown = false;
         //Reset movement when pointer is released
         this.inputState.frameMovement = {x: 0, y: 0};
+        this.accumulatedMovement = {x: 0, y: 0};
         this.inputState.previousPosition = {x: 0, y: 0};
         this.inputState.currentPosition = {x: 0, y: 0};
     }
@@ -123,8 +159,11 @@ export class InputManager {
 
     public getFrameMovement(): Vector2 {
         const movement = { ...this.inputState.frameMovement };
-        //Reset frame movement after reading it to ensure it's only used once per frame
+        
+        // Reset both frame movement and accumulated movement after reading
         this.inputState.frameMovement = {x: 0, y: 0};
+        this.accumulatedMovement = {x: 0, y: 0};
+        
         return movement;
     }
 
@@ -144,9 +183,4 @@ export class InputManager {
         this.canvas.removeEventListener('touchcancel', this.onPointerEnd.bind(this));
 
     }
-
-
-
-
-
 }

@@ -48,6 +48,9 @@ export class GameBootstrapper {
     // Add to DOM
     document.body.appendChild(app.view as HTMLCanvasElement);
     
+    // Expose app globally for FPS settings
+    (window as any).app = app;
+    
     return app;
   }
 

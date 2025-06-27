@@ -8,6 +8,8 @@ export class LevelManager {
     private currentLevel: number = 0;
     private isLevelActive: boolean = false;
     private isInitialized: boolean = false;
+    private levelStartTime: number = 0;
+    private levelElapsedTime: number = 0;
 
     constructor(enemyManager: EnemyManager, app?: Application, uiContainer?: Container) {
         this.enemyManager = enemyManager;
@@ -44,6 +46,7 @@ export class LevelManager {
 
         this.currentLevel = levelNumber;
         this.isLevelActive = true;
+        this.levelStartTime = Date.now();
         
         return this.formationManager.startLevel(levelId);
     }
@@ -54,9 +57,10 @@ export class LevelManager {
     public update(deltaTime: number): void {
         if (!this.isLevelActive) return;
 
+        // Update elapsed time while level is active
+        this.levelElapsedTime = Date.now() - this.levelStartTime;
 
         this.formationManager.update(deltaTime);
-
 
         if (this.formationManager.isLevelComplete()) {
             this.completeLevel();
@@ -68,6 +72,7 @@ export class LevelManager {
      */
     private completeLevel(): void {
         this.isLevelActive = false;
+        this.levelElapsedTime = Date.now() - this.levelStartTime;
     }
 
     /**
@@ -113,8 +118,13 @@ export class LevelManager {
 
 
     public getLevelElapsedTime(): number {
-
-        return 0;
+        if (this.isLevelActive) {
+            // Return current elapsed time in seconds
+            return Math.floor((Date.now() - this.levelStartTime) / 1000);
+        } else {
+            // Return final elapsed time in seconds
+            return Math.floor(this.levelElapsedTime / 1000);
+        }
     }
 
     public getWaveProgress(): string {
