@@ -9,7 +9,7 @@ export class NaEnemy extends Enemy {
     }
 
     public async setupVisuals(): Promise<void> {
-        console.log('Setting up NaEnemy visuals...');
+    
         
         const animationManager = AnimationManager.getInstance();
         const config = GameConfig.enemies.na;
@@ -24,6 +24,6 @@ export class NaEnemy extends Enemy {
         }
         
         this.addChild(this.sprite);
-        console.log('NaEnemy animation created successfully');
+    
     }
 } 

@@ -17,6 +17,7 @@ export class UniversalMenu extends PIXI.Container {
   private titleText: PIXI.Text | null = null;
   private background: PIXI.Graphics | null = null;
   private menuPanel: PIXI.Graphics | null = null;
+  private statsContainer: PIXI.Container | null = null;
   private isVisible: boolean = false;
 
   constructor() {
@@ -34,12 +35,17 @@ export class UniversalMenu extends PIXI.Container {
   private rebuild(): void {
     this.removeChildren();
     this.buttons = [];
+    this.statsContainer = null;
+    this.selectedIndex = -1; // Reset to no selection initially
     
     if (!this.config) return;
 
     this.createBackground();
     this.createMenuPanel();
     this.createTitle();
+    if (this.config.stats) {
+      this.createStatsDisplay();
+    }
     this.createButtons();
     this.updateSelection();
   }
@@ -57,34 +63,143 @@ export class UniversalMenu extends PIXI.Container {
   private createMenuPanel(): void {
     if (!this.config) return;
 
-    const panelWidth = 400;
-    const panelHeight = this.config.buttons.length * 80 + 200;
+    const isVictory = this.config.context === 'victory';
+    const isGameOver = this.config.context === 'game_over';
+    const panelWidth = 450; // Slightly wider
+    const hasStats = (isVictory || isGameOver) && this.config.stats;
+    const extraHeight = hasStats ? 200 : 0; // More space for stats and better spacing
+    const panelHeight = this.config.buttons.length * 80 + 250 + extraHeight;
     const panelX = (GameConfig.screen.width - panelWidth) / 2;
     const panelY = (GameConfig.screen.height - panelHeight) / 2;
 
     this.menuPanel = new PIXI.Graphics();
     
-    this.menuPanel.lineStyle(3, 0x00BFFF, 1);
-    this.menuPanel.beginFill(0x1a1a2e, 0.95);
+    // Victory screen gets gold/yellow theme, Game Over gets red theme
+    if (isVictory) {
+      this.menuPanel.lineStyle(3, 0xFFD700, 1); // Gold border
+      this.menuPanel.beginFill(0x2a2a1a, 0.95); // Dark gold background
+    } else if (isGameOver) {
+      this.menuPanel.lineStyle(3, 0xFF4444, 1); // Red border
+      this.menuPanel.beginFill(0x2a1a1a, 0.95); // Dark red background
+    } else {
+      this.menuPanel.lineStyle(3, 0x00BFFF, 1);
+      this.menuPanel.beginFill(0x1a1a2e, 0.95);
+    }
+    
     this.menuPanel.drawRoundedRect(panelX, panelY, panelWidth, panelHeight, 15);
     this.menuPanel.endFill();
 
-    this.menuPanel.lineStyle(1, 0x16213e, 0.8);
-    this.menuPanel.beginFill(0x0f3460, 0.3);
+    if (isVictory) {
+      this.menuPanel.lineStyle(1, 0xB8860B, 0.8); // Dark gold inner
+      this.menuPanel.beginFill(0x8B7355, 0.3); // Brown gold fill
+    } else if (isGameOver) {
+      this.menuPanel.lineStyle(1, 0x8B0000, 0.8); // Dark red inner
+      this.menuPanel.beginFill(0x654321, 0.3); // Dark brown fill
+    } else {
+      this.menuPanel.lineStyle(1, 0x16213e, 0.8);
+      this.menuPanel.beginFill(0x0f3460, 0.3);
+    }
+    
     this.menuPanel.drawRoundedRect(panelX + 10, panelY + 10, panelWidth - 20, panelHeight - 20, 10);
     this.menuPanel.endFill();
 
     this.addChild(this.menuPanel);
   }
 
+  private createStatsDisplay(): void {
+    if (!this.config?.stats) return;
+
+    this.statsContainer = new PIXI.Container();
+    
+    const isGameOver = this.config.context === 'game_over';
+    
+    // Different icon and message for game over vs victory
+    const iconText = isGameOver ? '💀 GAME OVER 💀' : '🏆 GAME COMPLETED! 🏆';
+    const iconColor = isGameOver ? ['#FF4444', '#CC0000'] : ['#FFD700', '#FFA500'];
+    const iconStroke = isGameOver ? '#4B0000' : '#8B4513';
+    
+    const statusText = new PIXI.Text(iconText, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 20,
+      fontWeight: 'bold',
+      fill: iconColor,
+      stroke: iconStroke,
+      strokeThickness: 2,
+      align: 'center'
+    });
+    statusText.anchor.set(0.5);
+    statusText.x = GameConfig.screen.width / 2;
+    statusText.y = GameConfig.screen.height / 2 - 60; // Move up closer to title
+    this.statsContainer.addChild(statusText);
+
+    // Stats display - position relative to panel center
+    const stats = this.config.stats;
+    const centerY = GameConfig.screen.height / 2;
+    const statsStartY = centerY - 20; // Start stats just above center
+    const spacing = 25; // Reduce spacing
+
+    // Score
+    const scoreText = new PIXI.Text(`Score: ${stats.score.toLocaleString()}`, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 18,
+      fontWeight: 'bold',
+      fill: '#FFFFFF',
+      align: 'center'
+    });
+    scoreText.anchor.set(0.5);
+    scoreText.x = GameConfig.screen.width / 2;
+    scoreText.y = statsStartY;
+    this.statsContainer.addChild(scoreText);
+
+    // Coins
+    const coinsText = new PIXI.Text(`Coins: ${stats.coins}`, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 18,
+      fontWeight: 'bold',
+      fill: isGameOver ? '#FF6666' : '#FFD700',
+      align: 'center'
+    });
+    coinsText.anchor.set(0.5);
+    coinsText.x = GameConfig.screen.width / 2;
+    coinsText.y = statsStartY + spacing;
+    this.statsContainer.addChild(coinsText);
+
+    // Time
+    const timeText = new PIXI.Text(`Time: ${stats.time}`, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 18,
+      fontWeight: 'bold',
+      fill: '#87CEEB',
+      align: 'center'
+    });
+    timeText.anchor.set(0.5);
+    timeText.x = GameConfig.screen.width / 2;
+    timeText.y = statsStartY + spacing * 2;
+    this.statsContainer.addChild(timeText);
+
+    this.addChild(this.statsContainer);
+  }
+
   private createTitle(): void {
     if (!this.config) return;
 
+    const isVictory = this.config.context === 'victory';
+    const isGameOver = this.config.context === 'game_over';
+    
+    let titleColor;
+    if (isVictory) {
+      titleColor = ['#FFD700', '#FFA500']; // Gold for victory
+    } else if (isGameOver) {
+      titleColor = ['#FF4444', '#CC0000']; // Red for game over
+    } else {
+      titleColor = ['#00BFFF', '#87CEEB']; // Blue for normal menus
+    }
+    
     this.titleText = new PIXI.Text(this.config.title, {
       fontFamily: 'Arial, sans-serif',
       fontSize: 42,
       fontWeight: 'bold',
-      fill: ['#00BFFF', '#87CEEB'],
+      fill: titleColor,
       stroke: '#1a1a2e',
       strokeThickness: 3,
       dropShadow: true,
@@ -97,7 +212,9 @@ export class UniversalMenu extends PIXI.Container {
 
     this.titleText.anchor.set(0.5);
     this.titleText.x = GameConfig.screen.width / 2;
-    this.titleText.y = GameConfig.screen.height / 2 - 150;
+    // Position title higher up for victory/game over screens
+    const hasStats = this.config.stats;
+    this.titleText.y = hasStats ? GameConfig.screen.height / 2 - 120 : GameConfig.screen.height / 2 - 100;
     
     this.addChild(this.titleText);
   }
@@ -106,9 +223,14 @@ export class UniversalMenu extends PIXI.Container {
     if (!this.config) return;
 
     const visibleButtons = this.config.buttons.filter(btn => btn.visible);
-    const startY = GameConfig.screen.height / 2 - 50;
-    const spacing = 70;
-    const buttonWidth = 300;
+    const isVictory = this.config.context === 'victory';
+    const isGameOver = this.config.context === 'game_over';
+    const hasStats = (isVictory || isGameOver) && this.config.stats;
+    // Push buttons down much more for stats screens to avoid overlap
+    const extraOffset = hasStats ? 120 : 0; 
+    const startY = GameConfig.screen.height / 2 + extraOffset;
+    const spacing = 60; // Reduce spacing slightly
+    const buttonWidth = 320; // Wider buttons to match panel
     const buttonHeight = 50;
 
     visibleButtons.forEach((button, index) => {
@@ -150,7 +272,9 @@ export class UniversalMenu extends PIXI.Container {
       });
 
       container.on('pointerout', () => {
-        
+        // Reset selection when mouse leaves all buttons
+        this.selectedIndex = -1;
+        this.updateSelection();
       });
 
       const buttonGraphics: MenuButtonGraphics = {
@@ -168,28 +292,30 @@ export class UniversalMenu extends PIXI.Container {
 
   private updateSelection(): void {
     this.buttons.forEach((buttonGraphics, index) => {
-      const isSelected = index === this.selectedIndex;
+      const isSelected = index === this.selectedIndex && this.selectedIndex >= 0;
       
       buttonGraphics.background.clear();
       
       if (isSelected) {
+        // Hover effect - highlighted
         buttonGraphics.background.lineStyle(2, 0x00BFFF, 1);
         buttonGraphics.background.beginFill(0x00BFFF, 0.2);
-        buttonGraphics.background.drawRoundedRect(0, 0, 300, 50, 8);
+        buttonGraphics.background.drawRoundedRect(0, 0, 320, 50, 8);
         buttonGraphics.background.endFill();
         
         buttonGraphics.background.lineStyle(1, 0x87CEEB, 0.6);
         buttonGraphics.background.beginFill(0xFFFFFF, 0.1);
-        buttonGraphics.background.drawRoundedRect(2, 2, 296, 46, 6);
+        buttonGraphics.background.drawRoundedRect(2, 2, 316, 46, 6);
         buttonGraphics.background.endFill();
         
         buttonGraphics.text.style.fill = '#FFFFFF';
         buttonGraphics.text.style.fontSize = 22;
         buttonGraphics.text.style.fontWeight = 'bold';
       } else {
+        // Normal state - unselected
         buttonGraphics.background.lineStyle(1, 0x555555, 0.8);
         buttonGraphics.background.beginFill(0x2a2a2a, 0.6);
-        buttonGraphics.background.drawRoundedRect(0, 0, 300, 50, 8);
+        buttonGraphics.background.drawRoundedRect(0, 0, 320, 50, 8);
         buttonGraphics.background.endFill();
         
         buttonGraphics.text.style.fill = '#E0E0E0';
@@ -200,35 +326,7 @@ export class UniversalMenu extends PIXI.Container {
   }
 
   public handleInput(key: string): boolean {
-    if (!this.config || this.buttons.length === 0) return false;
-
-    switch (key) {
-      case 'ArrowUp':
-        this.selectedIndex = Math.max(0, this.selectedIndex - 1);
-        this.updateSelection();
-        return true;
-
-      case 'ArrowDown':
-        this.selectedIndex = Math.min(this.buttons.length - 1, this.selectedIndex + 1);
-        this.updateSelection();
-        return true;
-
-      case 'Enter':
-        if (this.buttons[this.selectedIndex]) {
-          this.buttons[this.selectedIndex].button.action();
-          return true;
-        }
-        break;
-
-      default:
-        const button = this.buttons.find(btn => btn.button.key.toLowerCase() === key.toLowerCase());
-        if (button) {
-          button.button.action();
-          return true;
-        }
-        break;
-    }
-
+    // Disabled keyboard navigation - only mouse/touch input allowed
     return false;
   }
 

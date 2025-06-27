@@ -109,7 +109,7 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 40,
             shootInterval: 1000,
-            animationSpeed: 0.015,
+            animationSpeed: 0.5,
             scoreValue: 1000
         },
         enemy1: {
@@ -119,7 +119,7 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 17,
             shootInterval: 2800,
-            animationSpeed: 0.012,
+            animationSpeed: 0.5,
             scoreValue: 110
         },
         enemy2: {
@@ -129,16 +129,16 @@ export const GameConfig = {
             movementPattern: 'straight',
             bulletDamage: 20,
             shootInterval: 2200,
-            animationSpeed: 0.018,
+            animationSpeed: 0.5,
             scoreValue: 160
         }
     } as Record<EnemyType, EnemyConfig & { animationSpeed: number }>,
 
     //Performance
-    maxBullets: 50,
-    maxEnemyBullets: 100,
-    maxEnemies: 30,
-    maxItems: 20,
+    maxBullets: 20,
+    maxEnemyBullets: 30,
+    maxEnemies: 15,
+    maxItems: 10,
 
     //Background scrolling
     background: {
@@ -259,8 +259,7 @@ export const updateScreenSize = () => {
     GameConfig.player.startPosition.x = refPlayerX * GameConfig.scale.x;
     GameConfig.player.startPosition.y = refPlayerY * GameConfig.scale.y;
     
-    console.log(`Screen updated: ${oldWidth}x${oldHeight} -> ${GameConfig.screen.width}x${GameConfig.screen.height}`);
-    console.log(`Scale factors: x=${GameConfig.scale.x.toFixed(2)}, y=${GameConfig.scale.y.toFixed(2)}, uniform=${GameConfig.scale.uniform.toFixed(2)}`);
+    
 };
 
 /**

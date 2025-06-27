@@ -103,16 +103,16 @@
   },
   "levels": {
     "level_1": {
-      "waves": ["wave_1", "wave_2"],
-      "waveDelay": 10
+      "waves": ["wave_1"],
+      "waveDelay": 1
     },
     "level_2": {
-      "waves": ["wave_2", "wave_3", "wave_4", "wave_5", "wave_6"],
-      "waveDelay": 15
+      "waves": ["wave_2"],
+      "waveDelay": 5
     },
     "level_3": {
-      "waves": ["wave_3", "wave_4", "wave_5", "wave_6", "boss_wave"],
-      "waveDelay": 20
+      "waves": ["wave_3","boss_wave"],
+      "waveDelay": 10
     }
   }
 } 

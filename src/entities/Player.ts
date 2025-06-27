@@ -4,6 +4,7 @@ import { GameConfig, getBoundaries } from '../core/Config';
 import { InputManager } from '../managers/InputManager';
 import { BulletManager } from '../managers/BulletManager';
 import { WarningGlowManager } from '../managers/animations/effects/WarningGlowManager';
+import { AudioManager } from '../managers/AudioManager';
 
 export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
   public velocity: Vector2;
@@ -115,7 +116,7 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
       
       // Debug log
       if (GameConfig.debug && isMovingThisFrame) {
-        console.log(`Moving: (${frameMovement.x.toFixed(2)}, ${frameMovement.y.toFixed(2)})`);
+
       }
     } else {
       // Immediately stop movement when pointer is released
@@ -174,6 +175,10 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     const shootDirection: Vector2 = { x: 0, y: -1 }; // Shoot upward
     
     this.bulletManager.shootBullet(bulletStartPosition, shootDirection);
+    
+    // Play shoot sound effect
+    const audioManager = AudioManager.getInstance();
+    audioManager.playShoot();
   }
 
   private applyBoundaries(): void {
@@ -250,7 +255,7 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
       this.warningGlowManager.startWarningGlow();
     }
     
-    console.log('Hit effect started - Player and warning glow blinking');
+    
   }
 
   private endHitEffect(): void {
@@ -271,14 +276,14 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
       this.warningGlowManager.stopWarningGlow();
     }
     
-    console.log('Hit effect ended - Player and warning glow restored');
+    
   }
 
   // Public methods
   public takeDamage(damage: number): boolean {
     // Ignore damage nếu đang trong invincibility frames
     if (this.isInvincible()) {
-      console.log('Player is invincible, damage ignored');
+
       return false;
     }
 
@@ -289,6 +294,11 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     
     if (this.state.health <= 0) {
       this.isActive = false;
+      
+      // Play player explosion sound effect
+      const audioManager = AudioManager.getInstance();
+      audioManager.playPlayerExplosion();
+      
       return true; // Player destroyed
     }
     return false; // Player still alive
@@ -359,16 +369,12 @@ export class Player extends PIXI.Sprite implements Entity, CollidableEntity {
     
     const damageIncrease = result.newDamage - result.oldDamage;
     
-    if (result.isSpecialLevel) {
-      console.log(`LEVEL UP! Level ${result.newLevel} - New pattern unlocked! Damage: ${result.newDamage} (+${damageIncrease})`);
-    } else {
-      console.log(`POWER UP! Level ${result.newLevel} - Damage increased to ${result.newDamage} (+${damageIncrease})`);
-    }
+    // Level up logic without logging for performance
   }
 
   public resetBulletLevel(): void {
     this.bulletManager.resetBulletLevel();
-    console.log('Player: Bullet level reset to 1');
+    // Bullet level reset without logging for performance
   }
 
   public getCurrentDamage(): number {

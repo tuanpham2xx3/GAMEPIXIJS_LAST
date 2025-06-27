@@ -293,18 +293,14 @@ export class AnimationManager {
      * Preload all animations
      */
     public async preloadAllAnimations(): Promise<void> {
-        console.log('🎬 Preloading all animations...');
-        
         try {
             await Promise.all([
                 this.basicEnemyAnimator.preloadAnimations(),
                 this.enemyPartsAnimator.preloadAnimations(),
-                this.coinAnimator.preloadAnimations(),
                 this.explosionAnimator.preloadAnimations(),
-                this.uiAnimator.preloadAnimations()
+                this.uiAnimator.preloadAnimations(),
+                this.coinAnimator.preloadAnimations()
             ]);
-            
-            console.log('✅ All animations preloaded successfully!');
         } catch (error) {
             console.error('❌ Failed to preload animations:', error);
             throw error;
@@ -318,7 +314,6 @@ export class AnimationManager {
      */
     public clearCache(): void {
         AnimationUtils.clearCache();
-        console.log('Animation cache cleared');
     }
 
     /**

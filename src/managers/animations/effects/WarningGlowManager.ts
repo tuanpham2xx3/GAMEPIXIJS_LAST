@@ -34,10 +34,10 @@ export class WarningGlowManager {
 
     public async initializeGlowSprites(): Promise<void> {
         try {
-            // Load texture warning glow với multiple paths
+            let glowTexture: PIXI.Texture | null = null;
             const assetManager = AssetManager.getInstance();
-            let glowTexture;
             
+            // Thử tải warning glow texture từ nhiều paths
             const texturePaths = [
                 'assets/textures/misc/spr_glow_warning.png',
                 '/assets/textures/misc/spr_glow_warning.png',
@@ -47,12 +47,9 @@ export class WarningGlowManager {
             
             for (const path of texturePaths) {
                 try {
-                    console.log(`Trying to load warning glow texture from: ${path}`);
                     glowTexture = await assetManager.loadTexture(path);
-                    console.log(`✅ Successfully loaded warning glow texture from: ${path}`);
                     break;
                 } catch (e) {
-                    console.log(`❌ Failed to load from: ${path}`);
                     continue;
                 }
             }
@@ -67,14 +64,11 @@ export class WarningGlowManager {
             const textureWidth = glowTexture.width;
             const textureHeight = glowTexture.height;
 
-            console.log(`Initializing warning glow: Screen ${screenWidth}x${screenHeight}, Texture ${textureWidth}x${textureHeight}`);
-
             // Tạo glow sprites cho 4 cạnh màn hình
             this.createEdgeGlowSprites(glowTexture, screenWidth, screenHeight, textureWidth, textureHeight);
 
         } catch (error) {
             console.error('Failed to load warning glow texture from all paths:', error);
-            console.log('Using fallback graphics instead');
             this.createFallbackGlow();
         }
     }
@@ -109,8 +103,6 @@ export class WarningGlowManager {
         // Add to arrays và container
         this.glowSprites.push(glowSprite);
         this.glowContainer.addChild(glowSprite);
-
-        console.log(`Created single warning glow sprite scaled ${scale.toFixed(2)}x (${screenW}x${screenH} screen, ${texW}x${texH} texture)`);
     }
 
     private createFallbackGlow(): void {
@@ -156,8 +148,6 @@ export class WarningGlowManager {
         overlay.visible = false;
         
         this.glowContainer.addChild(overlay);
-
-        console.log('Created single fallback warning glow overlay');
     }
 
     public startWarningGlow(): void {
@@ -172,8 +162,6 @@ export class WarningGlowManager {
             glowElement.alpha = this.GLOW_ALPHA;
             glowElement.visible = true;
         }
-
-        console.log('Warning glow started');
     }
 
     public stopWarningGlow(): void {
@@ -185,8 +173,6 @@ export class WarningGlowManager {
             glowElement.alpha = 0;
             glowElement.visible = false;
         }
-
-        console.log('Warning glow stopped');
     }
 
     public update(deltaTime: number): void {

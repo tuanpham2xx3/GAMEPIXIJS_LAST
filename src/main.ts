@@ -9,6 +9,7 @@ import { UIRenderer } from './rendering/UIRenderer';
 import { GameOrchestrator } from './core/GameOrchestrator';
 import { GameStateManager } from './managers/GameStateManager';
 import { GameState } from './types/GameStateTypes';
+import { AudioManager } from './managers/AudioManager';
 
 /**
  * Main Game class - now follows Single Responsibility Principle
@@ -27,7 +28,6 @@ class Game {
   private containers!: GameContainers;
 
   constructor() {
-    console.log('Starting Space Shooter Game...');
     this.initialize();
   }
 
@@ -103,7 +103,7 @@ class Game {
       this.gameOrchestrator.startGame();
     }, 500);
     
-    console.log('Game initialized successfully!');
+
   }
 
   /**
@@ -144,8 +144,6 @@ class Game {
    * Cleanup and destroy game
    */
   public destroy(): void {
-    console.log('Destroying game...');
-    
     try {
       this.gameOrchestrator?.destroy();
       this.backgroundRenderer?.destroy();
@@ -154,8 +152,6 @@ class Game {
     } catch (error) {
       console.error('Error during cleanup:', error);
     }
-    
-    console.log('Game destroyed');
   }
 }
 
@@ -167,7 +163,6 @@ window.onload = () => {
   if (GameConfig.debug) {
     (window as any).gameDebug = {
       getInfo: () => {
-        console.log('Game instance created');
         return {
           version: '2.0.0-refactored',
           architecture: 'Clean Architecture with SRP',
@@ -184,9 +179,6 @@ window.onload = () => {
         game.destroy();
       },
       getScaleInfo: () => {
-        console.log('Screen Resolution:', GameConfig.screen);
-        console.log('Reference Resolution:', GameConfig.referenceResolution);
-        console.log('Scale Factors:', GameConfig.scale);
         return {
           screen: GameConfig.screen,
           reference: GameConfig.referenceResolution,

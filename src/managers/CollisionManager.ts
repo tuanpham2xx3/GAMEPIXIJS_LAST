@@ -49,12 +49,12 @@ export class CollisionManager {
       deactivateA: true, // Destroy bullet
       scoreValue: 100, // Will be overridden by enemy's score value
       callback: (bullet: any, enemy: any) => {
-        console.log('Bullet hit enemy!', bullet, enemy);
+
         const enemyType = enemy.getEnemyType?.();
         const damage = GameConfig.collision.defaultDamage.playerBullet;
         const score = enemyType ? (GameConfig.collision.scoreValues as any)[enemyType] || 100 : 100;
         
-        console.log(`Enemy ${enemyType} hit by bullet for ${damage} damage`);
+
         
         return {
           entityA: bullet,
@@ -76,7 +76,7 @@ export class CollisionManager {
       scoreValue: GameConfig.collision.scoreValues.boss, // Only when boss is destroyed
       callback: (bullet: any, boss: any) => {
         const damage = GameConfig.collision.defaultDamage.playerBullet;
-        console.log(`Boss hit by bullet for ${damage} damage`);
+
         return {
           entityA: bullet,
           entityB: boss,
@@ -107,7 +107,7 @@ export class CollisionManager {
       deactivateB: true, // Deactivate item (collect it)
       scoreValue: 0, // Items handle their own effects
       callback: (player: any, item: any) => {
-        console.log('Player collected item!', item);
+
         
         // Get item type and apply effects
         const itemType = item.getItemType?.();
@@ -186,7 +186,7 @@ export class CollisionManager {
 
         // Limit collision checks per frame for performance
         if (this.collisionChecks >= GameConfig.collision.maxChecksPerFrame) {
-          console.warn(`Collision check limit reached: ${this.collisionChecks}`);
+          // Skip remaining checks to maintain performance
           break;
         }
       }

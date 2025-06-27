@@ -52,7 +52,7 @@ export class AssetLoader {
         bulletTexture = PIXI.Assets.get('bullet');
         enemyBulletTexture = PIXI.Assets.get('enemyBullet');
         smokeTexture = PIXI.Assets.get('smoke');
-        console.log('Loaded game assets successfully');
+  
       } catch (assetError) {
         console.warn('Could not load assets, using fallback textures');
         playerTexture = this.createFallbackTexture(0x00ff88, 64, 64);
@@ -108,6 +108,6 @@ export class AssetLoader {
    */
   public async preloadAdditionalAssets(): Promise<void> {
 
-    console.log('Additional assets preloaded');
+
   }
 } 

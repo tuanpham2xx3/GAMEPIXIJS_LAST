@@ -1,5 +1,6 @@
 import { EnemyManager } from './EnemyManager';
 import { FormationManager } from './FormationManager';
+import { Application, Container } from 'pixi.js';
 
 export class LevelManager {
     private enemyManager: EnemyManager;
@@ -8,9 +9,9 @@ export class LevelManager {
     private isLevelActive: boolean = false;
     private isInitialized: boolean = false;
 
-    constructor(enemyManager: EnemyManager) {
+    constructor(enemyManager: EnemyManager, app?: Application, uiContainer?: Container) {
         this.enemyManager = enemyManager;
-        this.formationManager = new FormationManager(enemyManager);
+        this.formationManager = new FormationManager(enemyManager, app, uiContainer);
     }
 
     /**
@@ -23,8 +24,6 @@ export class LevelManager {
         if (!loaded) {
             console.warn('Formation data failed to load! Using default formations.');
         }
-        
-        console.log('Simple Level Manager initialized');
     }
 
     /**
@@ -46,7 +45,6 @@ export class LevelManager {
         this.currentLevel = levelNumber;
         this.isLevelActive = true;
         
-        console.log(`Starting Level ${levelNumber}`);
         return this.formationManager.startLevel(levelId);
     }
 
@@ -70,14 +68,12 @@ export class LevelManager {
      */
     private completeLevel(): void {
         this.isLevelActive = false;
-        console.log(`Level ${this.currentLevel} completed!`);
     }
 
     /**
      * Test formation for development
      */
     public testFormation(formationId: string): void {
-        console.log(`Testing formation: ${formationId}`);
         this.formationManager.testFormation(formationId);
     }
 
@@ -113,7 +109,6 @@ export class LevelManager {
     public stop(): void {
         this.isLevelActive = false;
         this.formationManager.stop();
-        console.log('Level manager stopped');
     }
 
 
@@ -128,10 +123,8 @@ export class LevelManager {
 
     public nextLevel(): void {
         const nextLevelNumber = this.currentLevel + 1;
-        if (this.startLevel(nextLevelNumber)) {
-            console.log(`Advanced to level ${nextLevelNumber}`);
-        } else {
-            console.log('Game completed! No more levels available.');
+        if (!this.startLevel(nextLevelNumber)) {
+            // Game completed - no more levels available
         }
     }
 
@@ -163,8 +156,16 @@ export class LevelManager {
             totalWaves: this.getTotalWaves(),
             waveProgress: this.getWaveProgress(),
             isFormationActive: this.formationManager.isLevelActive(),
+            isShowingBossWarning: this.formationManager.isShowingBossWarning(),
             availableFormations: this.getAvailableFormations(),
             availableLevels: this.getAvailableLevels()
         };
+    }
+
+    /**
+     * Check if currently showing boss warning
+     */
+    public isShowingBossWarning(): boolean {
+        return this.formationManager.isShowingBossWarning();
     }
 } 

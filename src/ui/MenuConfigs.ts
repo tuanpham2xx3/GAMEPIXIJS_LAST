@@ -1,6 +1,6 @@
 import { MenuConfig } from './MenuTypes';
 import { GameStateManager } from '../managers/GameStateManager';
-import { GameState } from '../types/GameStateTypes';
+import { GameState, GameSession } from '../types/GameStateTypes';
 
 export class MenuConfigs {
   private static gameStateManager: GameStateManager;
@@ -25,19 +25,19 @@ export class MenuConfigs {
       buttons: [
         { 
           text: "New Game", 
-          key: 'n', 
+          key: '', 
           action: () => this.startNewGame(), 
           visible: true 
         },
         { 
           text: "Settings", 
-          key: 's', 
+          key: '', 
           action: () => this.openSettings(), 
           visible: true 
         },
         { 
           text: "Quit", 
-          key: 'q', 
+          key: '', 
           action: () => this.quitGame(), 
           visible: true 
         }
@@ -53,25 +53,25 @@ export class MenuConfigs {
       buttons: [
         { 
           text: "Resume", 
-          key: 'Escape', 
+          key: '', 
           action: () => this.resumeGame(), 
           visible: true 
         },
         { 
           text: "Restart", 
-          key: 'r', 
+          key: '', 
           action: () => this.restartGame(), 
           visible: true 
         },
         { 
           text: "Settings", 
-          key: 's', 
+          key: '', 
           action: () => this.openSettings(), 
           visible: true 
         },
         { 
           text: "Quit to Menu", 
-          key: 'q', 
+          key: '', 
           action: () => this.quitToMenu(), 
           visible: true 
         }
@@ -90,20 +90,82 @@ export class MenuConfigs {
       buttons: [
         { 
           text: audioText, 
-          key: 'a', 
+          key: '', 
           action: () => this.toggleAudio(), 
           visible: true 
         },
         { 
           text: fpsText, 
-          key: 'f', 
+          key: '', 
           action: () => this.cycleFPS(), 
           visible: true 
         },
         { 
           text: "Back", 
-          key: 'b', 
+          key: '', 
           action: () => this.goBack(), 
+          visible: true 
+        }
+      ]
+    };
+  }
+
+  public static getVictoryMenuConfig(sessionData: GameSession): MenuConfig {
+    const playTimeMinutes = Math.floor(sessionData.playTime / 60000);
+    const playTimeSeconds = Math.floor((sessionData.playTime % 60000) / 1000);
+    const timeString = `${playTimeMinutes}:${playTimeSeconds.toString().padStart(2, '0')}`;
+
+    return {
+      title: "VICTORY!",
+      context: 'victory',
+      showBackground: true,
+      stats: {
+        score: sessionData.score,
+        coins: sessionData.coins,
+        time: timeString
+      },
+      buttons: [
+        { 
+          text: "New Game", 
+          key: '', 
+          action: () => this.startNewGame(), 
+          visible: true 
+        },
+        { 
+          text: "Main Menu", 
+          key: '', 
+          action: () => this.quitToMenu(), 
+          visible: true 
+        }
+      ]
+    };
+  }
+
+  public static getGameOverMenuConfig(sessionData: GameSession): MenuConfig {
+    const playTimeMinutes = Math.floor(sessionData.playTime / 60000);
+    const playTimeSeconds = Math.floor((sessionData.playTime % 60000) / 1000);
+    const timeString = `${playTimeMinutes}:${playTimeSeconds.toString().padStart(2, '0')}`;
+
+    return {
+      title: "GAME OVER",
+      context: 'game_over',
+      showBackground: true,
+      stats: {
+        score: sessionData.score,
+        coins: sessionData.coins,
+        time: timeString
+      },
+      buttons: [
+        { 
+          text: "Try Again", 
+          key: '', 
+          action: () => this.startNewGame(), 
+          visible: true 
+        },
+        { 
+          text: "Main Menu", 
+          key: '', 
+          action: () => this.quitToMenu(), 
           visible: true 
         }
       ]
@@ -154,7 +216,6 @@ export class MenuConfigs {
 
   private static toggleAudio(): void {
     this.audioEnabled = !this.audioEnabled;
-    console.log(`Audio ${this.audioEnabled ? 'enabled' : 'disabled'}`);
     
     if (this.universalMenu) {
       const updatedConfig = this.getSettingsConfig();
@@ -172,8 +233,6 @@ export class MenuConfigs {
     if (app?.ticker) {
       app.ticker.maxFPS = this.currentFPS;
     }
-    
-    console.log(`FPS set to ${this.currentFPS}`);
     
     if (this.universalMenu) {
       const updatedConfig = this.getSettingsConfig();

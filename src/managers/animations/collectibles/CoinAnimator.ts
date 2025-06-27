@@ -35,11 +35,8 @@ export class CoinAnimator {
      * Preload coin animations
      */
     public async preloadAnimations(): Promise<void> {
-        console.log('🎬 Preloading coin animations...');
-        
         try {
             await AnimationUtils.getCachedFrames('coins', () => this.assetManager.loadCoins());
-            console.log('✅ Coin animations preloaded successfully!');
         } catch (error) {
             console.error('❌ Failed to preload coin animations:', error);
             throw error;

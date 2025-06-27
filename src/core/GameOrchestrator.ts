@@ -18,6 +18,7 @@ import { UniversalMenu } from '../ui/UniversalMenu';
 import { MenuConfigs } from '../ui/MenuConfigs';
 import { GameConfig } from './Config';
 import { WarningGlowManager } from '../managers/animations/effects/WarningGlowManager';
+import { AudioManager } from '../managers/AudioManager';
 
 export class GameOrchestrator {
   private app: PIXI.Application;
@@ -72,7 +73,10 @@ export class GameOrchestrator {
 
     this.gameStateManager.onStateChange(GameState.PLAYING, () => {
       this.hideMenu();
-      this.startGameplay();
+      // Only start gameplay if we're not resuming from pause
+      if (this.gameStateManager.getStateData().previousState !== GameState.PAUSED) {
+        this.startGameplay();
+      }
     });
 
     this.gameStateManager.onStateChange(GameState.PAUSED, () => {
@@ -82,20 +86,28 @@ export class GameOrchestrator {
     this.gameStateManager.onStateChange(GameState.GAME_OVER, () => {
       this.handleGameOver();
     });
+
+    this.gameStateManager.onStateChange(GameState.VICTORY, () => {
+      this.handleVictory();
+    });
   }
 
   private setupKeyboardListeners(): void {
     window.addEventListener('keydown', (event) => {
-      if (this.universalMenu.isShowing()) {
-        if (this.universalMenu.handleInput(event.key)) {
-          event.preventDefault();
-        }
-      } else if (this.gameStateManager.getCurrentState() === GameState.PLAYING) {
-        if (event.key === 'Escape') {
+      if (event.key === 'Escape') {
+        const currentState = this.gameStateManager.getCurrentState();
+        
+        if (currentState === GameState.PLAYING && !this.universalMenu.isShowing()) {
+          // In-game → Pause
           this.gameStateManager.pause();
+          event.preventDefault();
+        } else if (currentState === GameState.PAUSED && this.universalMenu.isShowing()) {
+          // In pause menu → Resume
+          this.gameStateManager.resume();
           event.preventDefault();
         }
       }
+      // Don't handle any other menu input - force mouse/touch only for menu navigation
     });
   }
 
@@ -103,6 +115,12 @@ export class GameOrchestrator {
     const config = MenuConfigs.getMainMenuConfig();
     this.universalMenu.configure(config);
     this.universalMenu.show();
+    
+    // Start menu background music with a small delay to ensure audio is loaded
+    setTimeout(() => {
+      const audioManager = AudioManager.getInstance();
+      audioManager.playBackgroundMusic();
+    }, 100);
   }
 
   private showPauseMenu(): void {
@@ -122,6 +140,12 @@ export class GameOrchestrator {
     if (this.levelManager) {
       this.levelManager.startLevel(1);
     }
+    
+    // Start background music with small delay to ensure smooth transition
+    setTimeout(() => {
+      const audioManager = AudioManager.getInstance();
+      audioManager.playBackgroundMusic();
+    }, 200);
   }
 
   private cleanupGameEntities(): void {
@@ -165,15 +189,80 @@ export class GameOrchestrator {
   }
 
   private handleGameOver(): void {
-    console.log('Game Over! Final Score:', this.score);
+    // Play lose sound effect
+    const audioManager = AudioManager.getInstance();
+    audioManager.playLose();
+    audioManager.stopAllMusic();
+    
+    this.showGameOverScreen();
+  }
+
+  private showGameOverScreen(): void {
+    // Calculate play time
+    const sessionData = this.gameStateManager.getSession();
+    const currentTime = Date.now();
+    const playTime = currentTime - sessionData.startTime;
+    
+    // Update session with final stats
+    this.gameStateManager.updateSession({
+      score: this.score,
+      coins: this.coins,
+      playTime: playTime
+    });
+
+    // Show game over menu with stats
+    const updatedSessionData = this.gameStateManager.getSession();
+    const config = MenuConfigs.getGameOverMenuConfig(updatedSessionData);
+    this.universalMenu.configure(config);
+    this.universalMenu.show();
+    
+    // Resume background music after lose sound finishes
     setTimeout(() => {
-      this.gameStateManager.changeState(GameState.MENU);
-    }, 2000);
+      const audioManager = AudioManager.getInstance();
+      audioManager.playBackgroundMusic();
+    }, 2500);
+  }
+
+  private handleVictory(): void {
+    // Play win sound effect
+    const audioManager = AudioManager.getInstance();
+    audioManager.playWin();
+    audioManager.stopAllMusic();
+    
+    this.showVictoryScreen();
+  }
+
+  private showVictoryScreen(): void {
+    // Calculate play time
+    const sessionData = this.gameStateManager.getSession();
+    const currentTime = Date.now();
+    const playTime = currentTime - sessionData.startTime;
+    
+    // Update session with final stats
+    this.gameStateManager.updateSession({
+      score: this.score,
+      coins: this.coins,
+      playTime: playTime
+    });
+
+    // Show victory menu with stats
+    const updatedSessionData = this.gameStateManager.getSession();
+    const config = MenuConfigs.getVictoryMenuConfig(updatedSessionData);
+    this.universalMenu.configure(config);
+    this.universalMenu.show();
+    
+    // Resume background music after win sound finishes
+    setTimeout(() => {
+      const audioManager = AudioManager.getInstance();
+      audioManager.playBackgroundMusic();
+    }, 3500);
   }
 
   public async initialize(assets: GameAssets): Promise<void> {
     try {
-      console.log('Initializing game systems...');
+      // Initialize AudioManager and load audio
+      const audioManager = AudioManager.getInstance();
+      await audioManager.loadGameAudio();
 
       this.inputManager = new InputManager(this.app.view as HTMLCanvasElement);
       this.bulletManager = new BulletManager(this.gameContainer, assets.bulletTexture);
@@ -188,14 +277,11 @@ export class GameOrchestrator {
       // Initialize ItemManager
       this.itemManager = ItemManager.getInstance();
       await this.itemManager.initialize(this.gameContainer);
-      console.log('ItemManager initialized');
 
       this.collisionManager = new CollisionManager();
-      console.log('CollisionManager initialized');
 
-      this.levelManager = new LevelManager(this.enemyManager);
+      this.levelManager = new LevelManager(this.enemyManager, this.app, this.uiContainer);
       await this.levelManager.initialize();
-      console.log('LevelManager initialized');
 
       this.player = new Player(assets.playerTexture, this.inputManager, this.bulletManager, assets.smokeTexture);
       this.player.addToParent(this.gameContainer);
@@ -209,15 +295,11 @@ export class GameOrchestrator {
       
       // Set warning glow manager cho player
       this.player.setWarningGlowManager(this.warningGlowManager);
-      console.log('WarningGlowManager initialized and connected to player');
 
       // Setup enemies với enemy bullet manager
       if (this.enemyManager && this.enemyBulletManager) {
         this.enemyManager.setEnemyBulletManager(this.enemyBulletManager);
-        console.log('🔫 Enemy bullet manager setup complete');
       }
-
-      console.log('Game systems initialized successfully');
 
     } catch (error) {
       console.error('Failed to initialize game systems:', error);
@@ -227,7 +309,6 @@ export class GameOrchestrator {
 
   public startGame(): void {
     this.app.ticker.add(this.gameLoop.bind(this));
-    console.log('Game started!');
   }
 
   public restartGame(): void {
@@ -283,17 +364,20 @@ export class GameOrchestrator {
       }
     }
 
-    this.handleCollisions().catch(error => {
+    // FIXED: Sync collision handling for performance
+    try {
+      this.handleCollisionsSync();
+    } catch (error) {
       console.error('Error in collision handling:', error);
-    });
+    }
 
     this.updateUI();
   }
 
   /**
-   * Handle collision detection
+   * Handle collision detection - SYNC VERSION for performance
    */
-  private async handleCollisions(): Promise<void> {
+  private handleCollisionsSync(): void {
     if (!this.collisionManager || !this.enemyManager || !this.bulletManager || !this.player) return;
 
     const entityGroups = new Map<EntityCategory, CollidableEntity[]>();
@@ -328,23 +412,15 @@ export class GameOrchestrator {
     const collisionResults = this.collisionManager.checkAllCollisions(entityGroups);
 
     for (const result of collisionResults) {
-      await this.processCollision(result);
+      this.processCollisionSync(result);
     }
   }
 
   /**
    * Process individual collision result
    */
-  private async processCollision(result: any): Promise<void> {
+  private processCollisionSync(result: any): void {
     const { entityA, entityB, damageToA, damageToB, damage } = result;
-
-    console.log('Processing collision:', {
-      categoryA: entityA.getCategory(),
-      categoryB: entityB.getCategory(),
-      damageToA,
-      damageToB,
-      damage: damage || 'undefined'
-    });
 
     // Handle item collection
     if ((entityA.getCategory() === EntityCategory.PLAYER && entityB.getCategory() === EntityCategory.ITEM) ||
@@ -352,8 +428,6 @@ export class GameOrchestrator {
       
       const item = entityA.getCategory() === EntityCategory.ITEM ? entityA : entityB;
       const itemType = (item as any).getItemType?.();
-      
-      console.log(`Item collected: ${itemType}`);
       
       if (itemType === 'coin') {
         this.collectCoin();
@@ -373,10 +447,8 @@ export class GameOrchestrator {
     // Use damageToA or fallback to damage
     if (entityA.getCategory() === EntityCategory.PLAYER && (damageToA || damage)) {
       const playerDamage = damageToA || damage;
-      console.log(`Player taking ${playerDamage} damage`);
-      const isDestroyed = await (entityA as any).takeDamage(playerDamage);
+      const isDestroyed = (entityA as any).takeDamage(playerDamage);
       if (isDestroyed) {
-        console.log('Player destroyed!');
         this.gameOver();
       }
     }
@@ -384,11 +456,9 @@ export class GameOrchestrator {
     // Use damageToB or fallback to damage
     if (entityB.getCategory() === EntityCategory.ENEMY || entityB.getCategory() === EntityCategory.BOSS) {
       const enemyDamage = damageToB || damage || GameConfig.collision.defaultDamage.playerBullet; // Use config default damage
-      console.log(`Enemy taking ${enemyDamage} damage`);
-      const isDestroyed = await (entityB as any).takeDamage(enemyDamage);
+      const isDestroyed = (entityB as any).takeDamage(enemyDamage);
       if (isDestroyed) {
         this.score += (entityB as any).getScoreValue ? (entityB as any).getScoreValue() : 100;
-        console.log(`Enemy destroyed! Score: ${this.score}`);
       }
     }
 
@@ -446,8 +516,6 @@ export class GameOrchestrator {
    * Handle level completion
    */
   private onLevelComplete(): void {
-    console.log('Level completed!');
-
     if (this.levelManager) {
       const currentLevel = this.levelManager.getCurrentLevel();
       const nextLevel = currentLevel + 1;
@@ -468,11 +536,11 @@ export class GameOrchestrator {
   }
 
   private gameComplete(): void {
-    this.gameStateManager.changeState(GameState.GAME_OVER);
     if (this.levelManager) {
       this.levelManager.stopLevel();
     }
-    console.log('Congratulations! Game completed! Final Score:', this.score);
+    // Trigger victory state instead of game over
+    this.gameStateManager.changeState(GameState.VICTORY);
   }
 
   /**
@@ -520,12 +588,17 @@ export class GameOrchestrator {
       this.warningGlowManager.destroy();
     }
 
-    console.log('Game orchestrator cleaned up');
+
   }
 
   public collectCoin(): void {
-    this.coins++;
-    console.log(`Coin collected! Total coins: ${this.coins}`);
+    this.coins += GameConfig.items.coin.value;
+    
+    // Play coin collect sound effect
+    const audioManager = AudioManager.getInstance();
+    audioManager.playCoinCollect();
+    
+
   }
 
   public collectBooster(): void {
@@ -538,7 +611,11 @@ export class GameOrchestrator {
       const newLevel = this.player.getBulletLevel();
       const newDamage = this.player.getCurrentDamage();
       
-      console.log(`Booster collected! Level: ${oldLevel} -> ${newLevel}, Damage: ${oldDamage} -> ${newDamage}`);
+      // Play booster collected sound effect
+      const audioManager = AudioManager.getInstance();
+      audioManager.playBoosterCollected();
+      
+
     }
   }
 } 

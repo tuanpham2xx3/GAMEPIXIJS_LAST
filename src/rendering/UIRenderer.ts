@@ -36,6 +36,9 @@ export interface GameStats {
 export class UIRenderer {
   private uiContainer: PIXI.Container;
   private gameTitle: PIXI.Text | null = null;
+  private statsText: PIXI.Text | null = null; // CACHE stats text
+  private lastUpdateTime: number = 0;
+  private readonly UPDATE_INTERVAL = 100; // Update UI every 100ms instead of every frame
 
   constructor(uiContainer: PIXI.Container) {
     this.uiContainer = uiContainer;
@@ -46,7 +49,7 @@ export class UIRenderer {
    */
   public initialize(): void {
     this.createTitle();
-    console.log('🎨 UI initialized');
+    this.createStatsText();
   }
 
   /**
@@ -69,15 +72,9 @@ export class UIRenderer {
   }
 
   /**
-   * Update game statistics display
+   * Create cached stats text object
    */
-  public render(stats: GameStats): void {
-    // Remove previous stats
-    const existingStats = this.uiContainer.getChildByName('gameStats');
-    if (existingStats) {
-      this.uiContainer.removeChild(existingStats);
-    }
-
+  private createStatsText(): void {
     const style = new PIXI.TextStyle({
       fontFamily: 'Arial',
       fontSize: 12,
@@ -86,31 +83,47 @@ export class UIRenderer {
       strokeThickness: 1,
     });
 
-    const statsText = new PIXI.Text(
-      `=== GAME STATS ===\n` +
-      `Score: ${stats.score}\n` +
-      `Coins: ${stats.coins} 🪙\n` +
-      `Level: ${stats.level}\n` +
-      `Wave: ${stats.waveProgress}\n` +
-      `Time: ${stats.levelProgress}s\n` +
-      `\n=== PLAYER ===\n` +
-      `Health: ${stats.health}/${stats.maxHealth}\n` +
-      `Player Level: ${stats.playerLevel}\n` +
-      `Position: (${stats.playerPosition.x}, ${stats.playerPosition.y})\n` +
-      `Status: ${stats.isPlayerMoving ? 'Moving & Shooting' : 'Idle'}\n` +
-      `\n=== ENTITIES ===\n` +
-      `Active Enemies: ${stats.enemyCount}\n` +
-      `Active Bullets: ${stats.bulletCount}\n` +
-      `Active Items: ${stats.activeItemCount}\n` +
-      `\n=== SYSTEM ===\n` +
-      `Collision Checks: ${stats.collisionChecks}`,
-      style
-    );
+    this.statsText = new PIXI.Text('', style);
+    this.statsText.x = 10;
+    this.statsText.y = 60;
+    this.statsText.name = 'gameStats';
+    this.uiContainer.addChild(this.statsText);
+  }
 
-    statsText.x = 10;
-    statsText.y = 60;
-    statsText.name = 'gameStats';
-    this.uiContainer.addChild(statsText);
+  /**
+   * Update game statistics display - OPTIMIZED VERSION
+   */
+  public render(stats: GameStats): void {
+    const currentTime = Date.now();
+    
+    // Throttle UI updates to reduce CPU usage
+    if (currentTime - this.lastUpdateTime < this.UPDATE_INTERVAL) {
+      return;
+    }
+    
+    this.lastUpdateTime = currentTime;
+
+    // Update existing text instead of recreating
+    if (this.statsText) {
+      this.statsText.text = 
+        `=== GAME STATS ===\n` +
+        `Score: ${stats.score}\n` +
+        `Coins: ${stats.coins} 🪙\n` +
+        `Level: ${stats.level}\n` +
+        `Wave: ${stats.waveProgress}\n` +
+        `Time: ${stats.levelProgress}s\n` +
+        `\n=== PLAYER ===\n` +
+        `Health: ${stats.health}/${stats.maxHealth}\n` +
+        `Player Level: ${stats.playerLevel}\n` +
+        `Position: (${stats.playerPosition.x}, ${stats.playerPosition.y})\n` +
+        `Status: ${stats.isPlayerMoving ? 'Moving & Shooting' : 'Idle'}\n` +
+        `\n=== ENTITIES ===\n` +
+        `Active Enemies: ${stats.enemyCount}\n` +
+        `Active Bullets: ${stats.bulletCount}\n` +
+        `Active Items: ${stats.activeItemCount}\n` +
+        `\n=== SYSTEM ===\n` +
+        `Collision Checks: ${stats.collisionChecks}`;
+    }
   }
 
   /**

@@ -47,7 +47,7 @@ export class ItemManager {
             this.itemPool.push(booster);
         }
 
-        console.log(`ItemManager initialized with ${coinCount} coins and ${boosterCount} boosters`);
+
     }
 
     public async initialize(parentContainer: PIXI.Container): Promise<void> {
@@ -57,7 +57,7 @@ export class ItemManager {
         const setupPromises = this.itemPool.map(item => item.setupVisuals());
         await Promise.all(setupPromises);
         
-        console.log('ItemManager visual setup completed');
+
     }
 
     public setPlayerPosition(playerPosition: Vector2): void {
@@ -114,7 +114,7 @@ export class ItemManager {
 
         this.activeItems.push(availableItem);
         
-        console.log(`Spawned ${itemType} at (${spawnPosition.x.toFixed(1)}, ${spawnPosition.y.toFixed(1)})`);
+
     }
 
     private getAvailableItem(itemType: ItemType): Item | null {
@@ -168,7 +168,7 @@ export class ItemManager {
         });
         
         this.activeItems = [];
-        console.log('ItemManager reset completed');
+
     }
 
     public destroy(): void {
@@ -181,6 +181,6 @@ export class ItemManager {
         this.parentContainer = undefined;
         this.playerPosition = undefined;
         
-        console.log('ItemManager destroyed');
+
     }
 } 

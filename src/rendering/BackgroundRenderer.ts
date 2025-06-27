@@ -19,21 +19,14 @@ export class BackgroundRenderer {
    */
   public async initialize(): Promise<void> {
     try {
-      console.log(`🖼️ Loading background from: ${GameConfig.background.src}`);
-      
       // Try to load the background image
       this.backgroundTexture = await PIXI.Assets.load(GameConfig.background.src);
-      console.log('✅ Background loaded successfully');
-      
-      if (this.backgroundTexture) {
-        console.log(`Background dimensions: ${this.backgroundTexture.width}x${this.backgroundTexture.height}`);
-      }
       
       // Create scrolling background
       this.createScrollingBackground();
       
     } catch (error) {
-      console.warn('⚠️ Could not load background, creating fallback starfield');
+      console.warn('Could not load background, creating fallback starfield');
       console.error('Background load error:', error);
       this.createFallbackBackground();
     }

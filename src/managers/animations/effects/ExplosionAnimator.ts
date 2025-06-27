@@ -16,12 +16,17 @@ export class ExplosionAnimator {
     /**
      * Create Explosion Animation (4x4 sprite sheet)
      */
-    public async createExplosionAnimation(config: AnimationConfig & { entityWidth?: number; entityHeight?: number } = {}): Promise<AnimatedSprite> {
-        try {
-            const hitTexture = await this.assetManager.loadTexture('assets/textures/animations/anim_hit.jpg');
+    public async createExplosionAnimation(
+        x: number, 
+        y: number, 
+        scale: number = 1.0, 
+        config: AnimationConfig = {}
+    ): Promise<AnimatedSprite> {
+        const frames = await AnimationUtils.getCachedFrames('explosion', async () => {
+            // Load hit animation texture (4x4 sprite sheet)
+            const hitTexture = await this.assetManager.loadTexture(AssetManager.paths.HIT_ANIMATION);
             
-            // Create frames from sprite sheet 4x4
-            const frames: Texture[] = [];
+            const explosionFrames: Texture[] = [];
             const frameWidth = hitTexture.width / 4;
             const frameHeight = hitTexture.height / 4;
 
@@ -36,66 +41,58 @@ export class ExplosionAnimator {
                     );
                     
                     const frame = new Texture(hitTexture.baseTexture, frameRect);
-                    frames.push(frame);
+                    explosionFrames.push(frame);
                 }
             }
             
-            // Calculate scale based on entity size if provided
-            let explosionScale = config.scale || 1.0;
-            if (config.entityWidth && config.entityHeight) {
-                const entityMaxSize = Math.max(config.entityWidth, config.entityHeight);
-                const explosionBaseSize = Math.max(frameWidth, frameHeight);
-                explosionScale = (entityMaxSize * 1.5) / explosionBaseSize;
-            }
-            
-            console.log(`Creating explosion with ${frames.length} frames, scale: ${explosionScale}`);
-            
-            return AnimationUtils.createAnimatedSprite(frames, {
-                speed: GameConfig.animation.effects.explosionSpeed,
-                loop: false,
-                autoPlay: true,
-                scale: explosionScale,
-                anchor: { x: 0.5, y: 0.5 },
-                ...config
-            });
-        } catch (error) {
-            console.error('Failed to load explosion texture, creating fallback:', error);
-            
-            // Fallback: create simple explosion texture
-            const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            const ctx = canvas.getContext('2d')!;
-            
-            // Draw simple explosion circle
-            ctx.fillStyle = '#FF6600';
-            ctx.beginPath();
-            ctx.arc(32, 32, 30, 0, Math.PI * 2);
-            ctx.fill();
-            
-            const fallbackTexture = Texture.from(canvas);
-            const frames = [fallbackTexture];
-            
-            return AnimationUtils.createAnimatedSprite(frames, {
-                speed: GameConfig.animation.effects.uiFadeSpeed,
-                loop: false,
-                autoPlay: true,
-                scale: config.scale || 1.0,
-                anchor: { x: 0.5, y: 0.5 },
-                ...config
-            });
-        }
+            return explosionFrames;
+        });
+
+        const explosionScale = scale * (config.scale || 1.0);
+
+        const explosion = AnimationUtils.createAnimatedSprite(frames, {
+            speed: GameConfig.animation.defaultSpeeds.explosion,
+            loop: false,
+            autoPlay: true,
+            scale: explosionScale,
+            anchor: { x: 0.5, y: 0.5 },
+            ...config
+        });
+
+        explosion.x = x;
+        explosion.y = y;
+
+        return explosion;
     }
 
     /**
      * Preload explosion animations
      */
     public async preloadAnimations(): Promise<void> {
-        console.log('🎬 Preloading explosion animations...');
-        
         try {
-            await this.assetManager.loadTexture('assets/textures/animations/anim_hit.jpg');
-            console.log('✅ Explosion animations preloaded successfully!');
+            await AnimationUtils.getCachedFrames('explosion', async () => {
+                const hitTexture = await this.assetManager.loadTexture(AssetManager.paths.HIT_ANIMATION);
+                
+                const explosionFrames: Texture[] = [];
+                const frameWidth = hitTexture.width / 4;
+                const frameHeight = hitTexture.height / 4;
+
+                for (let row = 0; row < 4; row++) {
+                    for (let col = 0; col < 4; col++) {
+                        const frameRect = new Rectangle(
+                            col * frameWidth,
+                            row * frameHeight,
+                            frameWidth,
+                            frameHeight
+                        );
+                        
+                        const frame = new Texture(hitTexture.baseTexture, frameRect);
+                        explosionFrames.push(frame);
+                    }
+                }
+                
+                return explosionFrames;
+            });
         } catch (error) {
             console.error('❌ Failed to preload explosion animations:', error);
             throw error;

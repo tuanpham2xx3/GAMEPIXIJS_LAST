@@ -130,7 +130,7 @@ export class BulletManager {
     const newDamage = this.calculateCurrentDamage();
     const isSpecialLevel = this.bulletLevel <= 5; // Level 1-5 have special patterns
     
-    console.log(`BulletManager upgraded: Level ${oldLevel} -> ${this.bulletLevel}, Damage ${oldDamage} -> ${newDamage}`);
+    
     
     return {
       oldLevel,
@@ -206,7 +206,7 @@ export class BulletManager {
 
   public resetBulletLevel(): void {
     this.bulletLevel = 1;
-    console.log('BulletManager: Bullet level reset to 1');
+    
   }
 
   // Debug methods

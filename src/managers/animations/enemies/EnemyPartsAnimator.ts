@@ -17,15 +17,12 @@ export class EnemyPartsAnimator {
      * Load enemy parts from assets
      */
     private async loadEnemyParts(enemyType: string): Promise<{ [key: string]: Texture }> {
-        console.log(`Loading enemy parts for: ${enemyType}`);
         const basePath = `assets/textures/characters/enemies/${enemyType}/enemy_${enemyType}_`;
         const parts: { [key: string]: Texture } = {};
 
         // Load body
         try {
-            console.log(`Loading body: ${basePath}body.png`);
             parts.body = await this.assetManager.loadTexture(basePath + 'body.png');
-            console.log(`Body loaded successfully for ${enemyType}`);
         } catch (error) {
             console.warn(`No body found for ${enemyType}:`, error);
         }
@@ -35,7 +32,7 @@ export class EnemyPartsAnimator {
             parts.wing_l = await this.assetManager.loadTexture(basePath + 'wing_l.png');
             parts.wing_r = await this.assetManager.loadTexture(basePath + 'wing_r.png');
         } catch (error) {
-            console.log(`No wings found for ${enemyType}`);
+            // Wings are optional
         }
 
         // Load horns
@@ -43,7 +40,7 @@ export class EnemyPartsAnimator {
             parts.horn_l = await this.assetManager.loadTexture(basePath + 'horn_l.png');
             parts.horn_r = await this.assetManager.loadTexture(basePath + 'horn_r.png');
         } catch (error) {
-            console.log(`No horns found for ${enemyType}`);
+            // Horns are optional
         }
 
         // Load legs
@@ -55,10 +52,10 @@ export class EnemyPartsAnimator {
                 parts.leg_1_l = await this.assetManager.loadTexture(basePath + 'leg_1_l.png');
                 parts.leg_1_r = await this.assetManager.loadTexture(basePath + 'leg_1_r.png');
             } catch (error) {
-                console.log(`No additional leg parts found for ${enemyType}`);
+                // Additional leg parts are optional
             }
         } catch (error) {
-            console.log(`No legs found for ${enemyType}`);
+            // Legs are optional
         }
 
         return parts;
@@ -424,16 +421,12 @@ export class EnemyPartsAnimator {
      * Preload all enemy parts animations
      */
     public async preloadAnimations(): Promise<void> {
-        console.log('🎬 Preloading enemy parts animations...');
-        
         const enemyTypes = ['soldier', 'diver', 'green', 'inferior', 'na', 'saturation'];
         
         try {
             await Promise.all(
                 enemyTypes.map(type => this.loadEnemyParts(type))
             );
-            
-            console.log('✅ Enemy parts animations preloaded successfully!');
         } catch (error) {
             console.error('❌ Failed to preload enemy parts animations:', error);
             throw error;

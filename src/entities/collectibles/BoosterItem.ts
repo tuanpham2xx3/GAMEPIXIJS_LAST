@@ -33,7 +33,6 @@ export class BoosterItem extends Item {
             this.createGlowEffect();
 
             this.addChild(this.animation);
-            console.log('Booster visual setup completed using AssetManager');
         } catch (error) {
             console.error('Failed to setup booster visuals:', error);
             await this.setupFallbackVisual();
@@ -67,7 +66,6 @@ export class BoosterItem extends Item {
 
             this.animation = graphics as any;
             this.addChild(graphics);
-            console.log('Booster fallback visual setup completed');
         } catch (error) {
             console.error('Failed to setup booster fallback visual:', error);
         }
@@ -94,7 +92,6 @@ export class BoosterItem extends Item {
     protected applyEffect(): void {
         // Apply booster effect - increase bullet level
         const config = GameConfig.items.booster;
-        console.log(`Booster collected! Upgrade value: ${config.value}`);
         
         // The actual bullet upgrade is handled by GameOrchestrator
         // This method is called from the collision system

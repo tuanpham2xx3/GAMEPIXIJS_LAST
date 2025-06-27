@@ -52,12 +52,11 @@ export class AssetManager {
     }
 
     private constructor() {
-        console.log('Initializing AssetManager...');
+        // AssetManager initialized
     }
 
     public static getInstance(): AssetManager {
         if (!AssetManager.instance) {
-            console.log('Creating new AssetManager instance...');
             AssetManager.instance = new AssetManager();
         }
         return AssetManager.instance;
@@ -72,8 +71,6 @@ export class AssetManager {
         smoke: Texture;
         background: Texture;
     }> {
-        console.log('Loading essential game assets...');
-
         const essentialAssets = [
             { alias: 'player', src: AssetManager.ASSET_PATHS.PLAYER_SHIP },
             { alias: 'bullet', src: AssetManager.ASSET_PATHS.BULLET_PHOENIX },
@@ -97,7 +94,6 @@ export class AssetManager {
             this.loadedTextures.set('smoke', result.smoke);
             this.loadedTextures.set('background', result.background);
 
-            console.log('Essential game assets loaded successfully!');
             return result;
 
         } catch (error) {
@@ -110,8 +106,6 @@ export class AssetManager {
      * Load animation assets
      */
     public async loadAnimationAssets(): Promise<void> {
-        console.log('Loading animation assets...');
-        
         const animationAssets = [
             { alias: 'hitAnimation', src: AssetManager.ASSET_PATHS.HIT_ANIMATION },
             { alias: 'bossAnimation', src: AssetManager.ASSET_PATHS.BOSS_ANIMATION },
@@ -123,8 +117,6 @@ export class AssetManager {
             animationAssets.forEach(asset => {
                 this.loadedTextures.set(asset.alias, Assets.get(asset.alias));
             });
-
-            console.log('Animation assets loaded successfully!');
 
         } catch (error) {
             console.error('Failed to load animation assets:', error);
@@ -140,8 +132,6 @@ export class AssetManager {
         bullet: Texture;
         smoke: Texture;
     } {
-        console.log('Creating fallback textures...');
-        
         return {
             player: this.createColorTexture(0x00ff88, 64, 64), // Green player
             bullet: this.createColorTexture(0xffff00, 8, 16),  // Yellow bullet
@@ -165,18 +155,15 @@ export class AssetManager {
      * Load a single texture
      */
     public async loadTexture(path: string, alias?: string): Promise<Texture> {
-        console.log(`Loading texture: ${path}`);
         const key = alias || path;
         
         if (this.loadedTextures.has(key)) {
-            console.log(`Texture already loaded: ${key}`);
             return this.loadedTextures.get(key)!;
         }
 
         try {
             const texture = await Assets.load(path);
             this.loadedTextures.set(key, texture);
-            console.log(`Texture loaded successfully: ${key}`);
             return texture;
         } catch (error) {
             console.error(`Failed to load texture: ${path}`, error);
@@ -231,6 +218,5 @@ export class AssetManager {
      */
     public clearCache(): void {
         this.loadedTextures.clear();
-        console.log('Texture cache cleared');
     }
 } 
